@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 476" role="img"
+     aria-labelledby="t d" font-family="Georgia, 'Times New Roman', serif">
+  <title id="t">Der Zielkonflikt zwischen kurzer Restnutzungsdauer und Kaufpreisaufteilung</title>
+  <desc id="d">Gegenueberstellung an einem Fall mit 900.000 Euro Gebaeudeanteil laut
+  Kaufvertrag. Bei einer Restnutzungsdauer von 50 Jahren betraegt der AfA-Satz 2 Prozent,
+  die jaehrliche Abschreibung 18.000 Euro und das gesamte AfA-Volumen 900.000 Euro. Wird
+  eine Restnutzungsdauer von 10 Jahren durchgesetzt und kuerzt das Finanzamt daraufhin den
+  Gebaeudeanteil auf 400.000 Euro, betraegt der AfA-Satz 10 Prozent und die jaehrliche
+  Abschreibung 40.000 Euro, das gesamte AfA-Volumen aber nur noch 400.000 Euro. Dauerhaft
+  verloren gehen 500.000 Euro Abschreibungsvolumen.</desc>
+
+  <rect width="880" height="476" fill="#FFFFFF"/>
+
+  <text x="36" y="42" font-size="21" font-weight="bold" fill="#3A5791">Schneller abschreiben, insgesamt weniger</text>
+  <text x="36" y="66" font-size="14" fill="#5A6070">Gebäudeanteil laut Kaufvertrag: 900.000 EUR</text>
+  <rect x="36" y="80" width="64" height="4" rx="2" fill="#F7B234"/>
+
+  <!-- Links -->
+  <rect x="36" y="112" width="384" height="246" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <text x="60" y="144" font-size="15" font-weight="bold" fill="#3A5791">Längere Restnutzungsdauer</text>
+  <text x="60" y="166" font-size="13" fill="#5A6070">Aufteilung bleibt unangetastet</text>
+
+  <text x="60" y="200" font-size="13" fill="#333333">Restnutzungsdauer</text>
+  <text x="396" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">50 Jahre</text>
+  <text x="60" y="226" font-size="13" fill="#333333">AfA-Satz</text>
+  <text x="396" y="226" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">2 %</text>
+  <text x="60" y="252" font-size="13" fill="#333333">Gebäudeanteil</text>
+  <text x="396" y="252" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">900.000 EUR</text>
+  <text x="60" y="278" font-size="13" fill="#333333">Abschreibung pro Jahr</text>
+  <text x="396" y="278" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">18.000 EUR</text>
+
+  <line x1="60" y1="296" x2="396" y2="296" stroke="#C9D2E0"/>
+  <text x="60" y="322" font-size="13" fill="#5A6070">AfA-Volumen insgesamt</text>
+  <text x="60" y="348" font-size="24" font-weight="bold" fill="#3A5791">900.000 EUR</text>
+
+  <!-- Rechts -->
+  <rect x="460" y="112" width="384" height="246" rx="6" fill="#FDF3E0" stroke="#F7B234" stroke-width="2"/>
+  <text x="484" y="144" font-size="15" font-weight="bold" fill="#3A5791">Kurze Restnutzungsdauer</text>
+  <text x="484" y="166" font-size="13" fill="#5A6070">Finanzamt kürzt die Aufteilung</text>
+
+  <text x="484" y="200" font-size="13" fill="#333333">Restnutzungsdauer</text>
+  <text x="820" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">10 Jahre</text>
+  <text x="484" y="226" font-size="13" fill="#333333">AfA-Satz</text>
+  <text x="820" y="226" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">10 %</text>
+  <text x="484" y="252" font-size="13" fill="#333333">Gebäudeanteil</text>
+  <text x="820" y="252" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">400.000 EUR</text>
+  <text x="484" y="278" font-size="13" fill="#333333">Abschreibung pro Jahr</text>
+  <text x="820" y="278" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">40.000 EUR</text>
+
+  <line x1="484" y1="296" x2="820" y2="296" stroke="#EBC98A"/>
+  <text x="484" y="322" font-size="13" fill="#5A6070">AfA-Volumen insgesamt</text>
+  <text x="484" y="348" font-size="24" font-weight="bold" fill="#3A5791">400.000 EUR</text>
+
+  <!-- Ergebnis -->
+  <rect x="36" y="376" width="808" height="52" rx="6" fill="#3A5791"/>
+  <text x="60" y="408" font-size="15" font-weight="bold" fill="#FFFFFF">Dauerhaft verloren</text>
+  <text x="250" y="408" font-size="20" font-weight="bold" fill="#F7B234">500.000 EUR</text>
+  <text x="410" y="408" font-size="14" fill="#C3D2E8">Abschreibungsvolumen, das nie wiederkommt</text>
+
+  <text x="36" y="452" font-size="11" fill="#5A6070">Vereinfachtes Modell nach einem realen Einspruchsverfahren. Die schnellere Abschreibung endet nach zehn Jahren, die Kürzung bleibt.</text>
+</svg>

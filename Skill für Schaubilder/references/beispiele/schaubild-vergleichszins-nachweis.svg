@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 428" role="img"
+     aria-labelledby="t d" font-family="Georgia, 'Times New Roman', serif">
+  <title id="t">Was der Nachweis des Vergleichszinses wert ist</title>
+  <desc id="d">Dasselbe Darlehen von 300.000 Euro unter Geschwistern, einmal mit
+  nachgewiesenem Marktzins von 3,5 Prozent und einmal ohne Nachweis. Mit Nachweis
+  betraegt die Zinsdifferenz 2,5 Prozent und die Schenkungsteuer 7.455 Euro. Ohne
+  Nachweis setzt das Finanzamt den gesetzlichen Wert von 5,5 Prozent an, die
+  Zinsdifferenz betraegt 4,5 Prozent und die Schenkungsteuer 21.100 Euro. Der
+  Unterschied betraegt 13.645 Euro, also fast das Dreifache.</desc>
+
+  <rect width="880" height="428" fill="#FFFFFF"/>
+
+  <text x="36" y="42" font-size="21" font-weight="bold" fill="#3A5791">Derselbe Vertrag, zwei Ergebnisse</text>
+  <text x="36" y="66" font-size="14" fill="#5A6070">Darlehen 300.000 EUR unter Geschwistern, 1 % Zins, unbefristet</text>
+  <rect x="36" y="80" width="64" height="4" rx="2" fill="#F7B234"/>
+
+  <!-- Links: mit Nachweis -->
+  <rect x="36" y="112" width="384" height="230" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <text x="60" y="144" font-size="15" font-weight="bold" fill="#3A5791">Marktzins belegt</text>
+  <text x="60" y="166" font-size="13" fill="#5A6070">Bankangebote oder Bundesbank-Statistik liegen vor</text>
+
+  <text x="60" y="200" font-size="13" fill="#333333">Vergleichszins</text>
+  <text x="396" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">3,5 %</text>
+  <text x="60" y="224" font-size="13" fill="#333333">Zinsdifferenz</text>
+  <text x="396" y="224" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">2,5 %</text>
+  <text x="60" y="248" font-size="13" fill="#333333">Steuerpflichtiger Erwerb</text>
+  <text x="396" y="248" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">49.700 EUR</text>
+
+  <line x1="60" y1="266" x2="396" y2="266" stroke="#C9D2E0"/>
+  <text x="60" y="296" font-size="13" fill="#5A6070">Schenkungsteuer</text>
+  <text x="60" y="326" font-size="28" font-weight="bold" fill="#3A5791">7.455 EUR</text>
+
+  <!-- Rechts: ohne Nachweis -->
+  <rect x="460" y="112" width="384" height="230" rx="6" fill="#FDF3E0" stroke="#F7B234" stroke-width="2"/>
+  <text x="484" y="144" font-size="15" font-weight="bold" fill="#3A5791">Kein Nachweis</text>
+  <text x="484" y="166" font-size="13" fill="#5A6070">Finanzamt setzt den gesetzlichen Wert an</text>
+
+  <text x="484" y="200" font-size="13" fill="#333333">Gesetzlicher Wert, § 15 BewG</text>
+  <text x="820" y="200" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">5,5 %</text>
+  <text x="484" y="224" font-size="13" fill="#333333">Zinsdifferenz</text>
+  <text x="820" y="224" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">4,5 %</text>
+  <text x="484" y="248" font-size="13" fill="#333333">Steuerpflichtiger Erwerb</text>
+  <text x="820" y="248" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">105.500 EUR</text>
+
+  <line x1="484" y1="266" x2="820" y2="266" stroke="#EBC98A"/>
+  <text x="484" y="296" font-size="13" fill="#5A6070">Schenkungsteuer</text>
+  <text x="484" y="326" font-size="28" font-weight="bold" fill="#3A5791">21.100 EUR</text>
+
+  <!-- Ergebniszeile -->
+  <rect x="36" y="358" width="808" height="42" rx="6" fill="#3A5791"/>
+  <text x="60" y="385" font-size="15" font-weight="bold" fill="#FFFFFF">Unterschied:</text>
+  <text x="176" y="385" font-size="17" font-weight="bold" fill="#F7B234">13.645 EUR</text>
+  <text x="316" y="385" font-size="14" fill="#C3D2E8">fast das Dreifache, allein wegen der Dokumentation</text>
+
+  <text x="36" y="420" font-size="11" fill="#5A6070">Vereinfachtes Modell, Steuerklasse II, Freibetrag 20.000 EUR. Der höhere Erwerb fällt zusätzlich in die nächste Tarifstufe.</text>
+</svg>

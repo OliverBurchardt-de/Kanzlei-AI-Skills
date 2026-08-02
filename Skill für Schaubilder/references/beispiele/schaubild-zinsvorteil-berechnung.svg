@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 396" role="img"
+     aria-labelledby="t d" font-family="Georgia, 'Times New Roman', serif">
+  <title id="t">So wird der Zinsvorteil beim Familiendarlehen berechnet</title>
+  <desc id="d">Dreistufige Berechnung an einem Darlehen ueber 300.000 Euro: Aus der
+  Zinsdifferenz von 2,5 Prozent wird ein Jahreswert von 7.500 Euro. Dieser wird mit dem
+  Faktor 9,3 kapitalisiert und ergibt einen Erwerb von 69.750 Euro, der auf einmal
+  versteuert wird und nicht Jahr fuer Jahr.</desc>
+
+  <rect width="880" height="396" fill="#FFFFFF"/>
+
+  <text x="36" y="42" font-size="21" font-weight="bold" fill="#3A5791">Vom Zinssatz zur Steuer</text>
+  <text x="36" y="66" font-size="14" fill="#5A6070">Darlehen 300.000 EUR, unbefristet, 1 % statt 3,5 % Zins</text>
+  <rect x="36" y="80" width="64" height="4" rx="2" fill="#F7B234"/>
+
+  <!-- ===== Stufe 1 ===== -->
+  <rect x="36" y="112" width="236" height="136" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <circle cx="62" cy="140" r="14" fill="#3A5791"/>
+  <text x="62" y="145" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">1</text>
+  <text x="86" y="145" font-size="15" font-weight="bold" fill="#3A5791">Zinsdifferenz</text>
+  <text x="56" y="176" font-size="13" fill="#333333">Marktzins 3,5 %</text>
+  <text x="56" y="196" font-size="13" fill="#333333">abzüglich 1,0 %</text>
+  <line x1="56" y1="210" x2="252" y2="210" stroke="#C9D2E0"/>
+  <text x="56" y="236" font-size="24" font-weight="bold" fill="#3A5791">2,5 %</text>
+
+  <path d="M284 180 L310 180" stroke="#3A5791" stroke-width="2"/>
+  <path d="M310 180 l-8 -5 v10 z" fill="#3A5791"/>
+
+  <!-- ===== Stufe 2 ===== -->
+  <rect x="322" y="112" width="236" height="136" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <circle cx="348" cy="140" r="14" fill="#3A5791"/>
+  <text x="348" y="145" font-size="13" font-weight="bold" fill="#FFFFFF" text-anchor="middle">2</text>
+  <text x="372" y="145" font-size="15" font-weight="bold" fill="#3A5791">Jahreswert</text>
+  <text x="342" y="176" font-size="13" fill="#333333">2,5 % von 300.000 EUR</text>
+  <text x="342" y="196" font-size="13" fill="#5A6070">Vorteil pro Jahr</text>
+  <line x1="342" y1="210" x2="538" y2="210" stroke="#C9D2E0"/>
+  <text x="342" y="236" font-size="24" font-weight="bold" fill="#3A5791">7.500 EUR</text>
+
+  <path d="M570 180 L596 180" stroke="#3A5791" stroke-width="2"/>
+  <path d="M596 180 l-8 -5 v10 z" fill="#3A5791"/>
+
+  <!-- ===== Stufe 3 ===== -->
+  <rect x="608" y="112" width="236" height="136" rx="6" fill="#FDF3E0" stroke="#F7B234" stroke-width="2"/>
+  <circle cx="634" cy="140" r="14" fill="#F7B234"/>
+  <text x="634" y="145" font-size="13" font-weight="bold" fill="#3A5791" text-anchor="middle">3</text>
+  <text x="658" y="145" font-size="15" font-weight="bold" fill="#3A5791">Kapitalisierung</text>
+  <text x="628" y="176" font-size="13" fill="#333333">7.500 EUR × Faktor 9,3</text>
+  <text x="628" y="196" font-size="13" fill="#5A6070">§ 13 Abs. 2 BewG</text>
+  <line x1="628" y1="210" x2="824" y2="210" stroke="#EBC98A"/>
+  <text x="628" y="236" font-size="24" font-weight="bold" fill="#3A5791">69.750 EUR</text>
+
+  <!-- Hinweis -->
+  <path d="M726 254 L726 276" stroke="#F7B234" stroke-width="2"/>
+  <path d="M726 276 l-5 -8 h10 z" fill="#F7B234"/>
+  <rect x="322" y="284" width="522" height="58" rx="6" fill="#FFFFFF" stroke="#F7B234"/>
+  <text x="344" y="308" font-size="14" font-weight="bold" fill="#333333">Der dritte Schritt überrascht am meisten</text>
+  <text x="344" y="329" font-size="13" fill="#333333">Der Vorteil wird auf einmal versteuert, nicht Jahr für Jahr.</text>
+
+  <text x="36" y="378" font-size="11" fill="#5A6070">Vereinfachtes Modell, abgerundet nach § 10 Abs. 1 S. 6 ErbStG. Frühere Erwerbe innerhalb von zehn Jahren bleiben unberücksichtigt.</text>
+</svg>

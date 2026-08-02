@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 452" role="img"
+     aria-labelledby="t d" font-family="Georgia, 'Times New Roman', serif">
+  <title id="t">Warum dieselben Zinsen zweimal unterschiedlich besteuert werden</title>
+  <desc id="d">Ein Vater leiht seiner Tochter 300.000 Euro fuer eine vermietete Wohnung
+  zu 3,5 Prozent. Die Tochter zahlt 10.500 Euro Zinsen im Jahr und zieht sie als
+  Werbungskosten mit ihrem persoenlichen Steuersatz von 42 Prozent ab, was 4.410 Euro
+  Entlastung ergibt. Der Vater versteuert dieselben 10.500 Euro mit dem gesonderten
+  Steuersatz von 25 Prozent zuzueglich Solidaritaetszuschlag und zahlt 2.769 Euro.
+  In der Familie bleiben 1.641 Euro pro Jahr.</desc>
+
+  <rect width="880" height="452" fill="#FFFFFF"/>
+
+  <text x="36" y="42" font-size="21" font-weight="bold" fill="#3A5791">Dieselben Zinsen, zwei Steuersätze</text>
+  <text x="36" y="66" font-size="14" fill="#5A6070">Vater leiht Tochter 300.000 EUR zu 3,5 % für eine vermietete Wohnung</text>
+  <rect x="36" y="80" width="64" height="4" rx="2" fill="#F7B234"/>
+
+  <!-- Zinsfluss -->
+  <text x="440" y="122" font-size="13" fill="#5A6070" text-anchor="middle">10.500 EUR Zinsen pro Jahr</text>
+  <path d="M382 138 L498 138" stroke="#3A5791" stroke-width="2"/>
+  <path d="M498 138 l-9 -6 v12 z" fill="#3A5791"/>
+
+  <!-- Links: Darlehensnehmerin -->
+  <rect x="36" y="156" width="340" height="182" rx="6" fill="#F6F8FB" stroke="#D8DEE9"/>
+  <text x="60" y="186" font-size="15" font-weight="bold" fill="#3A5791">Tochter zahlt die Zinsen</text>
+  <text x="60" y="208" font-size="13" fill="#5A6070">Abzug als Werbungskosten</text>
+
+  <text x="60" y="240" font-size="13" fill="#333333">Persönlicher Steuersatz</text>
+  <text x="352" y="240" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">42 %</text>
+
+  <line x1="60" y1="258" x2="352" y2="258" stroke="#C9D2E0"/>
+  <text x="60" y="288" font-size="13" fill="#5A6070">Steuerentlastung</text>
+  <text x="60" y="320" font-size="26" font-weight="bold" fill="#3A5791">+ 4.410 EUR</text>
+
+  <!-- Rechts: Darlehensgeber -->
+  <rect x="504" y="156" width="340" height="182" rx="6" fill="#FDF3E0" stroke="#F7B234" stroke-width="2"/>
+  <text x="528" y="186" font-size="15" font-weight="bold" fill="#3A5791">Vater erhält die Zinsen</text>
+  <text x="528" y="208" font-size="13" fill="#5A6070">Einkünfte aus Kapitalvermögen</text>
+
+  <text x="528" y="240" font-size="13" fill="#333333">Abgeltungsteuer plus SolZ</text>
+  <text x="820" y="240" font-size="13" font-weight="bold" fill="#333333" text-anchor="end">25 %</text>
+
+  <line x1="528" y1="258" x2="820" y2="258" stroke="#EBC98A"/>
+  <text x="528" y="288" font-size="13" fill="#5A6070">Steuerbelastung</text>
+  <text x="528" y="320" font-size="26" font-weight="bold" fill="#3A5791">− 2.769 EUR</text>
+
+  <!-- Ergebnis -->
+  <rect x="36" y="356" width="808" height="46" rx="6" fill="#3A5791"/>
+  <text x="60" y="385" font-size="15" font-weight="bold" fill="#FFFFFF">In der Familie bleiben</text>
+  <text x="280" y="385" font-size="18" font-weight="bold" fill="#F7B234">1.641 EUR pro Jahr</text>
+  <text x="500" y="385" font-size="14" fill="#C3D2E8">Bei 1 % Zins wären es nur 469 EUR</text>
+
+  <text x="36" y="428" font-size="11" fill="#5A6070">Vereinfachtes Modell. Sparer-Pauschbetrag des Vaters bereits ausgeschöpft. Kirchensteuer und weitere Einkünfte bleiben unberücksichtigt.</text>
+</svg>
