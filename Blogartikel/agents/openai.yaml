@@ -1,0 +1,4 @@
+interface:
+  display_name: "B&K Blogartikel"
+  short_description: "Verständliche, belegte Steuerblogartikel erstellen"
+  default_prompt: "Nutze $bk-blogartikel, um aus meinem Briefing einen verständlichen, belegten deutschen Steuerblogartikel zu erstellen."
