@@ -23,7 +23,7 @@ def main() -> None:
         else None
     )
 
-    require(skill, "# BK Monatsbuchhaltung v0.3.8", "sichtbare Version")
+    require(skill, "# BK Monatsbuchhaltung v1.0.0", "sichtbare Version")
     require(
         skill,
         "### Vor jedem Lauf vollständig lesen",
@@ -36,7 +36,7 @@ def main() -> None:
     )
     require(
         skill,
-        "Startnachweis: bk-monatsbuchhaltung v0.3.8",
+        "Startnachweis: bk-monatsbuchhaltung v1.0.0",
         "nicht blockierender Startnachweis",
     )
     require(
@@ -54,17 +54,23 @@ def main() -> None:
         "ein ausdrücklicher `$bk-monatsbuchhaltung`-Aufruf ist nicht erforderlich",
         "implizite Aktivierungsregel",
     )
-    require(ui, 'display_name: "BK Monatsbuchhaltung v0.3.8"', "UI-Version")
+    require(skill, "## Prüfprotokoll-Rücklauf", "Rücklaufworkflow")
+    require(
+        skill,
+        "scripts/evaluate_review_return.py",
+        "deterministische Rücklaufprüfung",
+    )
+    require(ui, 'display_name: "BK Monatsbuchhaltung v1.0.0"', "UI-Version")
     require(ui, "$bk-monatsbuchhaltung", "Startprompt mit Skillname")
     require(ui, "allow_implicit_invocation: true", "implizite Aktivierung")
 
     if manifest is not None:
-        if manifest.get("version") != "0.3.8":
-            raise AssertionError("Pluginmanifest weist nicht Version 0.3.8 aus")
+        if manifest.get("version") != "1.0.0":
+            raise AssertionError("Pluginmanifest weist nicht Version 1.0.0 aus")
         if manifest.get("interface", {}).get("displayName") != (
-            "BK Monatsbuchhaltung v0.3.8"
+            "BK Monatsbuchhaltung v1.0.0"
         ):
-            raise AssertionError("Plugin-Anzeigename enthält Version 0.3.8 nicht")
+            raise AssertionError("Plugin-Anzeigename enthält Version 1.0.0 nicht")
 
     print("start contract tests: OK")
 

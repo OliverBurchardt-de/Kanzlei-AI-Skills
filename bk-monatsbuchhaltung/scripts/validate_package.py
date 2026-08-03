@@ -71,7 +71,7 @@ FORBIDDEN_DATEV_FOLDERS = {
 }
 
 
-EXPECTED_SKILL_VERSION = "0.3.8"
+EXPECTED_SKILL_VERSION = "1.0.0"
 EXPECTED_OUTPUT_CONTRACT = "single-datev-import-folder-v2"
 
 
@@ -966,6 +966,8 @@ def main() -> int:
         errors.append(
             "Ausgabevertrag single-datev-import-folder-v2 fehlt im Laufmanifest"
         )
+    if manifest.get("pruefprotokoll_ruecklauf_status") != "ausstehend":
+        errors.append("Fachlicher Prüfprotokoll-Rücklaufstatus fehlt im Laufmanifest")
 
     expected_import_order = [
         "EXTF_Debitoren_Kreditoren.csv (falls vorhanden)",

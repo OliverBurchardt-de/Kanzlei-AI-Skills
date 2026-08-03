@@ -36,7 +36,7 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "0.3.8"
+SKILL_VERSION = "1.0.0"
 OUTPUT_CONTRACT = "single-datev-import-folder-v2"
 
 VALID_STATUSES = {
@@ -1538,6 +1538,7 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
     manifest = {
         "skill_version": SKILL_VERSION,
         "output_contract": OUTPUT_CONTRACT,
+        "pruefprotokoll_ruecklauf_status": "ausstehend",
         "beraternummer": data["run"]["beraternummer"],
         "mandant": data["run"]["mandantennummer"],
         "buchungsmonat": data["run"]["buchungsmonat"],
@@ -1590,6 +1591,7 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "# Technisches Laufprotokoll", "",
         f"- Skill-Version: {SKILL_VERSION}",
         f"- Ausgabevertrag: {OUTPUT_CONTRACT}",
+        "- Prüfprotokoll-Rücklauf: ausstehend",
         f"- Vollständigkeit: {'VOLLSTÄNDIG' if complete else 'UNVOLLSTÄNDIG'}",
         f"- Hochgeladene Dateien: {len(docs)}",
         f"- Buchungsbelege: {status_counts.get('Buchungszeile erzeugt', 0)}",

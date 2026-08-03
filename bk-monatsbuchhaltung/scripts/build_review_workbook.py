@@ -177,7 +177,8 @@ def build(data: dict[str, Any], output: Path) -> None:
         ["Schritt / Feld", "Bedeutung"],
         ["1. Belegprüfung", "Zuerst Rot, dann Gelb bearbeiten. Direkt rechts neben der Ampel steht der vollständige DATEV-Buchungsstapel. Grün ist bereits plausibel kontiert."],
         ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, BU-Schlüssel, Belegfeld 1, Buchungstext und Periode nachvollziehen."],
-        ["3. Mitarbeiter-Ergebnis", "Bei geänderten oder nicht übernommenen Buchungen die endgültige Behandlung dokumentieren."],
+        ["3. Rücklaufstatus", "Für jeden roten und gelben Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
+        ["4. Mitarbeiter-Ergebnis", "Bei geändert oder nicht übernommen ist die endgültige Behandlung als Mitarbeiter-Ergebnis Pflicht."],
         ["Grün", "Vollständig und plausibel; keine offene fachliche Frage."],
         ["Gelb", "Importierbar; eine fachliche Kontrolle bleibt offen."],
         ["Rot", "Aktive DATEV-Bearbeitung; das Belegdatum ist im Klärungsposten bewusst leer."],
@@ -191,7 +192,7 @@ def build(data: dict[str, Any], output: Path) -> None:
         guide.cell(row, 1).font = Font(bold=True)
         guide.cell(row, 2).alignment = Alignment(wrap_text=True, vertical="top")
         guide.row_dimensions[row].height = 34
-    for row, color in ((5, GREEN), (6, YELLOW), (7, RED)):
+    for row, color in ((6, GREEN), (7, YELLOW), (8, RED)):
         guide.cell(row, 1).fill = PatternFill("solid", fgColor=color)
     set_widths(guide, [25, 90])
     guide.freeze_panes = "A2"
@@ -285,14 +286,14 @@ def build(data: dict[str, Any], output: Path) -> None:
     traffic_format(review, review.max_row)
     status_validation = DataValidation(
         type="list",
-        formula1='"offen,unverändert übernommen,geändert,nicht gebucht"',
+        formula1='"offen,unverändert übernommen,geändert,nicht übernommen"',
     )
     review.add_data_validation(status_validation)
     status_validation.add(f"N2:N{max(2, review.max_row)}")
     review.conditional_formatting.add(
         f"O2:O{max(2, review.max_row)}",
         FormulaRule(
-            formula=['AND(OR($N2="geändert",$N2="nicht gebucht"),$O2="")'],
+            formula=['AND(OR($N2="geändert",$N2="nicht übernommen"),$O2="")'],
             fill=PatternFill("solid", fgColor=RED),
             font=Font(color="9C0006", bold=True),
         ),
