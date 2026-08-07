@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://burchardt-kollegen.de/schemas/dms-uebergabe/1.0/uebergabe.schema.json",
+  "title": "DMS-Uebergabe Sidecar",
+  "description": "Metadaten-Begleitdatei (<Dateiname>.dms.json) für die automatische Ablage eines Dokuments aus der SharePoint-Übergabebibliothek in das DATEV DMS. Dieser Kontrakt ist die einzige Quelle der Wahrheit für Agent-Skill (bk-dms-ablage), Bridge-Worker und eine mögliche Klardaten-Write-Implementierung.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "mandanten_nr",
+    "jahr",
+    "dokumenttyp",
+    "beschreibung",
+    "datei_name",
+    "sha256",
+    "datei_groesse_bytes",
+    "quelle_skill",
+    "erstellt_am",
+    "binary_delivery"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version dieses Kontrakts. Worker lehnt unbekannte Versionen mit Status 'Fehler' ab."
+    },
+    "mandanten_nr": {
+      "type": "string",
+      "pattern": "^\\d{5}$",
+      "description": "Fünfstellige DATEV-Mandantennummer (Zentrale Mandantennummer, z. B. 10002). Wird vom Worker zur Laufzeit über /master-data/v1/clients in die correspondence_partner_guid aufgelöst."
+    },
+    "jahr": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 2099,
+      "description": "Veranlagungszeitraum bzw. Wirtschaftsjahr (DMS-Feld 'year')."
+    },
+    "monat": {
+      "type": ["integer", "null"],
+      "minimum": 1,
+      "maximum": 12,
+      "description": "Optionaler Monat (DMS-Feld 'month'), z. B. für Monatsbuchhaltungs-Protokolle."
+    },
+    "dokumenttyp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Schlüssel aus mapping.yaml (z. B. 'bescheidreview_arbeitspapier'). Bestimmt Bereich/Ordner/Register/Status im DMS. Unbekannte Typen -> Status 'Fehler', keine Ablage."
+    },
+    "beschreibung": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "DMS-Beschreibung (Feld 'description', max. 255 Zeichen)."
+    },
+    "stichworte": {
+      "type": ["string", "null"],
+      "maxLength": 255,
+      "description": "Optionale, kommagetrennte Stichworte (DMS-Feld 'keywords')."
+    },
+    "datei_name": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/\\\\]+\\.[A-Za-z0-9]{1,10}$",
+      "description": "Dateiname der Binärdatei inklusive Endung; muss exakt dem SharePoint-Item neben dem Sidecar entsprechen (DMS: structure_items.name)."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 der Binärdatei (lowercase hex). Grundlage für Idempotenz, Fortschreibungs-Erkennung und die Manuell-Lane."
+    },
+    "datei_groesse_bytes": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Größe der Binärdatei in Bytes zum Zeitpunkt der Sidecar-Erstellung."
+    },
+    "quelle_skill": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Erzeugender Skill/Workflow (z. B. 'bescheid-review', 'abschluss-review', 'bk-monatsbuchhaltung'). Wird in die SharePoint-Spalte QuelleSkill gespiegelt und im DMS-Feld 'application' abgelegt."
+    },
+    "erstellt_am": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Erstellungszeitpunkt des Dokuments (ISO 8601, lokale Zeit mit Offset). DMS: structure_items.creation_date."
+    },
+    "binary_delivery": {
+      "type": "string",
+      "enum": ["upload", "manual"],
+      "description": "'upload': Binärdatei wurde vom Agenten direkt mit hochgeladen. 'manual': Datei > 900 KiB, der Nutzer legt sie manuell im selben Ordner ab; der Worker wartet auf eine Datei mit passendem Namen und sha256."
+    },
+    "update_von_dms_guid": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$",
+      "description": "Optional: GUID eines bereits im DMS abgelegten Dokuments, das fortgeschrieben wird (z. B. Bescheidreview-Arbeitspapier derselben Bescheidfamilie). Normalerweise leer; der Worker erkennt Fortschreibungen primär über seinen Ledger (gleicher SharePoint-Pfad, vorhandene DMS-GUID)."
+    }
+  }
+}
