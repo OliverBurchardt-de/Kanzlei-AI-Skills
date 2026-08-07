@@ -1,0 +1,56 @@
+# Dokumenttyp-Mapping: Sidecar-Feld "dokumenttyp" -> DATEV-DMS-Ablageziel.
+#
+# Die IDs stammen aus der DMS-Instanz der Kanzlei (abgerufen am 2026-08-07 über
+# den Klardaten-MCP, Resourcen datev://dms/domains und datev://dms/document_states).
+# Vor dem Produktivbetrieb gegen GET /dms/v2/domains bzw. /documentstates der
+# Ziel-Instanz verifizieren – IDs sind installationsspezifisch!
+#
+# Struktur je Dokumenttyp:
+#   class:    DMS-Dokumentklasse (1 = Dokument, 3 = Beleg)
+#   domain:   Bereich          (1 = "Mandanten")
+#   folder:   Ordner           (innerhalb des Bereichs)
+#   register: Register         (innerhalb des Ordners)
+#   state:    Dokumentstatus   (muss zur class passen, siehe /documentstates)
+#   update_strategy: version | new_document
+#     version      = Fortschreibung als neue Datei-Revision am bestehenden
+#                    DMS-Dokument (structure_item-Update + dispatcher-information)
+#     new_document = Fortschreibung als neues Dokument mit Verweis in der
+#                    Beschreibung ("Aktualisierung n, ersetzt Dok-Nr X")
+
+defaults:
+  class: 1                 # Dokument
+  domain: 1                # Bereich "Mandanten"
+  state: 5                 # "offen" (gültig für Klasse 1)
+  update_strategy: version
+
+dokumenttypen:
+  bescheidreview_arbeitspapier:
+    beschreibung: "Bescheidreview-Arbeitspapier (Excel) aus dem Skill bescheid-review"
+    folder: 5              # "Steuerakte"
+    register: 560          # "Steuerbescheide"
+    update_strategy: version   # Workbook wird je Bescheidfamilie fortgeschrieben
+
+  abschlussreview_arbeitspapier:
+    beschreibung: "Review-Arbeitspapier Jahresabschluss/EÜR aus dem Skill abschluss-review"
+    folder: 4              # "Jahresabschluss /Bilanz"
+    register: 562          # "Arbeitspapiere zum Jahresabschluss"
+
+  fibu_pruefprotokoll:
+    beschreibung: "Prüfprotokoll / Buchungsprüfung aus bk-monatsbuchhaltung"
+    folder: 8              # "Finanzbuchhaltung"
+    register: 576          # "Arbeitspapiere FiBu"
+
+  fibu_klaerungsfaelle:
+    beschreibung: "Klärungsfälle-Dokumentation aus bk-monatsbuchhaltung"
+    folder: 8              # "Finanzbuchhaltung"
+    register: 571          # "Unterlagen zur Mandantenabstimmung"
+
+  jahresabschluss_dokument:
+    beschreibung: "Sonstige Dokumente zum Jahresabschluss"
+    folder: 4              # "Jahresabschluss /Bilanz"
+    register: 563          # "Mandanteninformationen"
+
+  steuerakte_korrespondenz:
+    beschreibung: "Mandanten-/Finanzamtskorrespondenz mit Steuerbezug"
+    folder: 5              # "Steuerakte"
+    register: 24           # "Korrespondenz"

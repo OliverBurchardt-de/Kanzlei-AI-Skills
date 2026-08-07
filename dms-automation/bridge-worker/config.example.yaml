@@ -1,0 +1,32 @@
+# Konfiguration des DMS-Bridge-Workers.
+# Kopie als config.yaml neben die Anwendung legen; Geheimnisse NICHT in diese
+# Datei schreiben, sondern in den Windows Credential Manager (siehe README).
+
+sharepoint:
+  tenant_id: "00000000-0000-0000-0000-000000000000"   # Entra-Verzeichnis-ID
+  client_id: "00000000-0000-0000-0000-000000000000"   # App-Registrierung "DMS-Bridge" (Sites.Selected)
+  # client_secret kommt aus dem Credential Manager (Eintrag "dms-bridge/graph"),
+  # NICHT hierher. Fallback für Tests: Umgebungsvariable DMS_BRIDGE_GRAPH_SECRET.
+  hostname: "burchardtkollegen.sharepoint.com"
+  site_path: "/sites/DMS-Uebergabe"
+  library: "DMS_Uebergabe"
+
+datevconnect:
+  # DATEVconnect-Endpunkt im ASP; Host/Port vom ASP-Provider bestätigen lassen.
+  base_url: "https://localhost:58452/datev/api"
+  # Basic-Auth-Zugangsdaten aus dem Credential Manager (Eintrag "dms-bridge/datevconnect");
+  # Fallback für Tests: DMS_BRIDGE_DATEV_USER / DMS_BRIDGE_DATEV_PASSWORD.
+  verify_tls: true
+  # GUID des DMS-Bearbeiters, dem abgelegte Dokumente zugeordnet werden
+  # (Service-Benutzer; via GET /iam/v1/users ermitteln):
+  dms_user_guid: "00000000-0000-0000-0000-000000000000"
+
+worker:
+  mapping_file: "mapping.yaml"
+  state_db: "dms_bridge_state.sqlite3"
+  lock_file: "dms_bridge.lock"
+  log_dir: "logs"                 # JSONL-Auditlogs, tagesweise rotiert
+  log_retention_days: 3650        # 10 Jahre (GoBD)
+  max_items_per_run: 50           # Begrenzung je Lauf; Rest im nächsten Lauf
+  manual_binary_wait_hours: 72    # Manuell-Lane: so lange auf die Binärdatei warten,
+                                  # danach Status "Fehler" mit Hinweistext

@@ -1,0 +1,5 @@
+requests>=2.31
+msal>=1.28
+PyYAML>=6.0
+jsonschema>=4.21
+keyring>=24.0; sys_platform == "win32"
