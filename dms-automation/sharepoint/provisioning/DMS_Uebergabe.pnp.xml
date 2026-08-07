@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PnP-Provisioning-Template für die Bibliothek DMS_Uebergabe.
+  Anwendung (PnP.PowerShell, gegen die zuvor angelegte Site):
+
+    Connect-PnPOnline -Url "https://burchardtkollegen.sharepoint.com/sites/DMS-Uebergabe" -Interactive
+    Invoke-PnPSiteTemplate -Path .\DMS_Uebergabe.pnp.xml
+
+  Die Site selbst (Teamsite ohne M365-Gruppe) vorher anlegen, siehe setup_checkliste.md.
+-->
+<pnp:Provisioning xmlns:pnp="http://schemas.dev.office.com/PnP/2021/03/ProvisioningSchema">
+  <pnp:Templates ID="DMS-Uebergabe-Templates">
+    <pnp:ProvisioningTemplate ID="DMS-Uebergabe-V1" Version="1.0">
+      <pnp:Lists>
+        <pnp:ListInstance Title="DMS_Uebergabe"
+                          Url="DMS_Uebergabe"
+                          TemplateType="101"
+                          EnableVersioning="true"
+                          MajorVersionLimit="50"
+                          ContentTypesEnabled="false"
+                          OnQuickLaunch="true">
+          <pnp:Fields>
+            <Field Type="Text" Name="Mandantennummer" DisplayName="Mandantennummer" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000001}" StaticName="Mandantennummer" MaxLength="5" Indexed="TRUE" />
+            <Field Type="Text" Name="Jahr" DisplayName="Jahr" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000002}" StaticName="Jahr" MaxLength="4" />
+            <Field Type="Choice" Name="Dokumenttyp" DisplayName="Dokumenttyp" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000003}" StaticName="Dokumenttyp" Format="Dropdown">
+              <CHOICES>
+                <CHOICE>bescheidreview_arbeitspapier</CHOICE>
+                <CHOICE>abschlussreview_arbeitspapier</CHOICE>
+                <CHOICE>fibu_pruefprotokoll</CHOICE>
+                <CHOICE>fibu_klaerungsfaelle</CHOICE>
+                <CHOICE>jahresabschluss_dokument</CHOICE>
+                <CHOICE>steuerakte_korrespondenz</CHOICE>
+              </CHOICES>
+            </Field>
+            <Field Type="Text" Name="Beschreibung" DisplayName="Beschreibung" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000004}" StaticName="Beschreibung" MaxLength="255" />
+            <Field Type="Text" Name="QuelleSkill" DisplayName="QuelleSkill" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000005}" StaticName="QuelleSkill" />
+            <Field Type="Choice" Name="StatusDMS" DisplayName="StatusDMS" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000006}" StaticName="StatusDMS" Format="Dropdown" Indexed="TRUE">
+              <Default>Neu</Default>
+              <CHOICES>
+                <CHOICE>Neu</CHOICE>
+                <CHOICE>InVerarbeitung</CHOICE>
+                <CHOICE>Abgelegt</CHOICE>
+                <CHOICE>Fehler</CHOICE>
+              </CHOICES>
+            </Field>
+            <Field Type="Note" Name="FehlerText" DisplayName="FehlerText" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000007}" StaticName="FehlerText" NumLines="6" />
+            <Field Type="Text" Name="DMSDokumentNr" DisplayName="DMSDokumentNr" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000008}" StaticName="DMSDokumentNr" />
+            <Field Type="Text" Name="DMSDokumentGUID" DisplayName="DMSDokumentGUID" ID="{5f1a6c1e-9a01-4a51-8e0a-000000000009}" StaticName="DMSDokumentGUID" />
+            <Field Type="Text" Name="VerarbeitetAm" DisplayName="VerarbeitetAm" ID="{5f1a6c1e-9a01-4a51-8e0a-00000000000a}" StaticName="VerarbeitetAm" />
+            <Field Type="Text" Name="VerarbeiteterHash" DisplayName="VerarbeiteterHash" ID="{5f1a6c1e-9a01-4a51-8e0a-00000000000b}" StaticName="VerarbeiteterHash" />
+          </pnp:Fields>
+          <pnp:Views>
+            <View DisplayName="Offen" DefaultView="FALSE" MobileView="TRUE" Type="HTML">
+              <RowLimit>100</RowLimit>
+              <ViewFields>
+                <FieldRef Name="DocIcon" /><FieldRef Name="LinkFilename" /><FieldRef Name="Mandantennummer" /><FieldRef Name="Jahr" /><FieldRef Name="Dokumenttyp" /><FieldRef Name="StatusDMS" /><FieldRef Name="Modified" />
+              </ViewFields>
+              <Query>
+                <Where><In><FieldRef Name="StatusDMS" /><Values><Value Type="Choice">Neu</Value><Value Type="Choice">InVerarbeitung</Value></Values></In></Where>
+                <OrderBy><FieldRef Name="Modified" Ascending="TRUE" /></OrderBy>
+              </Query>
+            </View>
+            <View DisplayName="Fehler" DefaultView="FALSE" MobileView="TRUE" Type="HTML">
+              <RowLimit>100</RowLimit>
+              <ViewFields>
+                <FieldRef Name="DocIcon" /><FieldRef Name="LinkFilename" /><FieldRef Name="Mandantennummer" /><FieldRef Name="Dokumenttyp" /><FieldRef Name="FehlerText" /><FieldRef Name="Modified" />
+              </ViewFields>
+              <Query>
+                <Where><Eq><FieldRef Name="StatusDMS" /><Value Type="Choice">Fehler</Value></Eq></Where>
+                <OrderBy><FieldRef Name="Modified" Ascending="FALSE" /></OrderBy>
+              </Query>
+            </View>
+            <View DisplayName="Abgelegt" DefaultView="FALSE" MobileView="TRUE" Type="HTML">
+              <RowLimit>200</RowLimit>
+              <ViewFields>
+                <FieldRef Name="DocIcon" /><FieldRef Name="LinkFilename" /><FieldRef Name="Mandantennummer" /><FieldRef Name="Jahr" /><FieldRef Name="DMSDokumentNr" /><FieldRef Name="VerarbeitetAm" />
+              </ViewFields>
+              <Query>
+                <Where><Eq><FieldRef Name="StatusDMS" /><Value Type="Choice">Abgelegt</Value></Eq></Where>
+                <OrderBy><FieldRef Name="VerarbeitetAm" Ascending="FALSE" /></OrderBy>
+              </Query>
+            </View>
+          </pnp:Views>
+        </pnp:ListInstance>
+      </pnp:Lists>
+    </pnp:ProvisioningTemplate>
+  </pnp:Templates>
+</pnp:Provisioning>
