@@ -90,6 +90,43 @@ def canonical_description(value: object) -> str:
     return canonical
 
 
+
+
+def verified_pdf_description(
+    tx: dict[str, Any], transaction_number: int
+) -> tuple[str, int, int]:
+    page = tx.get("source_page")
+    if isinstance(page, bool) or not isinstance(page, int) or page < 1:
+        raise MT940Error(
+            f"PDF transaction {transaction_number} requires a positive source_page", 2
+        )
+    lines = tx.get("source_description_lines")
+    if (
+        not isinstance(lines, list)
+        or not lines
+        or not all(isinstance(line, str) and line.strip() for line in lines)
+    ):
+        raise MT940Error(
+            f"PDF transaction {transaction_number} requires exact, non-empty "
+            "source_description_lines in visible order",
+            2,
+        )
+    if tx.get("source_text_verified") is not True:
+        raise MT940Error(
+            f"PDF transaction {transaction_number} requires source_text_verified=true "
+            "after visual comparison with the rendered page",
+            2,
+        )
+    source_text = canonical_description(" ".join(lines))
+    if "description" in tx:
+        manifest_text = canonical_description(tx["description"])
+        if manifest_text != source_text:
+            raise MT940Error(
+                f"PDF transaction {transaction_number} description differs from the "
+                "visually verified source_description_lines",
+                2,
+            )
+    return source_text, page, len(lines)
 def normalize_reference(value: object, fallback: str) -> str:
     if value is None or value == "":
         return fallback
@@ -144,6 +181,39 @@ def field86_result(value: object) -> Field86Result:
     return result
 
 
+
+
+def native_field86_result(value: object) -> Field86Result:
+    if not isinstance(value, list) or not value or len(value) > 6:
+        raise MT940Error(
+            "native mode requires one to six exact native_field86_lines per transaction",
+            2,
+        )
+    if not all(isinstance(line, str) for line in value):
+        raise MT940Error("native_field86_lines must contain text lines", 2)
+    lines = list(value)
+    if not lines[0].startswith(":86:"):
+        raise MT940Error("The first native :86: line must start with ':86:'", 3)
+    if any(line.startswith(":") for line in lines[1:]):
+        raise MT940Error("A native :86: continuation must not start with ':'", 3)
+    for line in lines:
+        if len(line) > 65:
+            raise MT940Error("A native :86: line exceeds 65 characters", 3)
+        try:
+            line.encode("cp1252", errors="strict")
+        except UnicodeEncodeError as exc:
+            raise MT940Error(
+                f"A native :86: line is not representable in Windows-1252: {exc}", 3
+            ) from exc
+    reconstructed = lines[0][4:] + "".join(lines[1:])
+    return Field86Result(
+        lines=lines,
+        source_description_length=len(reconstructed),
+        encoded_description_length=len(reconstructed),
+        roundtrip_match=True,
+        truncated=False,
+        canonical_description=reconstructed,
+    )
 def statement_reference(data: dict[str, Any]) -> str:
     number = int(data["_statement_number"])
     reference = (
@@ -331,7 +401,23 @@ def normalize_manifest(
         code = tx.get("code", "NMSC")
         if not isinstance(code, str) or not CODE_RE.fullmatch(code):
             raise MT940Error(f"Transaction {index} has invalid code {code!r}", 2)
-        description_result = field86_result(tx.get("description"))
+        source_page: int | None = None
+        source_line_count: int | None = None
+        source_to_manifest_match: bool | None = None
+        if field86_mode == "native":
+            description_result = native_field86_result(tx.get("native_field86_lines"))
+            if "description" in tx and tx["description"] != description_result.canonical_description:
+                raise MT940Error(
+                    f"Transaction {index} description differs from exact native :86: lines", 2
+                )
+            source_line_count = len(tx["native_field86_lines"])
+            source_to_manifest_match = True
+        elif source_type in {"pdf", "image"}:
+            source_text, source_page, source_line_count = verified_pdf_description(tx, index)
+            description_result = field86_result(source_text)
+            source_to_manifest_match = True
+        else:
+            description_result = field86_result(tx.get("description"))
         customer_reference = normalize_reference(tx.get("customer_reference"), "NONREF")
         bank_reference = normalize_reference(tx.get("bank_reference"), f"{index:09d}")
         if bank_reference in bank_references:
@@ -353,6 +439,9 @@ def normalize_manifest(
                 "_customer_reference": customer_reference,
                 "_bank_reference": bank_reference,
                 "_field86": description_result,
+                "_source_page": source_page,
+                "_source_line_count": source_line_count,
+                "_source_to_manifest_match": source_to_manifest_match,
             }
         )
         normalized_transactions.append(tx)
@@ -483,6 +572,11 @@ def transaction_metrics(data: dict[str, Any]) -> list[dict[str, Any]]:
         {
             "transaction_number": tx["_transaction_number"],
             "source_description_length": tx["_field86"].source_description_length,
+            "source_page": tx["_source_page"],
+            "source_line_count": tx["_source_line_count"],
+            "source_to_manifest_match": tx["_source_to_manifest_match"],
+            "source_text_start": tx["_field86"].canonical_description[:40],
+            "source_text_end": tx["_field86"].canonical_description[-40:],
             "encoded_description_length": tx["_field86"].encoded_description_length,
             "roundtrip_match": tx["_field86"].roundtrip_match,
             "truncated": tx["_field86"].truncated,

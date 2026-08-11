@@ -94,6 +94,24 @@ Jede erzeugte `:61:`-Zeile gegen Valuta, Buchungsdatum, Betrag, Code und Referen
 
 ## Informationsfeld `:86:`
 
+
+### Verbindliche PDF-Quellenkette
+
+Die technische Rundlaufpr?fung beginnt bei PDF-Quellen nicht erst am Manifest. F?r jeden Umsatz diese Kette erzwingen:
+
+```text
+gerenderte PDF-Seite
+? source_description_lines in sichtbarer Reihenfolge
+? kanonischer Manifesttext
+? physische :86:-Zeilen
+? zur?ckgelesener Nutztext
+```
+
+`source_page`, `source_description_lines` und `source_text_verified: true` sind f?r jeden PDF-/Bildumsatz Pflicht. Den kanonischen Text ausschlie?lich durch Zusammenf?gen dieser sichtbaren Zeilen mit je einem Leerzeichen bilden. Ein vorhandenes `description` muss kanonisch exakt gleich sein.
+
+Die Software kann die visuelle Richtigkeit einer menschlichen Transkription nicht aus eigener Kraft beweisen. Deshalb die gerenderte Seite vor dem Setzen von `source_text_verified` pr?fen. Bei uneindeutigen Spaltengrenzen, abgeschnittenem Text, OCR-Abweichungen oder unklarem Buchungsblock mit Status `2` abbrechen.
+
+Im Bericht Textanfang und Textende ausweisen. Dadurch werden insbesondere fehlende erste W?rter, abgeschnittene Referenzenden und dem falschen Umsatz zugeordnete Folgezeilen in der Abnahme sichtbar.
 ### Verlustfreie generische Ausgabe
 
 Kanonische Ausgangsform:
@@ -117,6 +135,11 @@ Je Umsatz im Bericht speichern:
 
 ```text
 transaction_number
+source_page
+source_line_count
+source_to_manifest_match
+source_text_start
+source_text_end
 source_description_length
 encoded_description_length
 roundtrip_match

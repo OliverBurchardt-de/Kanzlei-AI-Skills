@@ -79,6 +79,36 @@ Für DATEV ein UTF-8-JSON mit getrennten Auszugs- und Saldendaten verwenden:
 
 Für PDF-, Bild- und manuelle Quellen zusätzlich `source_evidence` mit den sichtbaren Datums-, Salden- und Auszugswerten speichern. Der Generator gleicht vorhandene Evidenzfelder gegen das Manifest ab.
 
+
+#### PDF-Buchungstext als Pflichtnachweis erfassen
+
+F?r **jeden** Umsatz aus PDF oder Bild folgende Felder speichern:
+
+```json
+{
+  "source_page": 3,
+  "source_description_lines": [
+    "Allianz Versicherungs-AG Vertrag AS-6170637093,",
+    "Kfz-Versicherung ME-LS 2028,",
+    "Referenz SA01A000000095207172"
+  ],
+  "source_text_verified": true,
+  "description": "Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicherung ME-LS 2028, Referenz SA01A000000095207172"
+}
+```
+
+Dabei zwingend:
+
+- Buchungsblock auf der gerenderten PDF-Seite visuell abgrenzen.
+- Alle sichtbaren Zeilen des Buchungstextes in ihrer Reihenfolge wortgetreu nach `source_description_lines` ?bernehmen.
+- OCR-/Extraktionstext nur als Arbeitshilfe verwenden und anschlie?end Zeichen f?r Zeichen gegen das Seitenbild pr?fen.
+- Namen, Verwendungszweck, IBAN, Mandats-, End-to-End-, Vertrags- und sonstige Referenzen weder umstellen noch zusammenfassen, erg?nzen oder sprachlich ?verbessern?.
+- Sichtbare Wiederholungen, Bindestriche, Satzzeichen und Referenzbestandteile erhalten.
+- Bei unklarem Anfang oder Ende des Buchungsblocks abbrechen und einen Kl?rungsfall ausgeben.
+- `source_text_verified: true` erst nach der visuellen Pr?fung setzen.
+
+Der Generator leitet den `:86:`-Ausgangstext ausschlie?lich aus den sichtbaren `source_description_lines` ab. Ein zus?tzlich gespeichertes `description` muss nach der festgelegten Leerzeichennormalisierung exakt ?bereinstimmen; andernfalls mit Status `2` abbrechen. Damit reicht ein intern stimmiger, aber gegen?ber dem PDF falscher Manifesttext nicht mehr aus.
+
 Pflichtregeln:
 
 - `opening_balance_date` ausschließlich für `:60F:` verwenden.
@@ -181,6 +211,8 @@ Je Konto `.sta`, JSON-Sidecar und eine Prüfzusammenfassung liefern:
 - Anfangssaldodatum/-betrag, Buchungszahl/-summe, Endbestandsdatum/-betrag
 - frühestes/spätestes Valuta- und Buchungsdatum
 - Fingerprint und Ergebnis der technischen Validierung
+- je PDF-Umsatz: Seite, Zahl der sichtbaren Quellzeilen, `source_to_manifest_match`, Textanfang, Textende und `roundtrip_match`
+- PDF-basierte Datei nur freigeben, wenn f?r jeden Umsatz `source_to_manifest_match: true` und `roundtrip_match: true` ausgewiesen sind
 - separater Status des DATEV-Probeimports
 - offene Klärungen und Löschbestätigung für Testumsätze
 
