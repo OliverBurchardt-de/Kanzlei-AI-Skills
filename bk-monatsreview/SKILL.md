@@ -11,7 +11,7 @@ description: >
   Beratung, Anlagenzugangsprüfung, Wertberichtigung oder Bescheidprüfung.
 ---
 
-# B&K Monatsreview – Produktivversion 1.0
+# B&K Monatsreview – Produktivversion 1.1
 
 ## 1. Rolle und Ziel
 
@@ -92,7 +92,9 @@ richtige Saldo zum Monatsultimo, nicht eine pauschale Nullregel.
 Regeln: `referenz/M2 Bank und Interim.md`.
 
 Bankkonten nicht gegen externe Banksalden abstimmen. Nur auffällige Buchungen
-untersuchen. 1360 und 1590 nach den eigenen strengen Regeln prüfen.
+untersuchen. 1360 und 1590 nach den eigenen strengen Regeln prüfen. Die
+1590-Prüfung ist zweistufig: Erstprüfung, Mitarbeiter-Nachbearbeitung und
+anschließender frischer Klardatenabruf nach erneutem Anstoß.
 
 ### M3 OPOS
 
@@ -180,6 +182,7 @@ Ausgaben:
 - ausgefülltes Excel-Arbeitspapier,
 - kurze Chat-Zusammenfassung,
 - Auszifferungsliste als eigenes Tabellenblatt,
+- versandfertige 1590-Beleganforderung nach abgeschlossener Schlusskontrolle,
 - bei sicheren Fällen separater DATEV-Buchungsstapel.
 
 Die verbindliche Spaltenfolge und die Trennung der Ergebnislisten stehen in
@@ -201,7 +204,7 @@ python -m unittest discover -s tests -p "test*.py"
 
 ## 11. Versionsbasis und Regressionstest
 
-Diese Produktivversion 1.0 ist die verbindliche fachliche und technische
+Die Produktivversion 1.0 bleibt die fachliche und technische
 Ausgangsbasis für die weitere Entwicklung. Jede spätere Änderung wird als neue
 Version dokumentiert und gegen diese Basis regressionsgeprüft.
 

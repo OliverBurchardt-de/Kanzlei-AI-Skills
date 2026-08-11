@@ -25,6 +25,12 @@
 - Statuszählung auf der Übersicht vollständig: ja/nein
 - Formelfehlerprüfung ohne Treffer: ja/nein
 - Sichtprüfung aller Tabellenblätter bestanden: ja/nein
+- 1590-Kleinbeträge unter 100 EUR vollständig ohne Umsatzsteuer auf 4980
+  vorgeschlagen: ja/nein/nicht vorhanden
+- 1590-Beleganforderung nennt Zahlungsrichtung, Zahlungspartner und Vorgang:
+  ja/nein/nicht vorhanden
+- 1590 nach Mitarbeiter-Nachbearbeitung frisch aus DATEV gelesen:
+  ja/nein/nicht erforderlich
 - Weder automatische DATEV-Übertragung noch automatischer Import vorgesehen: bestätigt/nicht bestätigt
 
 ## Festgestellte Fehler des Skills

@@ -34,7 +34,8 @@ Verbindliche Kopfzeilen:
   Soll/Haben, Belegfeld 1, Buchungstext, Buchungsschlüssel, Grund,
   Stapelaufnahme, Bearbeitungsstatus, Kommentar.
 - 1590 Klärungsliste: Ampel, Datum, Betrag, Alter in Monaten, Konto, Gegenkonto,
-  Buchungstext, Beanstandung, Konkrete Mandantenfrage, Bearbeitungsstatus,
+  Zahlungsrichtung, Zahlungspartner, Vorgang/Leistungsbezug, Buchungstext
+  DATEV, Beanstandung, Versandfertiger Mandantentext, Bearbeitungsstatus,
   Kommentar.
 - Geprüfte Bereiche: Ampel, Modul, Prüfbereich, Kurzbegründung, Quelle,
   Kommentar.
@@ -51,3 +52,6 @@ Stapelaufnahme ja/nein, Bearbeitungsstatus und Kommentar.
   ausgeziffert werden müssen.
 - Umbuchungsvorschläge: echte Korrektur durch zusätzliche Buchung.
 - DATEV-Stapel: ausschließlich sichere Umbuchungen/Ausbuchungen.
+- 1590 Klärungsliste: ausschließlich fehlende Belege zu den nach der
+  Kleinbetragsausbuchung verbleibenden Posten ab 100 EUR; jede Zeile ist
+  verständlich und unmittelbar an den Mandanten versendbar.

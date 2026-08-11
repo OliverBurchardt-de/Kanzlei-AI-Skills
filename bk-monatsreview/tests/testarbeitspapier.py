@@ -31,7 +31,8 @@ EXPECTED_HEADERS = {
     ],
     "1590 Klärungsliste": [
         "Ampel", "Datum", "Betrag", "Alter in Monaten", "Konto", "Gegenkonto",
-        "Buchungstext", "Beanstandung", "Konkrete Mandantenfrage",
+        "Zahlungsrichtung", "Zahlungspartner", "Vorgang/Leistungsbezug",
+        "Buchungstext DATEV", "Beanstandung", "Versandfertiger Mandantentext",
         "Bearbeitungsstatus", "Kommentar",
     ],
     "Geprüfte Bereiche": [
@@ -114,6 +115,14 @@ class ArbeitspapierContractTest(unittest.TestCase):
                 self.assertTrue(any("A2:A201" in value for value in validations))
                 self.assertTrue(any("A2:A201" in value for value in conditions))
 
+    def test_1590_validierungen_sind_spaltengenau(self):
+        xml = self.reader.xml("1590 Klärungsliste")
+        ranges = {
+            node.attrib.get("sqref", "")
+            for node in xml.findall(f".//{{{MAIN_NS}}}dataValidation")
+        }
+        self.assertEqual(ranges, {"A2:A201", "G2:G201", "M2:M201"})
+
     def test_statuszaehlung_verwendet_vordere_ampel(self):
         xml = self.reader.xml("Übersicht")
         formulas = [node.text or "" for node in xml.findall(f".//{{{MAIN_NS}}}f")]
@@ -133,6 +142,19 @@ class ArbeitspapierContractTest(unittest.TestCase):
             "Der Skill importiert oder überträgt keine Buchungen in DATEV.",
             skill_text,
         )
+
+    def test_1590_kleinbetrag_und_schlusskontrolle(self):
+        regel_text = (
+            SKILL_ROOT / "referenz" / "M2 Bank und Interim.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Ein Einzelbetrag unter 100 EUR darf nicht", regel_text)
+        self.assertIn("auf Konto 4980", regel_text)
+        self.assertIn("ohne Umsatzsteuer und ohne Buchungsschlüssel", regel_text)
+        self.assertIn(
+            "1590 ist nachbearbeitet – bitte Schlusskontrolle durchführen.",
+            regel_text,
+        )
+        self.assertIn("Konto 1590 frisch aus den DATEV-Klardaten", regel_text)
 
 
 if __name__ == "__main__":
