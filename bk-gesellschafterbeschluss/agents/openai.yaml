@@ -1,0 +1,16 @@
+interface:
+  display_name: BK Gesellschafterbeschluss
+  short_description: Gesellschafterbeschlüsse aus Jahresabschlüssen
+  default_prompt: Nutze $bk-gesellschafterbeschluss, ermittle Bilanzsumme und Jahresergebnis
+    ausschließlich aus Kanzlei-ReWe, berechne sie bei Bedarf aus den vollständigen
+    Summen und Salden und erstelle mit den Mandantenstammdaten einen unterschriftsreifen
+    Beschluss.
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
