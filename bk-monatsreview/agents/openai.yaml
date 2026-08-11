@@ -1,0 +1,14 @@
+interface:
+  display_name: B&K Monatsreview
+  short_description: Prüft final gebuchte FIBU-Monate fachlich
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+  default_prompt: Nutze $bk-monatsreview, um den final gebuchten Monat des genannten
+    Mandanten fachlich zu prüfen.
+policy:
+  allow_implicit_invocation: true
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
