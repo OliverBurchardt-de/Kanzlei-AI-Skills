@@ -1,153 +1,193 @@
 ---
 name: mt940-dateien-erstellen
-description: Erstellt, prüft und erläutert MT940-Swift-Dateien aus PDF-Kontoauszügen oder strukturierten Umsatzlisten. Verwenden, wenn Konto- oder Kreditkartenumsätze für DATEV als MT940/STA aufbereitet, bestehende MT940-Dateien technisch validiert, Salden und Buchungszahlen abgestimmt oder Mitarbeitern Aufbau und Prüfschritte des Formats erklärt werden sollen.
+description: Erstellt und validiert MT940-/STA-Dateien aus nativen Bankdateien, PDF-Kontoauszügen, Bildern oder strukturierten Umsatzlisten, insbesondere für DATEV. Verwenden, wenn Konto- oder Kreditkartenumsätze als MT940 aufbereitet, bestehende Dateien feldweise gegen Quelldaten geprüft, Salden und Verwendungszwecke abgestimmt, DATEV-Probeimporte vorbereitet oder Mehrfachimporte verhindert werden sollen.
 ---
 
 # MT940-Dateien erstellen
 
-Aus Quelldokumenten nachvollziehbare MT940-Dateien erzeugen. Keine Buchung, kein Datum und keinen Saldo erfinden. Eine Datei erst nach vollständiger Saldenabstimmung ausgeben.
+Aus Quelldaten nachvollziehbare MT940-Dateien erzeugen. Keine Buchung, kein Datum, keinen Saldo und kein DATEV-Profil erfinden. Technische Gültigkeit nie mit einem praktisch erfolgreichen DATEV-Import gleichsetzen.
 
 ## Arbeitsmodus bestimmen
 
-- **Erstellen:** Kontoauszüge oder Umsatzlisten in eine `.sta`-Datei umwandeln.
-- **Prüfen:** Vorhandene MT940-Datei technisch und rechnerisch validieren.
-- **Erklären:** Den technischen Aufbau für Mitarbeiter anhand von [technischer-aufbau.md](references/technischer-aufbau.md) erläutern.
+- **Erstellen:** Kontoauszug oder Umsatzliste in eine `.sta`-Datei umwandeln.
+- **Prüfen:** MT940-Datei feldweise gegen Manifest und Quelle validieren.
+- **Erklären:** [technischer-aufbau.md](references/technischer-aufbau.md) lesen und den Aufbau erläutern.
 
 Bei PDFs zuerst die PDF-Skill-Anweisungen lesen, alle Seiten rendern und visuell prüfen. Textextraktion nur zusammen mit der visuellen Kontrolle verwenden.
 
-## Erstellungsworkflow
+## Workflow
 
-### 1. Quelldaten sichern
+### 1. Native Bankdatei bevorzugen
 
-Je Konto getrennt erfassen:
+Vor einer PDF-Rekonstruktion ausdrücklich nach einer nativen MT940- oder CAMT-Datei fragen. Eine elektronische Originaldatei der Bank bevorzugen. Wenn ausschließlich PDF, Bild oder manuelle Daten verfügbar sind, die Rekonstruktion als solche kennzeichnen.
+
+### 2. Wiederholungsimport sperren
+
+Vor einer korrigierten oder erneut erzeugten Datei fragen:
+
+> Wurde der frühere Import für dieses Konto und diesen Zeitraum aus dem DATEV-Bankbestand gelöscht?
+
+Ein neuer Chat, Dateiname, eine neue `:20:`-Referenz oder eine andere Auszugsnummer bereinigt DATEV nicht. Bei einer bereits vorhandenen Fingerprint-Sidecar-Datei abbrechen. `--allow-duplicate` nur nach bestätigter Löschung und mit `previous_datev_import_removed_confirmed: true` verwenden.
+
+Keine MT940-Ausgleichsbuchung erzeugen, um eine FIBU-Differenz oder einen Mehrfachimport zu verdecken.
+
+### 3. Quelldaten getrennt erfassen
+
+Je Konto erfassen und gegen die sichtbare Quelle prüfen:
 
 - Kontoinhaber und IBAN
-- ausgewiesener Abfrage- oder Auszugszeitraum
-- Anfangs- und Endsaldo mit Vorzeichen und Währung
-- jede Buchung mit Betrag, Soll/Haben, Valutadatum, Buchungsdatum und Verwendungszweck
-- Reihenfolge der Buchungen
+- Auszugsbeginn und Auszugsende
+- Datum und Betrag des Anfangssaldos
+- Datum und Betrag des Endbestands
+- Auszugsnummer und Sequenznummer
+- jede Buchung in Quellreihenfolge mit Betrag, Vorzeichen, Valuta, Buchungsdatum, Referenz und vollständigem Verwendungszweck
 
-Aus jedem Konto eine eigene MT940-Datei erzeugen. Kreditkartenkonten nicht mit dem Zahlkonto vermischen.
+Aus jedem Konto eine eigene Datei erzeugen. Kreditkartenkonto und Zahlkonto nicht vermischen.
 
-### 2. Vollständigkeit prüfen
+### 4. Vollständigkeit centgenau prüfen
 
-Vor der Erzeugung zwingend rechnen:
+Zwingend rechnen:
 
 `Anfangssaldo + Summe aller vorzeichenbehafteten Buchungen = Endsaldo`
 
-Zusätzlich prüfen:
+Zusätzlich Buchungszahl, Reihenfolge, Datumsgrenzen, Seitenwechsel, Rücklastschriften, Gutschriften und Gebühren prüfen. Bei einer Differenz nicht runden, keine Ausgleichsbuchung erzeugen und keine Datei freigeben.
 
-- Zahl der erkannten Buchungen gegen die sichtbaren Buchungen
-- frühestes und spätestes Valuta- und Buchungsdatum
-- Rücklastschriften, Gutschriften und Gebühren mit korrektem Vorzeichen
-- Seitenwechsel auf abgeschnittene oder doppelt erfasste Buchungen
-- Auszugsfilter gegen den im Dateinamen genannten Zeitraum
+### 5. Manifest erstellen
 
-Bei einer Differenz nicht runden, keine Ausgleichsbuchung erzeugen und keine MT940-Datei freigeben. Den konkreten Klärungsfall nennen.
-
-### 3. Manifest erstellen
-
-Ein UTF-8-JSON nach diesem Schema anlegen:
+Für DATEV ein UTF-8-JSON mit getrennten Auszugs- und Saldendaten verwenden:
 
 ```json
 {
-  "iban": "DE89370400440532013000",
-  "account_name": "Beispiel Geschäftskonto",
-  "period_start": "2025-01-01",
-  "period_end": "2025-12-31",
-  "opening_balance": "100.00",
-  "closing_balance": "125.00",
+  "iban": "DE43300501101009524321",
+  "account_name": "JS Logistik GmbH - Stadtsparkasse Düsseldorf",
+  "statement_start": "2026-07-01",
+  "statement_end": "2026-07-31",
+  "opening_balance_date": "2026-06-30",
+  "opening_balance": "83077.77",
+  "closing_balance_date": "2026-07-31",
+  "closing_balance": "33444.84",
+  "statement_number": 7,
+  "sequence_number": 1,
   "currency": "EUR",
-  "transactions": [
-    {
-      "value_date": "2025-01-02",
-      "booking_date": "2025-01-02",
-      "amount": "-25.00",
-      "code": "NMSC",
-      "customer_reference": "RECHNUNG4711",
-      "description": "Beispielzahlung Rechnung 4711"
-    },
-    {
-      "value_date": "2025-01-03",
-      "booking_date": "2025-01-03",
-      "amount": "50.00",
-      "code": "NTRF",
-      "description": "Beispielgutschrift"
-    }
-  ]
+  "source_type": "pdf",
+  "target_system": "DATEV",
+  "field86_mode": "unverified",
+  "output_scope": "test",
+  "transactions": []
 }
 ```
 
-Beträge als Dezimalstrings mit Punkt und genau zwei Nachkommastellen speichern. Belastungen negativ, Gutschriften positiv erfassen. Transaktionen chronologisch nach Buchungsdatum anordnen; bei gleichem Buchungsdatum die nachvollziehbare Quellreihenfolge beibehalten.
+Für PDF-, Bild- und manuelle Quellen zusätzlich `source_evidence` mit den sichtbaren Datums-, Salden- und Auszugswerten speichern. Der Generator gleicht vorhandene Evidenzfelder gegen das Manifest ab.
 
-Übliche Codes:
+Pflichtregeln:
 
-| Sachverhalt | Code |
-| --- | --- |
-| Überweisung/Gutschrift | `NTRF` |
-| Lastschrift | `NDDT` |
-| Gebühren/Abschluss | `NCHG` |
-| Kartenzahlung oder nicht sicher klassifizierbar | `NMSC` |
+- `opening_balance_date` ausschließlich für `:60F:` verwenden.
+- `closing_balance_date` ausschließlich für `:62F:` verwenden.
+- `statement_start` und `statement_end` für Dateiname, Zeitraumskontrolle und Bericht verwenden.
+- Für DATEV keine fehlenden Saldendaten aus dem Auszugszeitraum ableiten.
+- `statement_number` und das standardmäßig `1` betragende `sequence_number` ausdrücklich speichern.
+- Buchungsdaten innerhalb des Auszugszeitraums halten.
+- Abweichende Valutadaten nur bei belegter Quelle zulassen: am Umsatz `value_date_source_confirmed: true` setzen und die Umsatznummer unter `review_report.value_date_exceptions` nennen.
+- Geldbeträge als Dezimalstrings mit Punkt und zwei Nachkommastellen speichern; Belastungen negativ, Gutschriften positiv.
+- Quellreihenfolge chronologisch beibehalten.
 
-Keine spezifischere Klassifizierung vortäuschen, wenn der Auszug sie nicht hergibt.
+Legacy-Manifeste mit `period_start` und `period_end` nur im generischen Modus verarbeiten. Bei `target_system: DATEV` ohne die vier getrennten Datumsfelder abbrechen; keine vermutete Migration durchführen.
 
-Eine im Auszug vorhandene `EREF`, `MREF`, Rechnungsnummer oder sonstige belastbare Referenz zusätzlich als `customer_reference` erfassen. Optional `bank_reference` verwenden, wenn eine gesonderte Bankreferenz sichtbar ist. Die Skripte normalisieren diese Werte auf höchstens 16 alphanumerische Zeichen; die vollständige Referenz außerdem im Verwendungszweck erhalten. Nur bei tatsächlich fehlender Referenz `NONREF` verwenden.
+### 6. Modus für `:86:` festlegen
 
-### 4. Datei deterministisch erzeugen
+Nur diese Werte verwenden:
 
-```bash
-python3 scripts/build-mt940.py manifest.json
+- `native`: Syntax unverändert aus einer elektronischen Originaldatei übernehmen.
+- `generic_unstructured`: formal generisches MT940 ohne DATEV-Anzeigegarantie.
+- `datev_verified:<profilname>`: Profil aus `profiles/<profilname>.json` mit dokumentiert erfolgreichem Probeimport und gelöschten Testumsätzen.
+- `unverified`: ausschließlich für eine Testdatei.
+
+Keine Unterfelder wie `?00`, `?10`, `?20` oder `?32` erfinden. Strukturierte Unterfelder nur aus einer nativen Bankdatei oder einem verifizierten Profil übernehmen.
+
+Verwendungszwecke kanonisch auf einfache Leerzeichen normalisieren und in Windows-1252 verlustfrei schreiben. Texte außerhalb der physischen Kapazität von sechs Zeilen als Klärungsfall behandeln; nie still kürzen.
+
+### 7. Unbekanntes DATEV-Profil zuerst testen
+
+Bei PDF, Bild oder manueller Umsatzliste mit Ziel DATEV und ohne verifiziertes Profil nur `output_scope: test` zulassen. Die Testdatei darf höchstens einen Buchungstag enthalten und muss mindestens einen langen Verwendungszweck enthalten.
+
+Vor dem Testimport ausdrücklich bestätigen lassen:
+
+> Für das Bankkonto und den Testzeitraum sind keine bereits importierten Bankkontoumsätze mehr vorhanden.
+
+Für den Referenztag 01.07.2026 gelten:
+
+```text
+Anfangssaldo:      83.077,77 EUR
+Umsatzsumme:       -4.139,53 EUR
+Test-Endsaldo:     78.938,24 EUR
+Anzahl Umsätze:             6
 ```
 
-Ohne Ausgabepfad erzeugt das Skript:
+Der Dateiname lautet ohne Unterstriche:
+
+`MT940 Test DE43300501101009524321 01.07.2026.sta`
+
+Nach dem Probeimport prüfen und dokumentieren:
+
+- Anfangssaldo in DATEV korrekt
+- Test-Endsaldo korrekt
+- Zahl und Vorzeichen der Umsätze korrekt
+- Verwendungszweck vollständig, ohne fehlende Textteile
+- keine sichtbaren Steuer- oder Unterfeldkennzeichen
+
+Danach ausdrücklich anweisen:
+
+> Die Testumsätze müssen vor dem Import der vollständigen Monatsdatei wieder aus dem DATEV-Bankbestand gelöscht werden.
+
+Ein verifiziertes Profil erst anlegen, wenn diese Prüfungen und die anschließende Löschung dokumentiert sind. Vorher keine vollständige Monatsdatei erzeugen oder freigeben.
+
+### 8. Datei erzeugen und Fingerprint prüfen
+
+```bash
+python scripts/build-mt940.py manifest.json
+```
+
+Das Skript erzeugt die `.sta`-Datei und eine JSON-Sidecar-Datei mit SHA-256-Fingerabdruck. Der Fingerabdruck umfasst Konto, Auszugs-/Sequenznummer, Zeitraum, Salden und alle kanonischen Umsätze in Quellreihenfolge. Ihn nie als erfundenes Bankfeld in die MT940-Datei schreiben.
+
+Generische Monatsdatei:
 
 `MT940 <IBAN> <TT.MM.JJJJ> bis <TT.MM.JJJJ>.sta`
 
-Keine Unterstriche in Dateinamen verwenden. Die Datei in Windows-1252 mit CRLF-Zeilenumbrüchen schreiben.
+Sidecar:
 
-### 5. Unabhängig validieren
+`MT940 Prüfung <IBAN> <TT.MM.JJJJ> bis <TT.MM.JJJJ>.json`
+
+### 9. Unabhängig gegen das Manifest validieren
 
 ```bash
-python3 scripts/validate-mt940.py "MT940 <IBAN> <Zeitraum>.sta"
+python scripts/validate-mt940.py "MT940 <IBAN> <Zeitraum>.sta" manifest.json
 ```
 
-Nur ausgeben, wenn beide Skripte erfolgreich enden und zusätzlich der Abgleich gegen die Quelldokumente abgeschlossen ist.
+Der Validator prüft unter anderem `:20:`, IBAN, `:28C:`, beide Saldenfelder, jedes `:61:`/`:86:`-Paar, Reihenfolge, Rundlauf, Zeichensatz, CRLF, Zeilenlängen, Saldenrechnung, Profilregeln und Fingerprint.
 
-## Technische Pflichtregeln
+Exit-Status:
 
-- Pflichtfolge: `:20:`, `:25:`, `:28C:`, `:60F:`, je Buchung `:61:` und unmittelbar danach `:86:`, abschließend `:62F:`.
-- In `:25:` die IBAN des ausgewerteten Kontos führen.
-- In `:60F:` den ausgewiesenen Anfangssaldo und in `:62F:` den Endsaldo führen.
-- `C` für positiven Saldo/Betrag und `D` für negativen Saldo/Betrag verwenden.
-- `:61:` mit Valuta, Buchungsdatum, Betrag, sachgerechtem Buchungscode und vorhandener Quellreferenz belegen; `NONREF` nur verwenden, wenn die Quelle keine belastbare Referenz enthält.
-- `:86:` auf höchstens sechs Zeilen und 390 Zeichen einschließlich Tag begrenzen; keine Fortsetzungszeile mit Doppelpunkt beginnen lassen.
-- Jede physische Zeile auf höchstens 65 Zeichen begrenzen.
-- Den Auszugszeitraum, nicht nur den Zeitraum mit tatsächlicher Kontobewegung, im Dateinamen nennen.
+- `0`: technisch und rechnerisch gültig
+- `2`: Quelldaten oder Salden unvollständig
+- `3`: Struktur- oder Zeichenfehler
+- `4`: DATEV-Profil nicht verifiziert; nur Probeimport zulässig
+- `5`: möglicher Doppelimport erkannt
 
-Die vollständige Feldbeschreibung und ein anonymisiertes Muster stehen in [technischer-aufbau.md](references/technischer-aufbau.md).
+## Freigabe und Übergabe
 
-## Abbruch- und Klärungsfälle
+Je Konto `.sta`, JSON-Sidecar und eine Prüfzusammenfassung liefern:
 
-Keine fertige Datei erzeugen, wenn mindestens einer dieser Fälle vorliegt:
-
-- Anfangs- oder Endsaldo fehlt.
-- Saldenrechnung geht nicht centgenau auf.
-- Betrag, Vorzeichen oder Buchungsdatum einer Buchung ist nicht sicher lesbar.
-- Seiten oder Monate fehlen, obwohl der angegebene Zeitraum Vollständigkeit behauptet.
-- Mehrere Konten sind nicht eindeutig voneinander trennbar.
-- Der Auszug enthält nur vorgemerkte, nicht endgültig gebuchte Umsätze.
-
-Unklare Positionen tabellarisch mit Seite, sichtbarem Text und benötigter Klärung ausgeben.
-
-## Übergabe
-
-Je Konto die `.sta`-Datei sowie eine kurze Prüfzusammenfassung liefern:
-
-- IBAN und Zeitraum
-- Anzahl der Buchungen
-- Anfangssaldo, Buchungssumme und Endsaldo
+- IBAN, Auszugsnummer und Zeitraum
+- Anfangssaldodatum/-betrag, Buchungszahl/-summe, Endbestandsdatum/-betrag
 - frühestes/spätestes Valuta- und Buchungsdatum
-- Ergebnis der technischen Validierung
-- Hinweis, ob ein tatsächlicher DATEV-Probeimport durchgeführt wurde
+- Fingerprint und Ergebnis der technischen Validierung
+- separater Status des DATEV-Probeimports
+- offene Klärungen und Löschbestätigung für Testumsätze
 
-Ohne DATEV-Probeimport niemals behaupten, der Import sei praktisch erfolgreich gewesen. Stattdessen „technisch und rechnerisch geprüft; DATEV-Probeimport nicht durchgeführt“ angeben.
+Ohne dokumentierten Probeimport exakt sinngemäß formulieren:
+
+> Technisch und rechnerisch geprüft. Die konkrete Verarbeitung und Anzeige in DATEV ist noch nicht durch einen Probeimport bestätigt. Die Datei ist daher noch nicht für den vollständigen Produktivimport freigegeben.
+
+Ohne Probeimport niemals „DATEV-kompatibel“, „DATEV-geprüft“ oder „erfolgreich importierbar“ behaupten.
+
+Die vollständigen Feldregeln und Profilanforderungen stehen in [technischer-aufbau.md](references/technischer-aufbau.md).

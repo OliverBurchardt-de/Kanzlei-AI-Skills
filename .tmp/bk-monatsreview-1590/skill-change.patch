@@ -1,0 +1,179 @@
+*** Begin Patch
+*** Update File: bk-monatsreview/SKILL.md
+@@
+-# B&K Monatsreview – Produktivversion 1.0
++# B&K Monatsreview – Produktivversion 1.1
+@@
+ Bankkonten nicht gegen externe Banksalden abstimmen. Nur auffällige Buchungen
+-untersuchen. 1360 und 1590 nach den eigenen strengen Regeln prüfen.
++untersuchen. 1360 und 1590 nach den eigenen strengen Regeln prüfen. Die
++1590-Prüfung ist zweistufig: Erstprüfung, Mitarbeiter-Nachbearbeitung und
++anschließender frischer Klardatenabruf nach erneutem Anstoß.
+@@
+ - ausgefülltes Excel-Arbeitspapier,
+ - kurze Chat-Zusammenfassung,
+ - Auszifferungsliste als eigenes Tabellenblatt,
++- versandfertige 1590-Beleganforderung nach abgeschlossener Schlusskontrolle,
+ - bei sicheren Fällen separater DATEV-Buchungsstapel.
+@@
+-Diese Produktivversion 1.0 ist die verbindliche fachliche und technische
++Die Produktivversion 1.0 bleibt die fachliche und technische
+ Ausgangsbasis für die weitere Entwicklung. Jede spätere Änderung wird als neue
+ Version dokumentiert und gegen diese Basis regressionsgeprüft.
+*** Update File: bk-monatsreview/referenz/M2 Bank und Interim.md
+@@
+ ## Konto 1590 – Durchlaufende Posten
+ 
+-Jeden offenen Posten einzeln auflisten.
+-
+-- Betrag unter 100 EUR je einzelner Buchung darf grundsätzlich nicht auf 1590
+-  stehen: ROT.
+-- plausibel betrieblicher Hintergrund: ohne Vorsteuer auf sonstigen
+-  betrieblichen Aufwand umbuchen.
+-- kein plausibler betrieblicher Hintergrund: über Privatkonto ausbuchen.
+-- aktueller Posten ab 100 EUR mit klarem Buchungstext und konkreter
+-  Klärungsfrage: GELB.
+-- älter als ein Monat: ROT.
+-- fehlender oder nichtssagender Buchungstext: ROT.
+-
+-Die 1590-Klärungsliste enthält Betrag, Datum, Alter, Buchungstext, Gegenkonto und
+-eine konkrete, für den Mandanten verständliche Frage.
++Konto 1590 immer vollständig bis auf die Einzelbuchungsebene auslesen. Für die
++Schwelle den absoluten Betrag jeder einzelnen Buchung verwenden; Buchungen
++nicht saldieren oder zusammenfassen.
++
++### Kleinbeträge unter 100 EUR
++
++- Ein Einzelbetrag unter 100 EUR darf nicht auf 1590 verbleiben: ROT.
++- Jeden solchen Betrag ohne Umsatzsteuer und ohne Buchungsschlüssel von 1590
++  auf Konto 4980 (sonstiger betrieblicher Aufwand) umbuchen. Konto 4980 nach
++  Kontonummernregel.md auf die Sachkontenlänge des Bestands umrechnen.
++- Soll/Haben aus der ursprünglichen Buchung ableiten und nicht raten.
++- Als sicheren Umbuchungsvorschlag und gegebenenfalls im DATEV-Vorschlagsstapel
++  erfassen. Nicht in die Beleganforderung an den Mandanten aufnehmen.
++
++### Posten ab 100 EUR und fehlende Belege
++
++Jeden auf 1590 verbleibenden Posten ab 100 EUR einzeln in die
++1590-Klärungsliste übernehmen. Für jeden Posten anhand der Klardaten prüfen und
++dokumentieren:
++
++- Zahlungsrichtung: Zahlungseingang von oder Zahlungsausgang an,
++- Zahlungspartner mit verständlichem Namen, zum Beispiel „Herr Mayer“ oder
++  „Herr Müller“,
++- erkennbarer Vorgang oder Leistungsbezug,
++- Datum, Betrag, Alter, Gegenkonto und vorhandener DATEV-Buchungstext,
++- konkrete Beanstandung und versandfertiger Mandantentext zur Nachreichung des
++  fehlenden Belegs.
++
++Namen oder Vorgänge nicht erfinden. Reichen Buchungstext, Banktext, Gegenkonto
++und weitere Klardaten nicht zur sicheren Bestimmung aus, den Posten ROT
++kennzeichnen und dem Mitarbeiter die Recherche aufgeben.
++
++Der DATEV-Buchungstext muss Zahlungsrichtung, Zahlungspartner und den fehlenden
++Beleg erkennen lassen, zum Beispiel:
++
++> Zahlung von Herrn Mayer – Beleg fehlt
++
++oder:
++
++> Zahlung an Herrn Müller – Beleg fehlt
++
++Den Vorgang ergänzen, wenn er sicher erkennbar ist. Formulierungen wie
++„Durchlaufender Posten“, „Zahlung“, „Klärung“ oder bloße Namen ohne
++Zahlungsrichtung sind nicht ausreichend.
++
++Der versandfertige Mandantentext muss ohne weitere interne Bearbeitung
++verständlich sein, zum Beispiel:
++
++> Zu der Zahlung von Herrn Mayer vom 14.05.2026 über 245,00 EUR fehlt uns der
++> Beleg. Bitte reichen Sie den zugehörigen Beleg ein und geben Sie kurz an,
++> wofür die Zahlung erfolgte.
++
++- aktueller Posten ab 100 EUR mit vollständigen Angaben: GELB,
++- älter als ein Monat: ROT,
++- fehlender Zahlungspartner, unklare Zahlungsrichtung oder nichtssagender
++  Buchungstext: ROT.
++
++### Mitarbeiter-Nachbearbeitung und verpflichtende Schlusskontrolle
++
++Nach der Erstprüfung dem Mitarbeiter eine konkrete Aufgabenliste ausgeben:
++
++1. alle Einzelbeträge unter 100 EUR ohne Umsatzsteuer von 1590 auf 4980
++   umbuchen,
++2. für jeden verbleibenden Posten Zahlungsrichtung, Zahlungspartner und Vorgang
++   prüfen sowie den DATEV-Buchungstext verständlich ergänzen,
++3. die Bearbeitung in der 1590-Klärungsliste dokumentieren und anschließend
++   erneut mit folgendem Text anstoßen:
++
++> 1590 ist nachbearbeitet – bitte Schlusskontrolle durchführen.
++
++Den Monatsreview bis zu diesem erneuten Anstoß nicht als abschließend erledigt
++kennzeichnen. Nach dem erneuten Anstoß Konto 1590 frisch aus den DATEV-Klardaten
++auslesen; nicht auf die alte Liste vertrauen. Dabei prüfen:
++
++- kein Einzelbetrag unter 100 EUR steht mehr auf 1590,
++- jeder verbleibende Posten ab 100 EUR hat Zahlungsrichtung,
++  Zahlungspartner und aussagekräftigen Buchungstext,
++- jeder verbleibende fehlende Beleg steht genau einmal in der strukturierten,
++  versandfertigen Mandantenliste.
++
++Verbleiben Mängel, erneut ROT ausgeben und die offene Aufgabe konkret an den
++Mitarbeiter zurückgeben. Erst nach bestandener Schlusskontrolle die
++1590-Beleganforderung als versandfertig und den Prüfpunkt als abgeschlossen
++kennzeichnen.
+*** Update File: bk-monatsreview/referenz/Ergebnisformat.md
+@@
+-- 1590 Klärungsliste: Ampel, Datum, Betrag, Alter in Monaten, Konto, Gegenkonto,
+-  Buchungstext, Beanstandung, Konkrete Mandantenfrage, Bearbeitungsstatus,
+-  Kommentar.
++- 1590 Klärungsliste: Ampel, Datum, Betrag, Alter in Monaten, Konto, Gegenkonto,
++  Zahlungsrichtung, Zahlungspartner, Vorgang/Leistungsbezug, Buchungstext
++  DATEV, Beanstandung, Versandfertiger Mandantentext, Bearbeitungsstatus,
++  Kommentar.
+@@
+ - Umbuchungsvorschläge: echte Korrektur durch zusätzliche Buchung.
+ - DATEV-Stapel: ausschließlich sichere Umbuchungen/Ausbuchungen.
++- 1590 Klärungsliste: ausschließlich fehlende Belege zu den nach der
++  Kleinbetragsausbuchung verbleibenden Posten ab 100 EUR; jede Zeile ist
++  verständlich und unmittelbar an den Mandanten versendbar.
+*** Update File: bk-monatsreview/tests/testarbeitspapier.py
+@@
+     "1590 Klärungsliste": [
+         "Ampel", "Datum", "Betrag", "Alter in Monaten", "Konto", "Gegenkonto",
+-        "Buchungstext", "Beanstandung", "Konkrete Mandantenfrage",
+-        "Bearbeitungsstatus", "Kommentar",
++        "Zahlungsrichtung", "Zahlungspartner", "Vorgang/Leistungsbezug",
++        "Buchungstext DATEV", "Beanstandung", "Versandfertiger Mandantentext",
++        "Bearbeitungsstatus", "Kommentar",
+@@
+     def test_keine_automatische_datev_uebertragung(self):
+@@
+         self.assertIn(
+             "Der Skill importiert oder überträgt keine Buchungen in DATEV.",
+             skill_text,
+         )
++
++    def test_1590_kleinbetrag_und_schlusskontrolle(self):
++        regel_text = (
++            SKILL_ROOT / "referenz" / "M2 Bank und Interim.md"
++        ).read_text(encoding="utf-8")
++        self.assertIn("Ein Einzelbetrag unter 100 EUR darf nicht", regel_text)
++        self.assertIn("auf Konto 4980", regel_text)
++        self.assertIn("ohne Umsatzsteuer und ohne Buchungsschlüssel", regel_text)
++        self.assertIn(
++            "1590 ist nachbearbeitet – bitte Schlusskontrolle durchführen.",
++            regel_text,
++        )
++        self.assertIn("Konto 1590 frisch aus den DATEV-Klardaten", regel_text)
+*** Update File: bk-monatsreview/assets/Freigabeprotokoll.md
+@@
+ - Sichtprüfung aller Tabellenblätter bestanden: ja/nein
++- 1590-Kleinbeträge unter 100 EUR vollständig ohne Umsatzsteuer auf 4980
++  vorgeschlagen: ja/nein/nicht vorhanden
++- 1590-Beleganforderung nennt Zahlungsrichtung, Zahlungspartner und Vorgang:
++  ja/nein/nicht vorhanden
++- 1590 nach Mitarbeiter-Nachbearbeitung frisch aus DATEV gelesen:
++  ja/nein/nicht erforderlich
+ - Weder automatische DATEV-Übertragung noch automatischer Import vorgesehen: bestätigt/nicht bestätigt
+*** End Patch

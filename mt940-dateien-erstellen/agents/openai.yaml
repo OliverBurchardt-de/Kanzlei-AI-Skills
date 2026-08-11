@@ -1,14 +1,8 @@
 interface:
-  display_name: MT940-Dateien erstellen
-  short_description: Kontoauszüge sicher in MT940 umwandeln
-  default_prompt: Nutze $mt940-dateien-erstellen, um aus diesen Kontoauszügen geprüfte
-    MT940-Dateien zu erzeugen.
-  icon_small: assets/icon.svg
-  icon_large: assets/icon.svg
+  display_name: "MT940-Dateien erstellen"
+  short_description: "MT940 für DATEV sicher erzeugen und prüfen"
+  default_prompt: "Nutze $mt940-dateien-erstellen, um diese Bankdaten als technisch geprüfte MT940-Datei mit DATEV-Prozesssperren aufzubereiten."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
 policy:
-  products:
-  - chatgpt
-  - codex
-  - api
-  - atlas
   allow_implicit_invocation: true
