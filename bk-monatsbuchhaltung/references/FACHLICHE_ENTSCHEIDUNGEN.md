@@ -2,7 +2,7 @@
 
 ## 1. Scope und Vollständigkeit
 
-Verarbeitet werden ausschließlich die bereitgestellten Belege. Bank, Kasse, Lohn, Zahlungsverkehr, OPOS-Ausgleich, Abstimmungen und Monatsabschluss bleiben außerhalb des Skills. Jede inventarisierte Datei erhält genau einen Endstatus. Kein buchungsrelevanter Beleg darf fehlen.
+Verarbeitet werden ausschließlich die bereitgestellten Dateien innerhalb des ausdrücklich beauftragten Modus `belegbuchhaltung`. Bank, Kasse, Lohn, Zahlungsverkehr, OPOS-Ausgleich, Abstimmungen und Monatsabschluss bleiben außerhalb des Skills; insbesondere erzeugt der Skill niemals Kassenbuchungen. Jede Quelldatei wird genau einmal inventarisiert und jedem logischen Vorgang wird ein Endstatus zugeordnet. Kein buchungsrelevanter Vorgang darf fehlen.
 
 ## 2. Ausgabe und Stapel
 
@@ -14,9 +14,26 @@ Alle DATEV-Dateien liegen unmittelbar in `01_DATEV_Import/`. Es gibt keine Unter
 
 Sichtbare DATEV-Dateinamen und Buchungstexte enthalten keine Ampelfarben oder Warnungen.
 
-## 3. Perioden
+## 3. Perioden als harte Auftragsgrenze
 
-Das Belegdatum bestimmt die Periode. Frühere Monate und Vorjahre erhalten eigene Buchungsstapel und eigene reguläre Belegtransfer-ZIPs. Ein fehlendes Datum führt zu Rot und leerem DATEV-Datum, nicht zum Weglassen.
+`scope.target_periods` begrenzt den Lauf. Frühere oder spätere Vorgänge werden vollständig inventarisiert, erhalten aber `außerhalb Auftragszeitraum` und keine Buchungszeile. Ein Nachtrags- oder Zukunftsstapel entsteht nur bei `include_prior_periods: true` beziehungsweise `include_future_periods: true`. Ein fehlendes Datum innerhalb des Auftrags führt zu Rot und leerem DATEV-Datum, nicht zum Weglassen.
+
+## 3a. Rechtsträger, Dokumentart und globale Ausschlüsse
+
+Je Dokument zwingend zuerst Rechtsträger/Adressat, dann Dokumentart und erst danach Buchungsrelevanz, Geschäftspartner, Konto und Umsatzsteuer prüfen.
+
+- Lohnabrechnungen, Lohnsteuerlisten und Sozialversicherungsnachweise nicht buchen; an die Lohnbuchhaltung übergeben.
+- Persönliche Bescheide, Privatkonten und Inkasso gegen eine Privatperson nicht einer GmbH zuordnen.
+- Mahnungen/Zahlungserinnerungen ohne Originalrechnung oder sicheren Abgleich nicht als neuen Aufwand buchen.
+- Anhörungsbogen ohne endgültige Geldbuße oder Zahlungsanspruch noch nicht buchen.
+- Deckblätter zu einzeln gebuchten Originalen nicht zusätzlich buchen; Abweichungen als Avis oder Klärung dokumentieren.
+- Kontoauszüge nur inventarisieren und an den Bankprozess übergeben.
+
+Jeder Ausschluss weist Rechtsträger, Dokumentart und konkreten Grund aus. Diese Regeln sind global und dürfen nicht in ein Mandantenprofil verschoben werden.
+
+## 3b. Quelldatei und logischer Vorgang
+
+`source_files`, `transactions` und `transaction_sources` strikt trennen. Eine Rechnung plus Begleit-E-Mail ist ein Vorgang mit zwei Quellen. Eine Sammeldatei kann mehrere Vorgänge belegen. Jede physische Quelldatei höchstens einmal in den Belegtransfer aufnehmen; mehrere Buchungszeilen oder Vorgänge dürfen auf denselben DATEV-Beleg verweisen. Deckblätter und Dublettenkopien nicht zusätzlich übertragen.
 
 ## 4. Belegfeld 1
 
@@ -58,13 +75,21 @@ Neue Debitoren/Kreditoren werden automatisch in `EXTF_Debitoren_Kreditoren.csv` 
 - Debitor: mindestens Name.
 - Änderung vorhandener Stammdaten nur als vollständiger aktueller Datensatz.
 
-## 10. DATEV-Dublettenprüfung
+## 10. Dreistufige Dublettenprüfung
 
-Jeder Nicht-Avis-Beleg erhält `prior_booking_check`. Sichere Dublette: nicht erneut buchen. Mögliche Dublette: Rot mit leerem DATEV-Datum buchen. Ein identischer technischer Datei-Hash darf nicht zweimal als Buchungsbeleg exportiert werden.
+Jeden Nicht-Avis-Vorgang auf drei Ebenen prüfen und Treffergrund sowie Referenz dokumentieren:
 
-## 11. Zahlungsavise
+1. identischer Datei-SHA-256 im aktuellen Upload,
+2. dasselbe logische Dokument im aktuellen Upload anhand Geschäftspartner, Rechnungsnummer, Datum und Betrag,
+3. bereits vorhandene Buchung in DATEV live.
 
-Zahlungsavise werden vorerst nicht gebucht und nicht in die fachliche Avis-/Factoringlogik einbezogen. Sie erhalten keine Ampel und keine EXTF-Zeile. Der Generator erstellt separate DUO-Belegtransfer-ZIPs `Belegtransfer_Avise_...` mit `document.xml` und ohne Belegtyp. Zusätzlich können Arbeitskopien in `04_Zahlungsavise/` liegen.
+Sichere Dublette nicht erneut buchen. Mögliche Dublette Rot mit leerem DATEV-Datum buchen. Identische Dateien nur einmal übertragen; weitere Kopien als `duplicate_copy` ausschließen.
+
+## 11. Zahlungsavise und Zahlungsabstimmung
+
+Zahlungsavise werden nicht gebucht. Sie erhalten keine Ampel und keine EXTF-Zeile. Der Generator erstellt separate DUO-Belegtransfer-ZIPs `Belegtransfer_Avise_...` mit `document.xml` und ohne Belegtyp.
+
+Fehlende Konto-/Kreditkartenabrechnungen, Zahlungsnachweise, Kartenumsätze oder Kursdifferenzen verändern die Ampel einer fachlich eindeutigen Rechnung nicht. Zahlungs- und Kreditkartenabstimmung separat in `payment_reconciliation` dokumentieren und gegebenenfalls an den Folgeprozess übergeben. Rot ist nur wegen Kontierung, Betrag, Geschäftspartner, Periode, Umsatzsteuer, betrieblichem Anlass, Anlagenbehandlung oder Dublette zulässig.
 
 ## 12. Abgrenzungen
 
@@ -74,9 +99,13 @@ Nur bei Bilanz, nur geschäftsjahresübergreifend und nur über 800 EUR maßgebl
 
 Wirtschaftlich zusammengehörige Bestandteile werden gemeinsam beurteilt. Bis 800 EUR maßgebliche Anschaffungskosten auf das konfigurierte GWG-Konto, darüber Einzelanlagekonto. Jede Buchungszeile, deren Konto oder Gegenkonto in `account_config.asset_accounts` steht, ist eine Anlagenbuchung: `asset_booking: true`, Ampel Rot und DATEV-Belegdatum zwingend leer. Das gilt auch bei einem vollständig und korrekt ausgelesenen Beleg, damit DATEV die automatische Anlagenerfassung bzw. erforderliche Bearbeitung auslöst. Keine Abschreibung und kein Sammelposten.
 
-## 14. Prüfungsdatei
+## 14. Prüfungsdatei und Abschlussnachweis
 
-Zentrales Blatt ist `Belegprüfung`: Ampel vorne und farbig, unmittelbar danach der vollständige EXTF-Dateiname des Buchungsstapels, eine Zeile je Beleg, danach Datum, Partner, Belegfeld 1, Betrag, Periode, Kontierung, Ableitung, konkrete Ampelbegründung, nächster Schritt und editierbare Mitarbeiterfelder. Im Blatt `Buchungszeilen` steht der Buchungsstapel ebenfalls an zweiter Stelle. Keine Quelldateinamen, GUIDs, Links oder Spalte „Importfähig“.
+Zentrales Blatt ist `Belegprüfung`: Ampel vorne und als feste Zellfüllung in der richtigen Farbe hinterlegt, unmittelbar danach der vollständige EXTF-Dateiname des Buchungsstapels, eine Zeile je logischem Vorgang, danach Datum, Partner, Belegfeld 1, Betrag, Periode, Kontierung, Ableitung, konkrete Ampelbegründung, nächster Schritt und editierbare Mitarbeiterfelder. Dasselbe gilt für die Ampel im Blatt `Buchungszeilen`. Keine Quelldateinamen, GUIDs, Links oder Spalte „Importfähig“.
+
+`Taetigkeitsnachweis.md` nennt Auftrag und tatsächliche Perioden, Quelldateien, logische Vorgänge, Buchungszeilen, Ampel-/Statuszahlen, alle ausdrücklich genannten Personen/Geschäftspartner samt Suchvarianten, Fundstellen und Endstatus sowie die verwendeten Datenquellen. Ein technisch gültiges Paket heißt `Importpaket erstellt – noch nicht in DATEV importiert`; `in DATEV importiert` ist nur mit Nachweis zulässig. Zusätzlich stets `fachlicher Prüfprotokoll-Rücklauf ausstehend` ausweisen.
+
+`Uebergabeliste.md` führt jede ausgeschlossene Folgearbeit mit Quelle, Vorgang, Periode, Zielprozess und Grund. Eine Übergabe an den Kassenprozess ist keine Kassenbuchung.
 
 ## 15. Mandanten-Hinweise
 

@@ -36,15 +36,24 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "1.0.0"
+SKILL_VERSION = "1.1.0"
 OUTPUT_CONTRACT = "single-datev-import-folder-v2"
 
 VALID_STATUSES = {
     "Buchungszeile erzeugt",
     "sichere Dublette – nicht erneut gebucht",
     "nicht buchungsrelevant",
+    "außerhalb Auftragszeitraum",
 }
 VALID_LIGHTS = {"Grün", "Gelb", "Rot"}
+SOURCE_ROLES = {
+    "primary_invoice",
+    "supporting_document",
+    "payment_notice",
+    "cover_sheet",
+    "duplicate_copy",
+}
+JOB_MODE = "belegbuchhaltung"
 DATEV_BATCH_NAMES = {
     "Grün": ("Buchungsstapel", "Buchungsstapel"),
     "Gelb": ("Klaerungsposten_1", "Klärungsposten"),
@@ -210,82 +219,37 @@ def _validate_accrual_register_evidence(
             expected_name=expected_name,
             label="Abgrenzungsregister",
         )
-    required = {
-        "source_url",
-        "file_name",
-        "retrieved_via",
-        "checked_at",
-        "not_found_code",
-        "site_verified",
-        "library_verified",
-        "direct_lookup_attempts",
-    }
-    missing = sorted(key for key in required if evidence.get(key) in (None, ""))
-    if missing:
-        raise ValueError(
-            "Abbruch: Abgrenzungsregister-not_found-Nachweis unvollständig: "
-            + ", ".join(missing)
-        )
-    if evidence["source_url"] != expected_url:
-        raise ValueError(
-            "Abbruch: Abgrenzungsregister-not_found-Nachweis verwendet nicht "
-            "die verbindliche exakte SharePoint-URL."
-        )
-    if evidence["file_name"] != expected_name:
-        raise ValueError(
-            f"Abbruch: Abgrenzungsregister-Dateiname ist nicht {expected_name}."
-        )
-    if str(evidence["not_found_code"]).lower() not in {
-        "itemnotfound",
-        "not_found",
-    }:
-        raise ValueError(
-            "Abbruch: Abgrenzungsregister wurde nicht eindeutig als "
-            "itemNotFound bestätigt."
-        )
-    if evidence["site_verified"] is not True or evidence["library_verified"] is not True:
-        raise ValueError(
-            "Abbruch: Site und Bibliothek wurden vor der Register-"
-            "Nichtvorhanden-Feststellung nicht bestätigt."
-        )
-    attempts = evidence["direct_lookup_attempts"]
-    if not isinstance(attempts, int) or attempts < 2:
-        raise ValueError(
-            "Abbruch: Das Abgrenzungsregister muss zweimal direkt als "
-            "itemNotFound bestätigt sein."
-        )
-    try:
-        datetime.fromisoformat(
-            str(evidence["checked_at"]).replace("Z", "+00:00")
-        )
-    except ValueError as exc:
-        raise ValueError(
-            "Abbruch: Abrufzeitpunkt des fehlenden Abgrenzungsregisters ist ungültig."
-        ) from exc
-    return {
-        "status": "not_found",
-        "source_url": expected_url,
-        "file_name": expected_name,
-        "retrieved_via": str(evidence["retrieved_via"]),
-        "checked_at": str(evidence["checked_at"]),
-        "not_found_code": "itemNotFound",
-        "site_verified": True,
-        "library_verified": True,
-        "direct_lookup_attempts": attempts,
-        "first_run_without_register": True,
-    }
+    summary = _confirmed_not_found_evidence(
+        evidence,
+        expected_url=expected_url,
+        expected_name=expected_name,
+        label="Abgrenzungsregister",
+    )
+    summary["first_run_without_register"] = True
+    return summary
 
 
 def validate_preflight_evidence(data: dict[str, Any]) -> None:
     run = data["run"]
     client_number = str(run["mandantennummer"]).zfill(5)
     targets = build_targets(client_number)
-    profile_summary = _validate_sharepoint_evidence(
-        run.get("mandantenprofil_evidence"),
-        expected_url=str(targets["profile_url"]),
-        expected_name=f"{client_number}.md",
-        label="Mandantenprofil",
-    )
+    profile_contract = data["mandantenprofil"]
+    if profile_contract["status"] == "provisional_first_run":
+        profile_summary = _confirmed_not_found_evidence(
+            run.get("mandantenprofil_evidence"),
+            expected_url=str(targets["profile_url"]),
+            expected_name=f"{client_number}.md",
+            label="Mandantenprofil",
+        )
+        profile_summary["profile_status"] = "vorläufig – Freigabe ausstehend"
+    else:
+        profile_summary = _validate_sharepoint_evidence(
+            run.get("mandantenprofil_evidence"),
+            expected_url=str(targets["profile_url"]),
+            expected_name=f"{client_number}.md",
+            label="Mandantenprofil",
+        )
+        profile_summary["profile_status"] = "freigegeben"
     accounting_method = str(run.get("accounting_method", "")).strip()
     if accounting_method not in {"Bilanz", "EÜR"}:
         raise ValueError("Abbruch: accounting_method muss Bilanz oder EÜR sein.")
@@ -633,9 +597,376 @@ def validate_live_datev_usage(data: dict[str, Any]) -> list[str]:
     return errors
 
 
+def _confirmed_not_found_evidence(
+    evidence: Any,
+    *,
+    expected_url: str,
+    expected_name: str,
+    label: str,
+) -> dict[str, Any]:
+    if not isinstance(evidence, dict) or evidence.get("status") != "not_found":
+        raise ValueError(f"Abbruch: {label} wurde nicht eindeutig als nicht vorhanden nachgewiesen.")
+    required = {
+        "source_url", "file_name", "retrieved_via", "checked_at",
+        "not_found_code", "site_verified", "library_verified",
+        "direct_lookup_attempts",
+    }
+    missing = sorted(key for key in required if evidence.get(key) in (None, ""))
+    if missing:
+        raise ValueError(
+            f"Abbruch: {label}-not_found-Nachweis unvollständig: "
+            + ", ".join(missing)
+        )
+    if evidence["source_url"] != expected_url or evidence["file_name"] != expected_name:
+        raise ValueError(f"Abbruch: {label}-not_found-Nachweis verwendet nicht das verbindliche SharePoint-Ziel.")
+    if str(evidence["not_found_code"]).lower() not in {"itemnotfound", "not_found"}:
+        raise ValueError(f"Abbruch: {label} wurde nicht als itemNotFound bestätigt.")
+    if evidence["site_verified"] is not True or evidence["library_verified"] is not True:
+        raise ValueError(f"Abbruch: Site und Bibliothek wurden für {label} nicht bestätigt.")
+    attempts = evidence["direct_lookup_attempts"]
+    if not isinstance(attempts, int) or attempts < 2:
+        raise ValueError(f"Abbruch: {label} muss zweimal direkt als itemNotFound bestätigt sein.")
+    try:
+        datetime.fromisoformat(str(evidence["checked_at"]).replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"Abbruch: Abrufzeitpunkt für {label} ist ungültig.") from exc
+    return {
+        "status": "not_found",
+        "source_url": expected_url,
+        "file_name": expected_name,
+        "retrieved_via": str(evidence["retrieved_via"]),
+        "checked_at": str(evidence["checked_at"]),
+        "not_found_code": "itemNotFound",
+        "site_verified": True,
+        "library_verified": True,
+        "direct_lookup_attempts": attempts,
+    }
+
+
+def normalize_input_model(data: dict[str, Any]) -> dict[str, Any]:
+    """Accept v1.0 input while normalizing the v1.1 source/transaction model."""
+    run = data.setdefault("run", {})
+    if not isinstance(data.get("scope"), dict):
+        data["scope"] = {
+            "target_periods": [str(run.get("buchungsmonat", ""))],
+            "include_prior_periods": True,
+            "include_future_periods": True,
+            "job_mode": JOB_MODE,
+            "legacy_default": True,
+        }
+    if not isinstance(data.get("mandantenprofil"), dict):
+        data["mandantenprofil"] = {
+            "status": "existing",
+            "source_status": "found",
+            "approval_status": "approved",
+            "evidence": [],
+            "legacy_default": True,
+        }
+
+    canonical_keys = ("source_files", "transactions", "transaction_sources")
+    canonical_present = any(key in data for key in canonical_keys)
+    if not canonical_present:
+        inventory = data.get("input_inventory", [])
+        source_files = []
+        path_to_id: dict[str, str] = {}
+        for index, item in enumerate(inventory, start=1):
+            source_id = str(item.get("source_id") or f"S{index:04d}")
+            source_item = dict(item)
+            source_item["source_id"] = source_id
+            source_item.setdefault("readability", "not_checked")
+            source_files.append(source_item)
+            path_to_id[str(item.get("source_path", ""))] = source_id
+        mappings = []
+        for document in data.get("documents", []):
+            source_path = str(document.get("source_path", ""))
+            source_id = path_to_id.get(source_path)
+            if source_id:
+                mappings.append({
+                    "transaction_id": str(document.get("transaction_id", "")),
+                    "source_id": source_id,
+                    "role": "payment_notice" if document.get("payment_advice") else "primary_invoice",
+                })
+        data["source_files"] = source_files
+        data["transactions"] = data.get("documents", [])
+        data["transaction_sources"] = mappings
+        data["_normalized_source_model"] = "legacy"
+        return data
+
+    if not all(isinstance(data.get(key), list) for key in canonical_keys):
+        raise ValueError(
+            "source_files, transactions und transaction_sources müssen gemeinsam als Listen vorliegen."
+        )
+    sources_by_id: dict[str, dict[str, Any]] = {}
+    normalized_inventory: list[dict[str, Any]] = []
+    for index, item in enumerate(data["source_files"], start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"source_files {index}: Eintrag ist kein Objekt")
+        source_id = str(item.get("source_id", "")).strip()
+        source_path = str(item.get("source_path", "")).strip()
+        if not source_id or source_id in sources_by_id:
+            raise ValueError(f"source_files {index}: source_id fehlt oder ist doppelt")
+        if not source_path:
+            raise ValueError(f"source_files {index}: source_path fehlt")
+        normalized = dict(item)
+        normalized.setdefault("readability", "not_checked")
+        sources_by_id[source_id] = normalized
+        normalized_inventory.append(normalized)
+
+    transactions_by_id: dict[str, dict[str, Any]] = {}
+    for index, item in enumerate(data["transactions"], start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"transactions {index}: Eintrag ist kein Objekt")
+        transaction_id = str(item.get("transaction_id", "")).strip()
+        if not transaction_id or transaction_id in transactions_by_id:
+            raise ValueError(f"transactions {index}: transaction_id fehlt oder ist doppelt")
+        transactions_by_id[transaction_id] = dict(item)
+
+    mappings_by_transaction: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for index, item in enumerate(data["transaction_sources"], start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"transaction_sources {index}: Eintrag ist kein Objekt")
+        transaction_id = str(item.get("transaction_id", "")).strip()
+        source_id = str(item.get("source_id", "")).strip()
+        role = str(item.get("role", "")).strip()
+        if transaction_id not in transactions_by_id or source_id not in sources_by_id:
+            raise ValueError(f"transaction_sources {index}: unbekannte Vorgangs- oder Quellen-ID")
+        if role not in SOURCE_ROLES:
+            raise ValueError(f"transaction_sources {index}: ungültige Dokumentrolle {role}")
+        mapping = {"transaction_id": transaction_id, "source_id": source_id, "role": role}
+        if mapping in mappings_by_transaction[transaction_id]:
+            raise ValueError(f"transaction_sources {index}: Zuordnung ist doppelt")
+        mappings_by_transaction[transaction_id].append(mapping)
+
+    documents: list[dict[str, Any]] = []
+    for transaction_id, document in transactions_by_id.items():
+        mappings = mappings_by_transaction.get(transaction_id, [])
+        if not mappings:
+            raise ValueError(f"{transaction_id}: keine Quelldatei zugeordnet")
+        primary = next((item for item in mappings if item["role"] == "primary_invoice"), mappings[0])
+        document["source_path"] = sources_by_id[primary["source_id"]]["source_path"]
+        document["source_paths"] = [sources_by_id[item["source_id"]]["source_path"] for item in mappings]
+        document["source_roles"] = mappings
+        documents.append(document)
+
+    data["documents"] = documents
+    data["input_inventory"] = normalized_inventory
+    data["_normalized_source_model"] = "canonical"
+    return data
+
+
+def validate_profile_contract(data: dict[str, Any]) -> None:
+    run = data["run"]
+    profile = data.get("mandantenprofil")
+    if not isinstance(profile, dict):
+        raise ValueError("Mandantenprofil-Vertrag fehlt.")
+    status = profile.get("status")
+    source_status = profile.get("source_status")
+    approval_status = profile.get("approval_status")
+    if not isinstance(profile.get("evidence"), list):
+        raise ValueError("mandantenprofil.evidence muss eine Liste sein.")
+    if status == "existing":
+        if source_status != "found" or approval_status != "approved":
+            raise ValueError("Vorhandenes Mandantenprofil muss gefunden und freigegeben sein.")
+        if run.get("mandantenprofil_verified") is not True:
+            raise ValueError("Abbruch: Mandantenprofil ist nicht eindeutig bestätigt.")
+        return
+    if status != "provisional_first_run":
+        raise ValueError("mandantenprofil.status ist ungültig.")
+    if source_status != "confirmed_not_found" or approval_status != "pending":
+        raise ValueError("Vorläufiges Erstlaufprofil erfordert confirmed_not_found und pending.")
+    if run.get("provisional_profile_verified") is not True:
+        raise ValueError("Abbruch: vorläufiges Erstlaufprofil ist nicht verifiziert.")
+    provisional = data.get("provisional_profile")
+    if not isinstance(provisional, dict):
+        raise ValueError("Vollständiges vorläufiges Mandantenprofil fehlt.")
+    if not str(provisional.get("content_markdown", "")).strip():
+        raise ValueError("Vorläufiges Mandantenprofil enthält keinen vollständigen Markdown-Inhalt.")
+    if not isinstance(provisional.get("sources"), list) or not provisional["sources"]:
+        raise ValueError("Vorläufiges Mandantenprofil enthält keine Quellen.")
+    if provisional.get("sharepoint_write_approved") is not False:
+        raise ValueError("Vorläufiges Mandantenprofil darf vor Freigabe nicht nach SharePoint geschrieben werden.")
+
+def _canonical_month(value: Any) -> str | None:
+    text = str(value or "")
+    try:
+        parsed = datetime.strptime(text, "%Y-%m")
+    except ValueError:
+        return None
+    return text if parsed.strftime("%Y-%m") == text else None
+
+
+def validate_scope(data: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    scope = data.get("scope")
+    if not isinstance(scope, dict):
+        return ["scope fehlt oder ist kein Objekt"]
+    if scope.get("job_mode") != JOB_MODE:
+        errors.append(
+            "scope.job_mode muss belegbuchhaltung sein; Kasse, Bank, Lohn und sonstige Teilaufträge sind ausgeschlossen"
+        )
+    periods = scope.get("target_periods")
+    if not isinstance(periods, list) or not periods:
+        errors.append("scope.target_periods fehlt oder ist leer")
+        return errors
+    if len(set(map(str, periods))) != len(periods):
+        errors.append("scope.target_periods enthält doppelte Perioden")
+    canonical = [str(value) for value in periods if _canonical_month(value)]
+    if len(canonical) != len(periods):
+        errors.append("scope.target_periods enthält eine ungültige Periode")
+        return errors
+    for flag in ("include_prior_periods", "include_future_periods"):
+        if not isinstance(scope.get(flag), bool):
+            errors.append(f"scope.{flag} muss true oder false sein")
+    if errors:
+        return errors
+    first_period = min(canonical)
+    last_period = max(canonical)
+    allowed = set(canonical)
+    for document in data.get("documents", []):
+        transaction_id = str(document.get("transaction_id", ""))
+        period = str(document.get("period", ""))
+        in_scope = period in allowed
+        if period < first_period and scope["include_prior_periods"]:
+            in_scope = True
+        if period > last_period and scope["include_future_periods"]:
+            in_scope = True
+        status = document.get("processing_status")
+        if not in_scope and status != "außerhalb Auftragszeitraum":
+            errors.append(
+                f"{transaction_id}: Periode {period} liegt außerhalb des Auftragszeitraums und muss ausgeschlossen werden"
+            )
+        if in_scope and status == "außerhalb Auftragszeitraum":
+            errors.append(f"{transaction_id}: zulässige Zielperiode ist fälschlich ausgeschlossen")
+    return errors
+
+
+def validate_payment_reconciliation(data: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    value = data.get("payment_reconciliation")
+    if value in (None, []):
+        items: list[Any] = []
+    elif isinstance(value, dict):
+        items = [value]
+    elif isinstance(value, list):
+        items = value
+    else:
+        return ["payment_reconciliation muss ein Objekt oder eine Liste sein"]
+    for index, item in enumerate(items, start=1):
+        if not isinstance(item, dict):
+            errors.append(f"payment_reconciliation {index}: Eintrag ist kein Objekt")
+            continue
+        if item.get("status") not in {"present", "missing", "not_expected", "not_checked"}:
+            errors.append(f"payment_reconciliation {index}: status ist ungültig")
+        if item.get("affects_document_traffic_light") is not False:
+            errors.append(
+                f"payment_reconciliation {index}: affects_document_traffic_light muss false sein"
+            )
+        periods = item.get("periods")
+        if not isinstance(periods, list) or any(_canonical_month(value) is None for value in periods):
+            errors.append(f"payment_reconciliation {index}: periods ist ungültig")
+        if not isinstance(item.get("handoff_required"), bool):
+            errors.append(f"payment_reconciliation {index}: handoff_required muss boolesch sein")
+    payment_terms = (
+        "kontoauszug", "kreditkartenabrechnung", "zahlungsnachweis",
+        "kartenumsatz", "kursdifferenz", "zahlungsabstimmung",
+    )
+    substantive_terms = (
+        "kontierung", "betrag", "geschäftspartner", "periode",
+        "umsatzsteuer", "vorsteuer", "betrieblicher anlass", "anlage", "dublette",
+    )
+    for document in data.get("documents", []):
+        if document.get("traffic_light") != "Rot":
+            continue
+        reason = str(document.get("reason", "")).casefold()
+        if any(term in reason for term in payment_terms) and not any(
+            term in reason for term in substantive_terms
+        ):
+            errors.append(
+                f"{document.get('transaction_id', '')}: Rot darf nicht ausschließlich mit fehlender Zahlungs- oder Kartenabstimmung begründet werden"
+            )
+    return errors
+
+def validate_activity_and_handoffs(data: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    canonical = data.get("_normalized_source_model") == "canonical"
+    report = data.get("activity_report")
+    if report is None and not canonical:
+        report = {
+            "datev_import_status": "Importpaket erstellt – noch nicht in DATEV importiert",
+            "named_entities": [],
+            "sources_used": [],
+            "legacy_default": True,
+        }
+        data["activity_report"] = report
+    if not isinstance(report, dict):
+        errors.append("activity_report fehlt oder ist kein Objekt")
+        report = {}
+    import_status = report.get("datev_import_status")
+    allowed_status = {
+        "Importpaket erstellt – noch nicht in DATEV importiert",
+        "in DATEV importiert",
+    }
+    if import_status not in allowed_status:
+        errors.append("activity_report.datev_import_status ist ungültig")
+    if import_status == "in DATEV importiert" and not isinstance(
+        report.get("import_evidence"), dict
+    ):
+        errors.append("Status 'in DATEV importiert' erfordert einen Importnachweis")
+    entities = report.get("named_entities")
+    if not isinstance(entities, list):
+        errors.append("activity_report.named_entities muss eine Liste sein")
+        entities = []
+    found_names: set[str] = set()
+    for index, item in enumerate(entities, start=1):
+        if not isinstance(item, dict):
+            errors.append(f"activity_report.named_entities {index}: Eintrag ist kein Objekt")
+            continue
+        name = str(item.get("name", "")).strip()
+        if not name or not str(item.get("final_status", "")).strip():
+            errors.append(f"activity_report.named_entities {index}: Name oder Endstatus fehlt")
+        if not isinstance(item.get("variants", []), list):
+            errors.append(f"activity_report.named_entities {index}: variants muss eine Liste sein")
+        if not isinstance(item.get("findings"), int) or item.get("findings", -1) < 0:
+            errors.append(f"activity_report.named_entities {index}: findings ist ungültig")
+        found_names.add(name.casefold())
+    for requested in data.get("run", {}).get("requested_entities", []):
+        if str(requested).casefold() not in found_names:
+            errors.append(f"Angefragte Person/Geschäftspartner ohne Such- und Endstatus: {requested}")
+    if canonical and (
+        not isinstance(report.get("sources_used"), list)
+        or not report.get("sources_used")
+    ):
+        errors.append("activity_report.sources_used fehlt oder ist leer")
+
+    handoffs = data.get("handoffs", [])
+    if not isinstance(handoffs, list):
+        return errors + ["handoffs muss eine Liste sein"]
+    covered_transactions: set[str] = set()
+    for index, item in enumerate(handoffs, start=1):
+        if not isinstance(item, dict):
+            errors.append(f"handoffs {index}: Eintrag ist kein Objekt")
+            continue
+        source_ids = item.get("source_ids", [])
+        transaction_ids = item.get("transaction_ids", [])
+        if not isinstance(source_ids, list) or not isinstance(transaction_ids, list):
+            errors.append(f"handoffs {index}: source_ids/transaction_ids müssen Listen sein")
+        if not source_ids and not transaction_ids:
+            errors.append(f"handoffs {index}: Quelle oder Vorgang fehlt")
+        if _canonical_month(item.get("period")) is None:
+            errors.append(f"handoffs {index}: Periode ist ungültig")
+        if not str(item.get("target_process", "")).strip() or not str(item.get("reason", "")).strip():
+            errors.append(f"handoffs {index}: Zielprozess oder Grund fehlt")
+        covered_transactions.update(str(value) for value in transaction_ids)
+    for document in data.get("documents", []):
+        if document.get("handoff_required") is True:
+            transaction_id = str(document.get("transaction_id", ""))
+            if transaction_id not in covered_transactions:
+                errors.append(f"{transaction_id}: erforderliche Übergabe fehlt in handoffs")
+    return errors
+
 def load_input(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
-        data = json.load(handle)
+        data = normalize_input_model(json.load(handle))
     run = data.get("run", {})
     required = [
         "beraternummer", "mandantennummer", "buchungsmonat",
@@ -646,8 +977,12 @@ def load_input(path: Path) -> dict[str, Any]:
         raise ValueError(f"Fehlende Laufdaten: {', '.join(missing)}")
     if run.get("datev_connection_verified") is not True:
         raise ValueError("Abbruch: DATEV-Kerndatenverbindung ist nicht bestätigt.")
-    if run.get("mandantenprofil_verified") is not True:
-        raise ValueError("Abbruch: Mandantenprofil ist nicht eindeutig bestätigt.")
+    validate_profile_contract(data)
+    scope_errors = validate_scope(data)
+    scope_errors.extend(validate_payment_reconciliation(data))
+    scope_errors.extend(validate_activity_and_handoffs(data))
+    if scope_errors:
+        raise ValueError("\n".join(scope_errors))
     validate_run_values(run)
     validate_preflight_evidence(data)
     live_errors = validate_live_datev_usage(data)
@@ -667,60 +1002,86 @@ def source_hash(path: Path) -> str:
 
 
 def validate_input_inventory(data: dict[str, Any]) -> list[str]:
-    """Prove that the pre-analysis file inventory and documents match 1:1."""
+    """Validate source files independently from their logical transactions."""
     errors: list[str] = []
     inventory = data.get("input_inventory")
     if not isinstance(inventory, list):
-        return ["input_inventory fehlt oder ist keine Liste"]
+        return ["input_inventory/source_files fehlt oder ist keine Liste"]
     if not inventory:
-        return ["input_inventory ist leer; ein Beleglauf ohne Eingabedateien ist unzulässig"]
+        return ["source_files ist leer; ein Beleglauf ohne Eingabedateien ist unzulässig"]
+    canonical = data.get("_normalized_source_model") == "canonical"
     inventory_paths: dict[str, str] = {}
+    hash_sources: dict[str, list[str]] = defaultdict(list)
     for index, item in enumerate(inventory, start=1):
         if not isinstance(item, dict):
-            errors.append(f"input_inventory {index}: Eintrag ist kein Objekt")
+            errors.append(f"source_files {index}: Eintrag ist kein Objekt")
             continue
+        source_id = str(item.get("source_id", f"S{index:04d}"))
         raw_path = str(item.get("source_path", "")).strip()
+        if canonical and not str(item.get("source_id", "")).strip():
+            errors.append(f"source_files {index}: source_id fehlt")
         if not raw_path:
-            errors.append(f"input_inventory {index}: source_path fehlt")
+            errors.append(f"source_files {index}: source_path fehlt")
             continue
         source = Path(raw_path)
         normalized = str(source.resolve()).casefold()
         if normalized in inventory_paths:
-            errors.append(f"input_inventory: Datei mehrfach enthalten: {raw_path}")
+            errors.append(f"source_files: Datei mehrfach enthalten: {raw_path}")
             continue
         inventory_paths[normalized] = raw_path
+        if item.get("readability") not in {
+            "readable", "partially_readable", "unreadable", "not_checked"
+        }:
+            errors.append(f"source_files {source_id}: readability ist ungültig")
         if not source.is_file():
-            errors.append(f"input_inventory: Datei fehlt: {raw_path}")
+            errors.append(f"source_files: Datei fehlt: {raw_path}")
             continue
         if item.get("size_bytes") != source.stat().st_size:
-            errors.append(f"input_inventory: Dateigröße stimmt nicht: {raw_path}")
+            errors.append(f"source_files: Dateigröße stimmt nicht: {raw_path}")
         expected_hash = str(item.get("sha256", "")).lower()
         if not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
-            errors.append(f"input_inventory: ungültiger SHA-256: {raw_path}")
+            errors.append(f"source_files: ungültiger SHA-256: {raw_path}")
         elif source_hash(source) != expected_hash:
-            errors.append(f"input_inventory: SHA-256 stimmt nicht: {raw_path}")
+            errors.append(f"source_files: SHA-256 stimmt nicht: {raw_path}")
+        else:
+            hash_sources[expected_hash].append(source_id)
 
-    document_paths: dict[str, str] = {}
-    for doc in data.get("documents", []):
-        raw_path = str(doc.get("source_path", "")).strip()
-        if not raw_path:
-            continue
-        normalized = str(Path(raw_path).resolve()).casefold()
-        if normalized in document_paths:
-            errors.append(f"documents: Datei mehrfach enthalten: {raw_path}")
-        document_paths[normalized] = raw_path
-    missing_documents = sorted(set(inventory_paths) - set(document_paths))
-    extra_documents = sorted(set(document_paths) - set(inventory_paths))
-    if missing_documents:
+    referenced_paths: dict[str, str] = {}
+    for document in data.get("documents", []):
+        paths = document.get("source_paths") or [document.get("source_path", "")]
+        for raw in paths:
+            raw_path = str(raw).strip()
+            if not raw_path:
+                continue
+            referenced_paths[str(Path(raw_path).resolve()).casefold()] = raw_path
+    missing_transactions = sorted(set(inventory_paths) - set(referenced_paths))
+    extra_sources = sorted(set(referenced_paths) - set(inventory_paths))
+    if missing_transactions:
         errors.append(
-            "Inventarisierte Dateien fehlen in documents: "
-            + ", ".join(inventory_paths[path] for path in missing_documents)
+            "Inventarisierte Quelldateien sind keinem Vorgang zugeordnet: "
+            + ", ".join(inventory_paths[path] for path in missing_transactions)
         )
-    if extra_documents:
+    if extra_sources:
         errors.append(
-            "documents enthält nicht inventarisierte Dateien: "
-            + ", ".join(document_paths[path] for path in extra_documents)
+            "Vorgänge referenzieren nicht inventarisierte Quelldateien: "
+            + ", ".join(referenced_paths[path] for path in extra_sources)
         )
+
+    if canonical:
+        mappings = data.get("transaction_sources", [])
+        for digest, source_ids in hash_sources.items():
+            if len(source_ids) < 2:
+                continue
+            for duplicate_id in source_ids[1:]:
+                roles = {
+                    str(item.get("role", ""))
+                    for item in mappings
+                    if str(item.get("source_id", "")) == duplicate_id
+                }
+                if roles != {"duplicate_copy"}:
+                    errors.append(
+                        f"source_files {duplicate_id}: gleicher SHA-256 wie {source_ids[0]}, aber nicht ausschließlich als duplicate_copy gekennzeichnet"
+                    )
     return errors
 
 
@@ -745,15 +1106,47 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
         if tid in seen_ids:
             errors.append(f"Doppelte Vorgangs-ID: {tid}")
         seen_ids.add(tid)
-        source_path = str(doc.get("source_path", ""))
-        if not source_path:
-            errors.append(f"{tid}: source_path fehlt")
-        elif source_path in seen_sources:
-            errors.append(f"{tid}: Quelldatei ist mehrfach als eigener Beleg erfasst")
-        seen_sources.add(source_path)
+        source_paths = doc.get("source_paths") or [doc.get("source_path", "")]
+        if not any(str(path).strip() for path in source_paths):
+            errors.append(f"{tid}: keine Quelldatei zugeordnet")
 
         if doc.get("business_purpose_status") not in {"betrieblich", "privat", "unklar"}:
             errors.append(f"{tid}: betrieblicher Anlass ist nicht klassifiziert")
+        if data.get("_normalized_source_model") == "canonical":
+            if not str(doc.get("document_type", "")).strip():
+                errors.append(f"{tid}: Dokumentart fehlt")
+            entity = doc.get("entity_assessment")
+            if not isinstance(entity, dict):
+                errors.append(f"{tid}: Rechtsträger-/Adressatenprüfung fehlt")
+            else:
+                for field in ("legal_entity", "addressee", "relevance"):
+                    if not str(entity.get(field, "")).strip():
+                        errors.append(f"{tid}: entity_assessment.{field} fehlt")
+            if doc.get("processing_status") != "Buchungszeile erzeugt":
+                if not str(doc.get("exclusion_reason", "")).strip():
+                    errors.append(f"{tid}: konkreter Ausschlussgrund fehlt")
+            if doc.get("processing_status") in {
+                "Buchungszeile erzeugt",
+                "sichere Dublette – nicht erneut gebucht",
+            }:
+                duplicate_checks = doc.get("duplicate_checks")
+                if not isinstance(duplicate_checks, dict):
+                    errors.append(f"{tid}: dreistufige Dublettenprüfung fehlt")
+                else:
+                    for level in (
+                        "file_hash_current_upload",
+                        "logical_document_current_upload",
+                        "datev_live",
+                    ):
+                        check = duplicate_checks.get(level)
+                        if not isinstance(check, dict) or check.get("checked") is not True:
+                            errors.append(f"{tid}: Dublettenprüfung {level} fehlt")
+                        elif check.get("result") not in {
+                            "no_hit", "possible_duplicate", "secure_duplicate"
+                        }:
+                            errors.append(f"{tid}: Dublettenprüfung {level} hat ungültiges Ergebnis")
+                        elif check.get("result") != "no_hit" and not str(check.get("reference", "")).strip():
+                            errors.append(f"{tid}: Dublettentreffer {level} enthält keine Referenz")
         try:
             period_valid = datetime.strptime(str(doc.get("period", "")), "%Y-%m").strftime("%Y-%m") == str(doc.get("period", ""))
         except ValueError:
@@ -790,7 +1183,10 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
                 errors.append(f"{tid}: Zahlungsavis muss nicht buchungsrelevant sein")
             if doc.get("bookings"):
                 errors.append(f"{tid}: Zahlungsavis darf keine Buchungen enthalten")
-        else:
+        elif doc.get("processing_status") in {
+            "Buchungszeile erzeugt",
+            "sichere Dublette – nicht erneut gebucht",
+        }:
             prior = doc.get("prior_booking_check")
             if not isinstance(prior, dict) or prior.get("checked") is not True:
                 errors.append(f"{tid}: DATEV-Dublettenprüfung fehlt")
@@ -1188,9 +1584,185 @@ def _technical_document_name(
 
 
 
+def _prepare_canonical_document_transfer(
+    data: dict[str, Any]
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    grouped: dict[tuple[str, str], list[tuple[dict[str, Any], int]]] = defaultdict(list)
+    packages: list[dict[str, Any]] = []
+    index: list[dict[str, Any]] = []
+    used_names: set[str] = set()
+    booked_hashes: dict[str, str] = {}
+    mandant = str(data["run"]["mandantennummer"])
+    run_period = str(data["run"]["buchungsmonat"])
+    documents = {
+        str(item.get("transaction_id", "")): item
+        for item in data.get("documents", [])
+    }
+    mappings_by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for mapping in data.get("transaction_sources", []):
+        mappings_by_source[str(mapping.get("source_id", ""))].append(mapping)
+
+    for source_item in data.get("source_files", []):
+        source_id = str(source_item.get("source_id", ""))
+        source = Path(str(source_item.get("source_path", "")))
+        mappings = mappings_by_source.get(source_id, [])
+        linked = [
+            (mapping, documents.get(str(mapping.get("transaction_id", ""))))
+            for mapping in mappings
+        ]
+        linked = [(mapping, document) for mapping, document in linked if document]
+        transaction_ids = [str(mapping["transaction_id"]) for mapping, _ in linked]
+        excluded_roles = {"cover_sheet", "duplicate_copy"}
+        transferable = [
+            (mapping, document)
+            for mapping, document in linked
+            if mapping.get("role") not in excluded_roles
+            and (
+                document.get("processing_status") == "Buchungszeile erzeugt"
+                or document.get("payment_advice") is True
+            )
+        ]
+        if not transferable:
+            index.append({
+                "source_id": source_id,
+                "transaction_ids": transaction_ids,
+                "included": False,
+                "reason": "keine übertragbare Dokumentrolle oder kein buchungsrelevanter Vorgang",
+            })
+            continue
+        booking_links = [
+            pair for pair in transferable
+            if pair[1].get("processing_status") == "Buchungszeile erzeugt"
+        ]
+        kind = "booking" if booking_links else "advice"
+        preferred = next(
+            (pair for pair in transferable if pair[0].get("role") == "primary_invoice"),
+            transferable[0],
+        )
+        primary_document = preferred[1]
+        period = str(primary_document.get("period") or run_period)
+        try:
+            month_bounds(period)
+        except ValueError as exc:
+            raise ValueError(f"{source_id}: ungültige Belegperiode {period}") from exc
+        if not source.is_file():
+            raise ValueError(f"{source_id}: Quelldatei für den Belegtransfer fehlt: {source}")
+        extension = source.suffix.lower()
+        if extension not in ALLOWED_DOCUMENT_EXTENSIONS:
+            raise ValueError(f"{source_id}: Dateityp {extension or '(ohne Endung)'} ist für DATEV Belegtransfer nicht zugelassen.")
+        file_size = source.stat().st_size
+        if file_size <= 0 or file_size > MAX_DOCUMENT_BYTES:
+            raise ValueError(f"{source_id}: Belegdatei ist leer oder überschreitet 20 MB.")
+        if extension == ".pdf" and source.read_bytes()[:5] != b"%PDF-":
+            raise ValueError(f"{source_id}: Datei trägt die Endung .pdf, ist aber keine PDF-Datei.")
+        digest = source_hash(source)
+        declared_hash = str(source_item.get("sha256", "")).lower()
+        if declared_hash and declared_hash != digest:
+            raise ValueError(f"{source_id}: hinterlegter Datei-Hash stimmt nicht.")
+        if kind == "booking":
+            previous = booked_hashes.get(digest)
+            if previous:
+                raise ValueError(f"{source_id}: identischer Dateiinhalt wurde bereits als {previous} übertragen.")
+            booked_hashes[digest] = source_id
+        technical_name = _technical_document_name(
+            {"transaction_id": source_id}, source, digest, used_names
+        )
+        guid = uuid.uuid5(
+            uuid.NAMESPACE_URL,
+            f"bk-monatsbuchhaltung:{kind}:{mandant}:{digest}",
+        )
+        transfer_item = {
+            "source_id": source_id,
+            "source_path": str(source),
+            "transaction_id": str(primary_document.get("transaction_id", "")),
+            "transaction_ids": transaction_ids,
+            "content_hash": digest,
+            "document_filename": technical_name,
+            "document_period": period,
+            "document_guid": str(guid).upper(),
+            "document_package_kind": kind,
+        }
+        grouped[(kind, period)].append((transfer_item, file_size))
+        for mapping, document in transferable:
+            if (
+                mapping.get("role") == "primary_invoice"
+                or not document.get("document_guid")
+            ):
+                document.update({
+                    "content_hash": digest,
+                    "document_filename": technical_name,
+                    "document_period": period,
+                    "document_guid": str(guid).upper(),
+                    "document_package_kind": kind,
+                })
+            else:
+                document.setdefault("supporting_document_guids", []).append(
+                    str(guid).upper()
+                )
+        index.append({
+            "source_id": source_id,
+            "transaction_ids": transaction_ids,
+            "content_hash": digest,
+            "document_guid": str(guid).upper(),
+            "technical_filename": technical_name,
+            "document_period": period,
+            "document_package_kind": kind,
+            "included": True,
+            "target": FOLDERS["datev"],
+        })
+
+    for document in data.get("documents", []):
+        if (
+            document.get("processing_status") == "Buchungszeile erzeugt"
+            or document.get("payment_advice") is True
+        ) and not document.get("document_guid"):
+            raise ValueError(
+                f"{document.get('transaction_id', '')}: keine übertragbare Primär- oder Unterstützungsquelle"
+            )
+
+    for (kind, period) in sorted(grouped):
+        current: list[dict[str, Any]] = []
+        current_size = 0
+        number = 1
+        for transfer_item, file_size in grouped[(kind, period)]:
+            if current and (
+                current_size + file_size > RECOMMENDED_PACKAGE_BYTES
+                or len(current) >= MAX_DOCUMENTS_PER_PACKAGE
+            ):
+                packages.append({"kind": kind, "period": period, "number": number, "documents": current})
+                number += 1
+                current = []
+                current_size = 0
+            current.append(transfer_item)
+            current_size += file_size
+        if current:
+            packages.append({"kind": kind, "period": period, "number": number, "documents": current})
+
+    assignments: dict[str, tuple[str, int, str]] = {}
+    for package in packages:
+        kind = str(package["kind"])
+        period = str(package["period"])
+        number = int(package["number"])
+        key = f"{kind}:{period}:{number:03d}"
+        for transfer_item in package["documents"]:
+            transfer_item["document_package_period"] = period
+            transfer_item["document_package_number"] = number
+            transfer_item["document_package_key"] = key
+            assignments[str(transfer_item["source_id"])] = (period, number, key)
+    for entry in index:
+        assignment = assignments.get(str(entry.get("source_id", "")))
+        if assignment:
+            period, number, key = assignment
+            entry["document_package_period"] = period
+            entry["document_package_number"] = number
+            entry["document_package_key"] = key
+    return packages, index
+
 def prepare_document_transfer(
     data: dict[str, Any]
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if data.get("_normalized_source_model") == "canonical":
+        return _prepare_canonical_document_transfer(data)
     grouped: dict[tuple[str, str], list[tuple[dict[str, Any], int]]] = defaultdict(list)
     packages: list[dict[str, Any]] = []
     index: list[dict[str, Any]] = []
@@ -1473,13 +2045,30 @@ def write_clarification_files(root: Path, data: dict[str, Any]) -> None:
     )
 
     suggestions = data.get("profile_suggestions", [])
-    profile = [
-        "# Vorschlag Mandantenprofil", "",
-        "Nur dauerhaft wiederverwendbare mandantenspezifische Besonderheiten "
-        "werden vorgeschlagen.", "",
-        "| Vorschlags-ID | Abschnitt | Vorgeschlagener Regeltext | Begründung | Vorgangs-ID(s) |",
-        "|---|---|---|---|---|",
-    ]
+    provisional = data.get("provisional_profile")
+    if data.get("mandantenprofil", {}).get("status") == "provisional_first_run":
+        profile = [
+            str(provisional.get("content_markdown", "")).rstrip(), "",
+            "**Mandantenprofil-Status: vorläufig – Freigabe ausstehend**", "",
+            "Dieses vollständige Erstlaufprofil wurde noch nicht nach SharePoint geschrieben.", "",
+            "## Quellen des vorläufigen Profils", "",
+        ]
+        profile.extend(
+            [f"- {md_cell(source)}" for source in provisional.get("sources", [])]
+        )
+        profile.extend([
+            "", "## Weitere dauerhafte Vorschläge", "",
+            "| Vorschlags-ID | Abschnitt | Vorgeschlagener Regeltext | Begründung | Vorgangs-ID(s) |",
+            "|---|---|---|---|---|",
+        ])
+    else:
+        profile = [
+            "# Vorschlag Mandantenprofil", "",
+            "Nur dauerhaft wiederverwendbare mandantenspezifische Besonderheiten "
+            "werden vorgeschlagen.", "",
+            "| Vorschlags-ID | Abschnitt | Vorgeschlagener Regeltext | Begründung | Vorgangs-ID(s) |",
+            "|---|---|---|---|---|",
+        ]
     if not suggestions:
         profile.append("| – | – | Keine Änderung vorgeschlagen | – | – |")
     for item in suggestions:
@@ -1491,6 +2080,88 @@ def write_clarification_files(root: Path, data: dict[str, Any]) -> None:
         profile.append("| " + " | ".join(md_cell(value) for value in values) + " |")
     (review / "Mandantenprofil_Vorschlag.md").write_text(
         "\n".join(profile) + "\n", encoding="utf-8"
+    )
+
+def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
+    review = root / FOLDERS["review"]
+    documents = data.get("documents", [])
+    report = data.get("activity_report", {})
+    status_counts = Counter(item.get("processing_status") for item in documents)
+    light_counts = Counter(item.get("traffic_light") for item in documents)
+    booking_lines = sum(len(item.get("bookings", [])) for item in documents)
+    actual_periods = sorted({
+        str(item.get("period", ""))
+        for item in documents
+        if item.get("processing_status") == "Buchungszeile erzeugt"
+    })
+    profile_status = (
+        "vorläufig – Freigabe ausstehend"
+        if data.get("mandantenprofil", {}).get("status") == "provisional_first_run"
+        else "freigegeben"
+    )
+    lines = [
+        "# Tätigkeits- und Abdeckungsnachweis",
+        "",
+        f"- Auftrag: {data.get('scope', {}).get('job_mode', JOB_MODE)}",
+        f"- Beauftragte Zielperioden: {', '.join(data.get('scope', {}).get('target_periods', []))}",
+        f"- Tatsächlich verarbeitete Buchungsperioden: {', '.join(actual_periods) or 'keine'}",
+        f"- Mandantenprofil-Status: {profile_status}",
+        f"- Quelldateien: {len(data.get('source_files', []))}",
+        f"- Logische Vorgänge: {len(documents)}",
+        f"- Buchungszeilen: {booking_lines}",
+        f"- Gebuchte Vorgänge: {status_counts.get('Buchungszeile erzeugt', 0)}",
+        f"- Grün/Gelb/Rot: {light_counts.get('Grün', 0)} / {light_counts.get('Gelb', 0)} / {light_counts.get('Rot', 0)}",
+        f"- Ausgeschlossen: {sum(1 for item in documents if item.get('processing_status') in {'nicht buchungsrelevant', 'außerhalb Auftragszeitraum'})}",
+        f"- Sichere Dubletten: {status_counts.get('sichere Dublette – nicht erneut gebucht', 0)}",
+        f"- Bearbeitungsstatus: {report.get('datev_import_status', 'Importpaket erstellt – noch nicht in DATEV importiert')}",
+        "- Fachstatus: fachlicher Prüfprotokoll-Rücklauf ausstehend",
+        "",
+        "## Verwendete Datenquellen",
+        "",
+    ]
+    sources_used = report.get("sources_used", [])
+    lines.extend([f"- {source}" for source in sources_used] or ["- Keine zusätzliche Quellenliste übergeben (Legacy-Lauf)"])
+    lines.extend([
+        "",
+        "## Angefragte Personen und Geschäftspartner",
+        "",
+        "| Name | Suchvarianten | Fundstellen | Endstatus |",
+        "|---|---|---:|---|",
+    ])
+    entities = report.get("named_entities", [])
+    if not entities:
+        lines.append("| – | – | 0 | Keine Namen ausdrücklich angefragt |")
+    for item in entities:
+        lines.append(
+            "| " + " | ".join(md_cell(value) for value in (
+                item.get("name", ""), item.get("variants", []),
+                item.get("findings", 0), item.get("final_status", ""),
+            )) + " |"
+        )
+    (review / "Taetigkeitsnachweis.md").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
+
+    handoff_lines = [
+        "# Übergabeliste ausgeschlossener Folgearbeiten", "",
+        "Bank, Kasse, Lohn, Zahlungsverkehr, OPOS-Ausgleich, Abstimmungen und Monatsabschluss werden nicht in diesem Skill gebucht.",
+        "",
+        "| Quellen-ID(s) | Vorgangs-ID(s) | Periode | Zielprozess | Grund |",
+        "|---|---|---|---|---|",
+    ]
+    handoffs = data.get("handoffs", [])
+    if not handoffs:
+        handoff_lines.append("| – | – | – | Keine Übergabe erforderlich | – |")
+    for item in handoffs:
+        handoff_lines.append(
+            "| " + " | ".join(md_cell(value) for value in (
+                item.get("source_ids", []), item.get("transaction_ids", []),
+                item.get("period", ""), item.get("target_process", ""),
+                item.get("reason", ""),
+            )) + " |"
+        )
+    (review / "Uebergabeliste.md").write_text(
+        "\n".join(handoff_lines) + "\n", encoding="utf-8"
     )
 
 def build_review(root: Path, data: dict[str, Any], node: str) -> None:
@@ -1543,6 +2214,8 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "mandant": data["run"]["mandantennummer"],
         "buchungsmonat": data["run"]["buchungsmonat"],
         "run_contract": {
+            "scope": data.get("scope", {}),
+            "mandantenprofil": data.get("mandantenprofil", {}),
             "wirtschaftsjahr_beginn": data["run"]["wirtschaftsjahr_beginn"],
             "sachkontenlaenge": data["run"]["sachkontenlaenge"],
             "sachkontenrahmen": data["run"]["sachkontenrahmen"],
@@ -1553,7 +2226,10 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
             "account_config": data["run"]["account_config"],
             "person_account_ranges": data["run"]["person_account_ranges"],
         },
-        "hochgeladene_dateien": len(docs),
+        "hochgeladene_dateien": len(data.get("source_files", [])),
+        "quelldateien": len(data.get("source_files", [])),
+        "logische_vorgaenge": len(docs),
+        "buchungszeilen": sum(len(doc.get("bookings", [])) for doc in docs),
         "input_inventory_count": len(data.get("input_inventory", [])),
         "input_inventory": data.get("input_inventory", []),
         "ampel": dict(light_counts),
@@ -1571,6 +2247,9 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "clarification_cases": len(data.get("clarification_cases", [])),
         "accrual_candidates": len(data.get("accrual_candidates", [])),
         "profile_suggestions": len(data.get("profile_suggestions", [])),
+        "activity_report": data.get("activity_report", {}),
+        "handoffs": data.get("handoffs", []),
+        "payment_reconciliation": data.get("payment_reconciliation", []),
         "booking_trace": trace,
         "document_index": document_index,
         "belegtransfer_status": (
@@ -1593,7 +2272,12 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         f"- Ausgabevertrag: {OUTPUT_CONTRACT}",
         "- Prüfprotokoll-Rücklauf: ausstehend",
         f"- Vollständigkeit: {'VOLLSTÄNDIG' if complete else 'UNVOLLSTÄNDIG'}",
-        f"- Hochgeladene Dateien: {len(docs)}",
+        f"- Quelldateien: {len(data.get('source_files', []))}",
+        f"- Logische Vorgänge: {len(docs)}",
+        f"- Buchungszeilen: {sum(len(doc.get('bookings', [])) for doc in docs)}",
+        f"- Zielperioden: {', '.join(data.get('scope', {}).get('target_periods', []))}",
+        f"- Bearbeitungsstatus: {data.get('activity_report', {}).get('datev_import_status', 'Importpaket erstellt – noch nicht in DATEV importiert')}",
+        "- Fachstatus: fachlicher Prüfprotokoll-Rücklauf ausstehend",
         f"- Buchungsbelege: {status_counts.get('Buchungszeile erzeugt', 0)}",
         f"- Sichere Dubletten: {status_counts.get('sichere Dublette – nicht erneut gebucht', 0)}",
         f"- Nicht buchungsrelevant: {status_counts.get('nicht buchungsrelevant', 0)}",
@@ -1636,6 +2320,7 @@ def main() -> int:
         copy_payment_advices(root, data)
         write_accrual_register(root, data)
         write_clarification_files(root, data)
+        write_activity_and_handoffs(root, data)
         build_review(root, data, args.node)
         write_manifest(root, data, trace, document_index)
         validator = Path(__file__).with_name("validate_package.py")

@@ -52,7 +52,7 @@ Ein Ergebnis aus `Kanzlei/Mandanten/<Mandant>` ist immer das Ergebnis eines fals
 
 ## Fehlerklassifikation
 
-`Mandantenprofil fehlt` darf nur festgestellt werden, wenn:
+`Mandantenprofil eindeutig nicht vorhanden` darf nur festgestellt werden, wenn:
 
 - die exakte URL `.../Mandantenprofile/<Mandantennummer>.md` zuerst direkt abgerufen wurde,
 - die Site `/sites/Wissen` anschließend erfolgreich aufgelöst wurde,
@@ -71,7 +71,15 @@ Profil ausschließlich am exakt aufgelösten SharePoint-Ziel laden. Das Profil e
 
 Wenn der SharePoint-Connector für eine Markdown-Datei keinen extrahierten Text liefert, dieselbe eindeutig gefundene Datei als Rohdatei herunterladen und UTF-8 lesen. Das ist der vorgesehene Fallback und kein fachlicher Fehler.
 
-Während des Beleglaufs keine Rückfragen zu möglichen neuen Besonderheiten stellen und das Profil nicht ändern. Wiederverwendbare mandantenspezifische Erkenntnisse in `02_Buchungspruefung/Mandantenprofil_Vorschlag.md` sammeln. Je Vorschlag Zielabschnitt, exakten Regeltext, Begründung und betroffene Vorgangs-IDs angeben. Einmalige Belegkorrekturen und globale Regeln nicht für das Mandantenprofil vorschlagen.
+### Kontrollierter Erstlauf ohne vorhandenes Profil
+
+Ein technischer Connector-, Datei- oder UTF-8-Lesefehler blockiert weiterhin. Nur wenn Site und Bibliothek erfolgreich bestätigt wurden und der zweite direkte Abruf der exakten Profil-URL erneut eindeutig `itemNotFound` liefert, ist `provisional_first_run` zulässig.
+
+Vor der Belegverarbeitung ein vollständiges vorläufiges Profil aus der bestehenden Profilvorlage erstellen. Ausschließlich live gelesene DATEV-Daten, ausdrückliche Nutzerangaben und belastbare Belegmerkmale verwenden. Jede abgeleitete Regel als vorläufig kennzeichnen und ihre Quelle nennen. Im Paket sichtbar ausweisen: `Mandantenprofil-Status: vorläufig – Freigabe ausstehend`.
+
+Das vollständige vorläufige Profil in `02_Buchungspruefung/Mandantenprofil_Vorschlag.md` ausgeben. Niemals während des Laufs nach SharePoint schreiben. Erst nach ausdrücklicher Freigabe darf es am exakt bestimmten Profilziel angelegt werden.
+
+Während des Beleglaufs keine Rückfragen zu möglichen neuen Besonderheiten stellen und ein vorhandenes Profil nicht ändern. Wiederverwendbare mandantenspezifische Erkenntnisse in `02_Buchungspruefung/Mandantenprofil_Vorschlag.md` sammeln. Je Vorschlag Zielabschnitt, exakten Regeltext, Begründung und betroffene Vorgangs-IDs angeben. Einmalige Belegkorrekturen und globale Regeln nicht für das Mandantenprofil vorschlagen.
 
 ## Abgrenzungsregister
 

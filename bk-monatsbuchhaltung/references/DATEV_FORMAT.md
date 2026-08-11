@@ -82,7 +82,7 @@ Verbindliche Regeln:
 - Dieselbe GUID wird in jeder zugehörigen EXTF-Buchungszeile in Feld 20 `Beleglink` als `BEDI "GUID"` ausgegeben.
 - Belegtransfer-Pakete werden anhand der unkomprimierten Größe bei ungefähr 100 MB oder spätestens 4.999 Dokumenten geteilt. Absolute Paketgrenze: 465 MB; Einzeldateigrenze: 20 MB.
 - Jedes Belegtransfer-Paket enthält ausschließlich Belege genau einer Belegperiode. Der Zeitraum im Dateinamen ist die tatsächliche Belegperiode, nicht pauschal der angeforderte Buchungsmonat.
-- Vorjahresbelege werden je Belegperiode in ein eigenes Uploadpaket `Belegtransfer_<Mandant>_<Belegperiode>_<NNN>.zip` ausgesteuert und niemals mit Belegen einer anderen Periode gemischt. Die laufende Paketnummer beginnt je Periode bei `001`.
+- Ausdrücklich über `scope` freigegebene Vorjahresbelege werden je Belegperiode in ein eigenes Uploadpaket `Belegtransfer_<Mandant>_<Belegperiode>_<NNN>.zip` ausgesteuert und niemals mit Belegen einer anderen Periode gemischt. Die laufende Paketnummer beginnt je Periode bei `001`.
 - Der technische Belegindex gehört ausschließlich nach `03_Technische_Protokolle/` und niemals in das DATEV-Document-Package.
 - Belegbilder zuerst nach DATEV Unternehmen online übertragen, danach die EXTF-Buchungsstapel einlesen.
 

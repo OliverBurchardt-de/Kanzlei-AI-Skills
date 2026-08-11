@@ -71,7 +71,7 @@ FORBIDDEN_DATEV_FOLDERS = {
 }
 
 
-EXPECTED_SKILL_VERSION = "1.0.0"
+EXPECTED_SKILL_VERSION = "1.1.0"
 EXPECTED_OUTPUT_CONTRACT = "single-datev-import-folder-v2"
 
 
@@ -164,6 +164,22 @@ def validate_review_workbook(path: Path) -> list[str]:
                         for node in item.findall(f".//{{{XLSX_MAIN_NS}}}t")
                     ))
 
+            styles_root = ET.fromstring(archive.read("xl/styles.xml"))
+            fills = styles_root.find(f"{{{XLSX_MAIN_NS}}}fills")
+            cell_xfs = styles_root.find(f"{{{XLSX_MAIN_NS}}}cellXfs")
+            style_fill_colors: dict[int, str] = {}
+            if fills is not None and cell_xfs is not None:
+                fill_items = list(fills)
+                for style_id, xf in enumerate(cell_xfs):
+                    fill_id = int(xf.get("fillId", "0"))
+                    if fill_id >= len(fill_items):
+                        continue
+                    fg = fill_items[fill_id].find(
+                        f".//{{{XLSX_MAIN_NS}}}fgColor"
+                    )
+                    if fg is not None and fg.get("rgb"):
+                        style_fill_colors[style_id] = str(fg.get("rgb"))[-6:].upper()
+
             workbook_root = ET.fromstring(archive.read("xl/workbook.xml"))
             rels_root = ET.fromstring(
                 archive.read("xl/_rels/workbook.xml.rels")
@@ -227,6 +243,34 @@ def validate_review_workbook(path: Path) -> list[str]:
                         "Buchungsstapel an zweiter Stelle ohne sichtbaren "
                         "Quelldateinamen oder Importfähig-Spalte."
                     )
+                if sheet_name in {"Belegprüfung", "Buchungszeilen"}:
+                    expected_colors = {
+                        "Grün": "C6E0B4",
+                        "Gelb": "FFE699",
+                        "Rot": "F4CCCC",
+                    }
+                    for row in sheet_root.findall(f".//{{{XLSX_MAIN_NS}}}row"):
+                        if int(row.get("r", "0")) < 2:
+                            continue
+                        cell = next(
+                            (
+                                item for item in row.findall(f"{{{XLSX_MAIN_NS}}}c")
+                                if excel_column_index(item.get("r", "")) == 0
+                            ),
+                            None,
+                        )
+                        if cell is None:
+                            continue
+                        value = xlsx_cell_text(cell, shared_strings)
+                        expected_color = expected_colors.get(value)
+                        if not expected_color:
+                            continue
+                        style_id = int(cell.get("s", "0"))
+                        if style_fill_colors.get(style_id) != expected_color:
+                            errors.append(
+                                f"{path.name}: {sheet_name}!{cell.get('r', '')} hat für {value} keine feste korrekte Hintergrundfarbe."
+                            )
+
                 forbidden = sorted(
                     FORBIDDEN_VISIBLE_REVIEW_HEADERS.intersection(actual)
                 )
@@ -324,12 +368,37 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
         if not item.get("raw_evidence"):
             errors.append(f"{label}-Inhaltsnachweis fehlt.")
 
-    check_sharepoint(
-        evidence.get("mandantenprofil"),
-        str(targets["profile_url"]),
-        f"{client_number}.md",
-        "Mandantenprofil",
-    )
+    profile_evidence = evidence.get("mandantenprofil")
+    profile_contract = contract.get("mandantenprofil", {})
+    if (
+        isinstance(profile_contract, dict)
+        and profile_contract.get("status") == "provisional_first_run"
+    ):
+        if not isinstance(profile_evidence, dict) or profile_evidence.get("status") != "not_found":
+            errors.append("Vorläufiges Mandantenprofil besitzt keinen bestätigten Nichtvorhanden-Nachweis.")
+        else:
+            if profile_evidence.get("source_url") != str(targets["profile_url"]):
+                errors.append("Mandantenprofil-Nichtvorhanden-Nachweis verwendet nicht die exakte URL.")
+            if profile_evidence.get("file_name") != f"{client_number}.md":
+                errors.append("Mandantenprofil-Dateiname stimmt nicht.")
+            if profile_evidence.get("not_found_code") != "itemNotFound":
+                errors.append("Mandantenprofil wurde nicht eindeutig als itemNotFound bestätigt.")
+            if profile_evidence.get("site_verified") is not True or profile_evidence.get("library_verified") is not True:
+                errors.append("Site/Bibliothek für das Mandantenprofil wurden nicht bestätigt.")
+            if not isinstance(profile_evidence.get("direct_lookup_attempts"), int) or profile_evidence["direct_lookup_attempts"] < 2:
+                errors.append("Mandantenprofil wurde nicht zweimal direkt geprüft.")
+    else:
+        check_sharepoint(
+            profile_evidence,
+            str(targets["profile_url"]),
+            f"{client_number}.md",
+            "Mandantenprofil",
+        )
+    scope = contract.get("scope")
+    if not isinstance(scope, dict) or scope.get("job_mode") != "belegbuchhaltung":
+        errors.append("Scope fehlt oder enthält einen unzulässigen Teilauftrag; Kassenbuchung ist ausgeschlossen.")
+    elif not isinstance(scope.get("target_periods"), list) or not scope["target_periods"]:
+        errors.append("Zielperioden fehlen im Laufvertrag.")
     def check_accrual_register(item: object) -> None:
         if isinstance(item, dict) and item.get("status") == "not_found":
             if item.get("source_url") != str(targets["accrual_url"]):
@@ -1011,6 +1080,8 @@ def main() -> int:
         args.package / "02_Buchungspruefung" / "Klaerungsfaelle.md",
         args.package / "02_Buchungspruefung" / "Mandantenprofil_Vorschlag.md",
         args.package / "02_Buchungspruefung" / "Abgrenzungsregister_Vorschlag.md",
+        args.package / "02_Buchungspruefung" / "Taetigkeitsnachweis.md",
+        args.package / "02_Buchungspruefung" / "Uebergabeliste.md",
     ]
     for path in required_work_files:
         if not path.is_file():

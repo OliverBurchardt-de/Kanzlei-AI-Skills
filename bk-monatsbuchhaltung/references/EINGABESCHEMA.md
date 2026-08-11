@@ -1,6 +1,6 @@
-# Eingabeschema für `build_package.py`
+# Eingabeschema für `build_package.py` (v1.1)
 
-Der Agent erstellt eine UTF-8-JSON-Datei. Technische GUIDs, Paketnamen und Dateinamen erzeugt ausschließlich der Generator.
+Der Agent erstellt eine UTF-8-JSON-Datei. Technische GUIDs, Paketnamen und Dateinamen erzeugt ausschließlich der Generator. Neue Läufe verwenden das normalisierte Modell `source_files` → `transaction_sources` → `transactions`. Das v1.0-Modell `input_inventory`/`documents` bleibt ausschließlich zur Rückwärtskompatibilität lesbar.
 
 ## `run`
 
@@ -8,132 +8,200 @@ Pflichtfelder:
 
 - `beraternummer`, `mandantennummer`, `buchungsmonat`, `wirtschaftsjahr_beginn`
 - `sachkontenlaenge`, `sachkontenrahmen`, `waehrung`, `accounting_method`
-- `datev_connection_verified: true`, `mandantenprofil_verified: true`
+- `datev_connection_verified: true`
+- bei vorhandenem Profil `mandantenprofil_verified: true`, beim kontrollierten Erstlauf stattdessen `provisional_profile_verified: true`
 - `kostenstellenpflicht: false`
-- SharePoint-Nachweise und `datev_live_evidence`
-- `vat_config`
-- `account_config`
-- `person_account_ranges`
+- `mandantenprofil_evidence`, bei Bilanz `abgrenzungsregister_evidence`, `datev_live_evidence`
+- `vat_config`, `account_config`, `person_account_ranges`
+- optional `requested_entities`: alle vom Nutzer ausdrücklich genannten Personen oder Geschäftspartner
 
-Beispiel:
+Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stelle mehr. `account_config.asset_accounts` ist vollständig, duplikatfrei und enthält das GWG-Konto.
+
+`datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys`, höchste Debitoren-/Kreditorennummer, Abrufzeitpunkt und `used_person_accounts`. Sammel-/CPD-Konten sind unzulässig.
+
+## Mandantenprofil
+
+Vorhandenes Profil:
 
 ```json
-{
-  "vat_config": {
-    "sales_treatment": "gemischt",
-    "input_tax_deduction": "anteilig",
-    "default_domestic_input_treatment": "anteilige_vorsteuer",
-    "general_cost_input_tax_rate": 45.5,
-    "special_rules": []
-  },
-  "account_config": {
-    "private_expense": "4655",
-    "gwg": "0480",
-    "clarification": "1590",
-    "hospitality_deductible": "4650",
-    "hospitality_nondeductible": "4654",
-    "asset_accounts": ["0480", "0500", "0670"]
-  },
-  "person_account_ranges": {
-    "debitor": {"start": "10000", "end": "69999"},
-    "kreditor": {"start": "70000", "end": "99999"}
-  }
+"mandantenprofil": {
+  "status": "existing",
+  "source_status": "found",
+  "approval_status": "approved",
+  "evidence": []
 }
 ```
 
-Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stelle mehr. `account_config.asset_accounts` ist eine vollständige, duplikatfreie Liste der für den Mandanten verwendbaren Anlagenkonten und enthält zwingend das GWG-Konto.
-
-SharePoint-Nachweise für vorhandene Dateien enthalten `source_url`, `file_name`, `file_uri`, `retrieved_via`, `sha256` sowie entweder `raw_file_path` oder `content_utf8`. `retrieved_via` benennt den tatsächlich verwendeten Connector/Abrufweg; er ist nicht auf einen Produktnamen festgelegt. Das Mandantenprofil ist immer eine vorhandene Pflichtdatei. Bei Bilanz darf ein noch nicht vorhandenes Abgrenzungsregister stattdessen durch `status: "not_found"`, exakte `source_url`, exakten `file_name`, `retrieved_via`, ISO-Zeitpunkt `checked_at`, `not_found_code: "itemNotFound"`, `site_verified: true`, `library_verified: true` und `direct_lookup_attempts: 2` nachgewiesen werden. Ein technischer Abruffehler ist nicht mit `not_found` gleichzusetzen.
-
-`datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys` (darf leer sein, wenn kein BU verwendet wird), höchste Debitoren-/Kreditorennummer innerhalb der konfigurierten Bereiche, Abrufzeitpunkt und `used_person_accounts`.
-
-`used_person_accounts` ist eine Liste aller im Lauf tatsächlich verwendeten bereits vorhandenen Personenkonten:
+Kontrollierter Erstlauf nach zweimaligem direktem `itemNotFound`:
 
 ```json
-[
+"mandantenprofil": {
+  "status": "provisional_first_run",
+  "source_status": "confirmed_not_found",
+  "approval_status": "pending",
+  "evidence": []
+},
+"provisional_profile": {
+  "content_markdown": "# Mandantenprofil …",
+  "sources": ["DATEV live …", "Nutzerangabe …", "Belegmerkmal …"],
+  "provisional_rules": [],
+  "sharepoint_write_approved": false
+}
+```
+
+Der Nichtvorhanden-Nachweis enthält die exakte URL und den exakten Dateinamen, `retrieved_via`, `checked_at`, `not_found_code: "itemNotFound"`, `site_verified: true`, `library_verified: true` und `direct_lookup_attempts: 2`. Ein Connector-/Lesefehler ist niemals `confirmed_not_found` und blockiert weiterhin. Das vorläufige Profil wird vollständig im Paket ausgegeben, aber erst nach ausdrücklicher Freigabe nach SharePoint geschrieben.
+
+## `scope`
+
+```json
+"scope": {
+  "target_periods": ["2026-06", "2026-07"],
+  "include_prior_periods": false,
+  "include_future_periods": false,
+  "job_mode": "belegbuchhaltung"
+}
+```
+
+Nur `job_mode: "belegbuchhaltung"` ist zulässig. Bank, Kasse, Lohn, Zahlungsverkehr, OPOS-Ausgleich, Abstimmung und Monatsabschluss bleiben ausgeschlossen. Belege außerhalb der Zielperioden erhalten `processing_status: "außerhalb Auftragszeitraum"`, keine Ampel und keine Buchungszeile. Sie bleiben vollständig inventarisiert.
+
+## `source_files`
+
+Jede physische Datei genau einmal:
+
+```json
+"source_files": [
   {
-    "account": "70015",
-    "account_type": "kreditor",
-    "name": "Musterlieferant GmbH"
+    "source_id": "S0001",
+    "source_path": "…/rechnung.pdf",
+    "size_bytes": 12345,
+    "sha256": "…64 hex…",
+    "readability": "readable"
   }
 ]
 ```
 
-Für neu in `master_records` angelegte Konten ist kein zusätzlicher Eintrag nötig. Für jedes verwendete bestehende Personenkonto ist der live aus DATEV gelesene Name Pflicht. Technisch oder inhaltlich als Sammel-/CPD-Konto erkennbare Namen sind unzulässig. Gesperrt sind insbesondere Namen, die mit `Diverse`, `Div.` oder `CPD` beginnen, sowie `Sammeldebitor`, `Sammelkreditor` und `Sammelkonto`.
+`readability`: `readable`, `partially_readable`, `unreadable` oder `not_checked`. Gleicher SHA-256 innerhalb eines Uploads ist nur als ausdrücklich zugeordnete `duplicate_copy` zulässig.
 
-## `input_inventory`
+## `transactions` und `transaction_sources`
 
-Nicht leere Liste aller bereitgestellten Dateien mit `source_path`, `size_bytes` und `sha256`. Sie muss 1:1 den `documents[].source_path` entsprechen.
+Ein logischer Vorgang besitzt eine eigene `transaction_id`. Eine Datei kann mehrere Vorgänge belegen; ein Vorgang kann mehrere Quellen besitzen.
 
-## `documents`
+```json
+"transaction_sources": [
+  {"transaction_id": "V0001", "source_id": "S0001", "role": "primary_invoice"},
+  {"transaction_id": "V0001", "source_id": "S0002", "role": "supporting_document"}
+]
+```
 
-Pflichtfelder:
+Rollen: `primary_invoice`, `supporting_document`, `payment_notice`, `cover_sheet`, `duplicate_copy`. Deckblätter und Dublettenkopien werden nicht zusätzlich übertragen. Jede Quelldatei wird höchstens einmal in den DATEV-Belegtransfer aufgenommen; mehrere Buchungen dürfen auf dieselbe übertragene Quelle verweisen.
 
-`transaction_id`, `source_path`, `document_type`, `partner`, `recognized_date`, `total_amount`, `currency`, `period`, `processing_status`, `traffic_light`, `derivation`, `reason`, `business_purpose_status`, `bookings`.
+Pflichtfelder je `transactions[]`:
+
+- `transaction_id`, `document_type`, `partner`, `recognized_date`, `total_amount`, `currency`, `period`
+- `processing_status`, `traffic_light`, `derivation`, `reason`, `business_purpose_status`, `bookings`
+- `entity_assessment`; bei buchungsrelevanten oder als Dublette behandelten Vorgängen zusätzlich `duplicate_checks`
 
 Zulässige Status:
 
 - `Buchungszeile erzeugt`
 - `sichere Dublette – nicht erneut gebucht`
 - `nicht buchungsrelevant`
+- `außerhalb Auftragszeitraum`
 
 Ampel `Grün`, `Gelb` oder `Rot` nur bei `Buchungszeile erzeugt`; sonst `null`.
 
-Jeder Nicht-Avis-Beleg benötigt:
+## Rechtsträger, Dokumentart und Ausschluss
+
+Vor Kontierung und Umsatzsteuer:
 
 ```json
-"prior_booking_check": {
-  "checked": true,
-  "result": "kein_treffer",
-  "references": []
+"entity_assessment": {
+  "legal_entity": "Muster GmbH",
+  "addressee": "Muster GmbH",
+  "relevance": "in_scope|foreign_entity|personal|unclear"
 }
 ```
 
-Zulässige Ergebnisse: `kein_treffer`, `moegliche_dublette`, `sichere_dublette`.
+Bei jedem nicht gebuchten Vorgang ist `exclusion_reason` Pflicht. Wenn Folgearbeit erforderlich ist, zusätzlich `handoff_required: true` und ein passender Eintrag in `handoffs`.
 
-Jeder gebuchte Beleg benötigt `input_tax_treatment`: `volle_vorsteuer`, `keine_vorsteuer`, `anteilige_vorsteuer` oder `sonderfall`. Bei anteiliger Vorsteuer zusätzlich `input_tax_rate`.
+Globale Ausschlüsse: Lohn-/Sozialversicherungsunterlagen, private Bescheide oder Inkasso gegen Privatpersonen, Mahnungen ohne Original oder sicheren Abgleich, Anhörungsbögen ohne endgültigen Anspruch, Deckblätter zu einzeln gebuchten Originalen und Kontoauszüge. Diese Regeln gehören nicht in Mandantenprofile.
 
-OCR-Auswertung optional als:
+## Dreistufige Dublettenprüfung
 
 ```json
-"extraction": {
-  "mode": "text_layer",
-  "quality": "hoch",
-  "uncertain_fields": []
+"duplicate_checks": {
+  "file_hash_current_upload": {"checked": true, "result": "no_hit", "reference": ""},
+  "logical_document_current_upload": {"checked": true, "result": "no_hit", "reference": ""},
+  "datev_live": {"checked": true, "result": "no_hit", "reference": ""}
 }
 ```
 
-Bei Zahlungsavis: `payment_advice: true`, Status `nicht buchungsrelevant`, `traffic_light: null`, leere `bookings`. Der Generator nimmt es dennoch in ein separates DUO-Belegtransfer-ZIP auf.
+Ergebnisse: `no_hit`, `possible_duplicate`, `secure_duplicate`. Treffer enthalten eine Referenz. Sichere Dublette wird nicht erneut gebucht; mögliche Dublette wird Rot mit leerem DATEV-Belegdatum behandelt. `prior_booking_check` bleibt als DATEV-Kompatibilitätsfeld bestehen.
 
-Bewirtung:
+## Belegampel und Zahlungsabstimmung
+
+Rot ist nur bei einer Unsicherheit des Belegs zulässig: Kontierung, Betrag, Geschäftspartner, Periode, Umsatzsteuer, betrieblicher Anlass, Anlagenbehandlung oder Dublette. Fehlende Konto-/Kreditkartenabrechnung, Zahlungsnachweis, Kartenumsatz oder Kursdifferenz verändern die Belegampel nicht.
 
 ```json
-"hospitality": {
-  "detected": true,
-  "status": "vollstaendig",
-  "machine_receipt_complete": true,
-  "hospitality_record_complete": true,
-  "participants_present": true,
-  "business_occasion_present": true
+"payment_reconciliation": {
+  "statement_type": "credit_card",
+  "status": "present|missing|not_expected|not_checked",
+  "periods": ["2026-06", "2026-07"],
+  "affects_document_traffic_light": false,
+  "handoff_required": true,
+  "note": "…"
 }
 ```
 
-`status`: `vollstaendig`, `klaerung`, `privat`.
+Ein Lauf wird abgelehnt, wenn Rot ausschließlich mit fehlender Zahlungs- oder Kartenabstimmung begründet wird.
 
-Eine Buchungszeile enthält `amount`, `debit_credit`, `account`, `account_name`, `contra_account`, `contra_account_name`, `bu_key`, `document_field_1`, `booking_text`. `bu_key` intern leer oder dreistellig; Export vierstellig mit führender Null. Belegfeld 1 ist immer gefüllt. Sobald Konto oder Gegenkonto in `account_config.asset_accounts` enthalten ist, muss das Dokument `asset_booking: true` und Ampel `Rot` tragen; der Generator exportiert das DATEV-Belegdatum leer.
+## Buchungszeilen
 
-## Stammdaten
+Eine Buchungszeile enthält `amount`, `debit_credit`, `account`, `account_name`, `contra_account`, `contra_account_name`, `bu_key`, `document_field_1`, `booking_text`. `bu_key` ist intern leer oder dreistellig, zum Beispiel `511`; eine führende Null entsteht erst beim Export. Belegfeld 1 ist immer gefüllt. Anlagenkonten erfordern `asset_booking: true`, Ampel Rot und leeres DATEV-Belegdatum.
 
-`master_records[]`: `action` (`Neuanlage`/`Änderung`), `account`, `account_type` (`kreditor`/`debitor`), `name`, `full_current_record_available`, `banks`. Kreditor zusätzlich, soweit vorhanden, `vat_id`; maximal zehn Bankverbindungen. Änderungen nur als vollständiger aktueller Datensatz.
+Bei Zahlungsavis: `payment_advice: true`, Status `nicht buchungsrelevant`, keine Ampel, keine Buchungen. Es entsteht ein separates Avis-Belegtransfer-ZIP.
 
-Der Name eines Stammdatensatzes darf keine Sammel-/CPD-Bezeichnung sein. Wird für einen Geschäftspartner kein zulässiges bestehendes Einzelkonto gefunden, muss `master_records[]` eine Neuanlage mit der nächsten fortlaufenden Nummer enthalten.
+## Tätigkeitsnachweis
 
-## Klärungen und Vorschläge
+```json
+"activity_report": {
+  "datev_import_status": "Importpaket erstellt – noch nicht in DATEV importiert",
+  "sources_used": ["hochgeladene Belege", "DATEV live", "Mandantenprofil"],
+  "named_entities": [
+    {
+      "name": "You Nie",
+      "variants": ["You Nie", "You Lie"],
+      "findings": 3,
+      "final_status": "2 Lohnunterlagen ausgeschlossen; 1 Rechnung gebucht"
+    }
+  ]
+}
+```
+
+Jeder Name aus `run.requested_entities` benötigt Fundstellenzahl, Varianten und Endstatus. `in DATEV importiert` ist nur mit `import_evidence` zulässig. Der Generator selbst meldet stets getrennt den Fachstatus `fachlicher Prüfprotokoll-Rücklauf ausstehend`.
+
+## `handoffs`
+
+```json
+"handoffs": [
+  {
+    "source_ids": ["S0007"],
+    "transaction_ids": ["V0006"],
+    "period": "2026-07",
+    "target_process": "Bankbuchhaltung / MT940",
+    "reason": "Kontoauszug ist kein Belegbuchungsvorgang"
+  }
+]
+```
+
+Typische Ziele: Bank-/Kreditkartenprozess, Lohnbuchhaltung, DUO-Avispaket, Rückgabe/Korrektur Rechtsträger oder ein separater Kassenprozess. Eine Übergabe an einen Kassenprozess erzeugt ausdrücklich keine Kassenbuchung in diesem Skill.
+
+## Stammdaten, Klärungen und Abgrenzungen
+
+`master_records[]`: `action`, `account`, `account_type`, `name`, `full_current_record_available`, `banks`; bei Kreditoren soweit vorhanden `vat_id`. Keine Sammel-/CPD-Konten.
 
 `clarification_cases[]`: `case_id`, `transaction_ids`, `topic`, `facts`, `provisional_treatment`, `recommendation`, `decision_needed`, `traffic_light`, `target`, `proposed_change`, `employee_result`.
 
-`profile_suggestions[]` enthält nur dauerhaft wiederverwendbare mandantenspezifische Regeln. Allgemeine Skill-Änderungen gehören nicht in den Buchhaltungslauf.
+`profile_suggestions[]` enthält ausschließlich dauerhaft wiederverwendbare mandantenspezifische Regeln. Allgemeine Ausschluss-, DATEV- und Dokumentregeln bleiben global.
 
-## Abgrenzungen
-
-`accrual_register`, `accrual_candidates` und `accrual_releases` folgen der bestehenden Registerlogik. `threshold_amount` muss über 800 EUR liegen. Bei neuen Abgrenzungen muss die Ursprungsrechnung gebucht und die erste Auflösung erzeugt sein. War das Register im Preflight nachweislich nicht vorhanden, fordert der Registervorschlag seine Neuanlage nur bei mindestens einer klaren neuen Abgrenzung; ohne erkannte Abgrenzung bleibt die Neuanlage entbehrlich.
+`accrual_register`, `accrual_candidates` und `accrual_releases` folgen der Registerlogik. `threshold_amount` liegt über 800 EUR. Bei neuen Abgrenzungen bleiben Ursprungsrechnung und erste Auflösung vollständig nachgewiesen.

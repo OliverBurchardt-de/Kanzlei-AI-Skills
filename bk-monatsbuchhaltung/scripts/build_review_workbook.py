@@ -22,6 +22,7 @@ RED = "F4CCCC"
 LIGHT = "F5F7FA"
 WHITE = "FFFFFF"
 THIN = Side(style="thin", color="D6DEE5")
+TRAFFIC_COLORS = {"Grün": GREEN, "Gelb": YELLOW, "Rot": RED}
 
 
 def parse_args() -> argparse.Namespace:
@@ -125,7 +126,17 @@ def set_widths(ws, widths: list[float]) -> None:
 def traffic_format(ws, end_row: int) -> None:
     if end_row < 2:
         return
-    for value, color in (("Grün", GREEN), ("Gelb", YELLOW), ("Rot", RED)):
+    for row in range(2, end_row + 1):
+        cell = ws.cell(row, 1)
+        color = TRAFFIC_COLORS.get(clean(cell.value))
+        if color:
+            # Als echte Zellformatierung setzen, damit die Ampelfarbe auch in
+            # Vorschauen ohne Auswertung bedingter Formatierung sichtbar ist.
+            cell.fill = PatternFill("solid", fgColor=color)
+            cell.font = Font(bold=True)
+
+    # Bedingte Formatierung hält die Farbe bei späteren Änderungen korrekt.
+    for value, color in TRAFFIC_COLORS.items():
         ws.conditional_formatting.add(
             f"A2:A{end_row}",
             FormulaRule(

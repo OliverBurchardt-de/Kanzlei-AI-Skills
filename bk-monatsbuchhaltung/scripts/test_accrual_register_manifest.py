@@ -17,6 +17,18 @@ def main() -> None:
         "beraternummer": 29098,
         "mandant": 12861,
         "run_contract": {
+            "scope": {
+                "target_periods": ["2026-07"],
+                "include_prior_periods": False,
+                "include_future_periods": False,
+                "job_mode": "belegbuchhaltung",
+            },
+            "mandantenprofil": {
+                "status": "existing",
+                "source_status": "found",
+                "approval_status": "approved",
+                "evidence": [],
+            },
             "wirtschaftsjahr_beginn": "2026-01-01",
             "sachkontenlaenge": 4,
             "sachkontenrahmen": "03",
