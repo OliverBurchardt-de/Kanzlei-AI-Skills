@@ -1,0 +1,12 @@
+[
+  {
+    "upload_id": "UPL-0001",
+    "beleg_id": "BEL-0001",
+    "year": 2025,
+    "topic": "Anlage-V-Werbungskosten",
+    "object_id": "OBJ-0001",
+    "person": "Person-1",
+    "page_from": 1,
+    "page_to": 2
+  }
+]
