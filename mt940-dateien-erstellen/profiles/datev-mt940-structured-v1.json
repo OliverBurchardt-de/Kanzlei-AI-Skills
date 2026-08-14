@@ -1,0 +1,61 @@
+{
+  "profile_name": "datev-mt940-structured-v1",
+  "target_system": "DATEV",
+  "target_import_path": null,
+  "charset": "Windows-1252",
+  "line_endings": "CRLF",
+  "allowed_underfields": [
+    "00",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "31",
+    "32",
+    "33"
+  ],
+  "required_underfields": ["00", "20"],
+  "subfield_lengths": {
+    "00": 27,
+    "20": 27,
+    "21": 27,
+    "22": 27,
+    "23": 27,
+    "24": 27,
+    "25": 27,
+    "26": 27,
+    "27": 27,
+    "28": 27,
+    "29": 27,
+    "31": 34,
+    "32": 27,
+    "33": 27
+  },
+  "gvc_rules": {
+    "default": "835",
+    "category_map": {}
+  },
+  "max_physical_line_length": 65,
+  "max_field86_lines": 6,
+  "tested_source_scenarios": [],
+  "probe_import": {
+    "date": null,
+    "result": "not_performed",
+    "checks": {
+      "opening_balance_correct": false,
+      "test_closing_balance_correct": false,
+      "transaction_count_and_signs_correct": false,
+      "special_characters_complete": false,
+      "counterparty_complete": false,
+      "references_complete": false,
+      "no_visible_underfield_markers": false
+    },
+    "test_transactions_deleted": false
+  }
+}

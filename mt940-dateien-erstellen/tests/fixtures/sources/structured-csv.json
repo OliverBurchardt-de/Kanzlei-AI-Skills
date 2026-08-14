@@ -1,0 +1,26 @@
+{
+  "source_type": "csv",
+  "transaction": {
+    "booking_date": "2026-08-03",
+    "value_date": "2026-08-03",
+    "amount": "-499.00",
+    "currency": "EUR",
+    "transaction_category": "direct_debit",
+    "booking_text": "Lastschrift",
+    "purpose": "Büromiete und Service",
+    "counterparty_name": "IWG Deutschland GmbH",
+    "counterparty_iban": null,
+    "references": ["8240-26-522INV", "8240-26-431INV"],
+    "raw_source_lines": [
+      "Lastschrift;IWG Deutschland GmbH;Büromiete und Service;8240-26-522INV;8240-26-431INV"
+    ],
+    "source_location": "CSV row 2",
+    "source_text_verified": true,
+    "field_confidence": {
+      "transaction_category": "high",
+      "booking_text": "high",
+      "purpose": "high",
+      "counterparty_name": "high"
+    }
+  }
+}

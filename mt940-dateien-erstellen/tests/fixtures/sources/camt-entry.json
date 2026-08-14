@@ -1,0 +1,27 @@
+{
+  "source_type": "camt",
+  "transaction": {
+    "booking_date": "2026-08-03",
+    "value_date": "2026-08-03",
+    "amount": "100.00",
+    "currency": "EUR",
+    "transaction_category": "transfer",
+    "booking_text": "Überweisung",
+    "purpose": "Öffentliche Zahlung Änderung Müllerstraße",
+    "counterparty_name": "Müller Öffentliche Stelle",
+    "counterparty_iban": null,
+    "references": ["CAMT-REF-001"],
+    "raw_source_lines": [
+      "<AddtlNtryInf>Überweisung Öffentliche Zahlung Änderung Müllerstraße CAMT-REF-001</AddtlNtryInf>",
+      "<Nm>Müller Öffentliche Stelle</Nm>"
+    ],
+    "source_location": "camt.053 Ntry[1]",
+    "source_text_verified": true,
+    "field_confidence": {
+      "transaction_category": "high",
+      "booking_text": "high",
+      "purpose": "high",
+      "counterparty_name": "high"
+    }
+  }
+}

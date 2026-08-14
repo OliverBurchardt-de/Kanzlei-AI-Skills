@@ -1,7 +1,7 @@
 interface:
   display_name: "MT940-Dateien erstellen"
-  short_description: "MT940 für DATEV sicher erzeugen und prüfen"
-  default_prompt: "Nutze $mt940-dateien-erstellen, um diese Bankdaten als technisch geprüfte MT940-Datei mit DATEV-Prozesssperren aufzubereiten."
+  short_description: "Institutsneutrale MT940-Dateien für DATEV"
+  default_prompt: "Nutze $mt940-dateien-erstellen, um diese Umsatzquelle über ein kanonisches Modell als bytegenau geprüfte DATEV-MT940-Datei aufzubereiten."
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"
 policy:
