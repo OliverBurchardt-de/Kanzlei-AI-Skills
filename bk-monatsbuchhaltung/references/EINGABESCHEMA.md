@@ -1,6 +1,8 @@
-# Eingabeschema für `build_package.py` (v1.1)
+# Eingabeschema für `build_package.py` (v1.2)
 
 Der Agent erstellt eine UTF-8-JSON-Datei. Technische GUIDs, Paketnamen und Dateinamen erzeugt ausschließlich der Generator. Neue Läufe verwenden das normalisierte Modell `source_files` → `transaction_sources` → `transactions`. Das v1.0-Modell `input_inventory`/`documents` bleibt ausschließlich zur Rückwärtskompatibilität lesbar.
+
+Bei Parallelverarbeitung ist `merged_draft.json` nur ein Konsolidierungsentwurf. Solange `_parallel_review.global_reconciliation_required` nicht ausdrücklich `false` ist, weist `build_package.py` die Datei ab. `person_account_proposals` müssen vor dem Paketbau global abgeglichen und gegebenenfalls in vollständige `master_records` überführt werden.
 
 ## `run`
 

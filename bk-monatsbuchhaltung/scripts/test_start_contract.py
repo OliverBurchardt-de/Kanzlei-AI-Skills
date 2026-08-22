@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import re
+import tempfile
 from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -57,8 +58,8 @@ def test_structural_yaml_and_version_mismatch() -> None:
         temp = Path(temp_name)
         quoted = temp / "quoted.yaml"
         unquoted = temp / "unquoted.yaml"
-        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.1.0"\n', encoding="utf-8")
-        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.1.0\n', encoding="utf-8")
+        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.2.0"\n', encoding="utf-8")
+        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.2.0\n', encoding="utf-8")
         assert parse_simple_yaml(quoted) == parse_simple_yaml(unquoted)
         mismatch = temp / "mismatch.py"
         mismatch.write_text('SKILL_VERSION = "9.9.9"\n', encoding="utf-8")
@@ -82,6 +83,10 @@ def main() -> None:
     require(skill, "ein ausdrücklicher `$bk-monatsbuchhaltung`-Aufruf ist nicht erforderlich", "implizite Aktivierungsregel")
     require(skill, "## Prüfprotokoll-Rücklauf", "Rücklaufworkflow")
     require(skill, "scripts/evaluate_review_return.py", "deterministische Rücklaufprüfung")
+    require(skill, "references/PARALLELVERARBEITUNG.md", "Parallelmodus-Referenz")
+    require(skill, "scripts/merge_parallel_results.py", "globale Parallelkonsolidierung")
+    require(skill, "eine unabhängige Kontrolle, nicht Laufzeit oder eine feste Agentenzahl", "Qualitätsziel Mehragentenmodus")
+    require(skill, "doppelte GUIDs technisch abweisen", "GUID-Integritätskontrolle")
     require(skill, "niemals Kassenbuchungen", "Ausschluss Kassenbuchung")
 
     interface = ui.get("interface", {})

@@ -180,6 +180,39 @@ def main() -> None:
         loaded = build_package.load_input(input_path)
         assert loaded["run"]["_preflight_summary"]["mandantenprofil"]["sha256"]
 
+        parallel_draft = copy.deepcopy(data)
+        parallel_draft["_parallel_review"] = {
+            "global_reconciliation_required": True
+        }
+        parallel_draft_path = temp / "parallel_draft.json"
+        parallel_draft_path.write_text(
+            json.dumps(parallel_draft, ensure_ascii=False), encoding="utf-8"
+        )
+        try:
+            build_package.load_input(parallel_draft_path)
+        except ValueError as exc:
+            assert "Parallelentwurf ist nicht global konsolidiert" in str(exc)
+        else:
+            raise AssertionError("Unkonsolidierter Parallelentwurf wurde nicht abgewiesen")
+
+        unresolved_accounts = copy.deepcopy(data)
+        unresolved_accounts["_parallel_review"] = {
+            "global_reconciliation_required": False
+        }
+        unresolved_accounts["person_account_proposals"] = [
+            {"partner": "Offener Lieferant", "account_type": "creditor"}
+        ]
+        unresolved_accounts_path = temp / "unresolved_accounts.json"
+        unresolved_accounts_path.write_text(
+            json.dumps(unresolved_accounts, ensure_ascii=False), encoding="utf-8"
+        )
+        try:
+            build_package.load_input(unresolved_accounts_path)
+        except ValueError as exc:
+            assert "Personenkontenvorschläge sind noch nicht final konsolidiert" in str(exc)
+        else:
+            raise AssertionError("Offene Personenkontenvorschläge wurden nicht abgewiesen")
+
 
         # Ein nachweislich noch nicht vorhandenes Register ist bei Bilanz ein
         # zulässiger Erstlauf und darf den Paketbau nicht blockieren.

@@ -36,7 +36,7 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "1.1.0"
+SKILL_VERSION = "1.2.0"
 OUTPUT_CONTRACT = "single-datev-import-folder-v2"
 
 VALID_STATUSES = {
@@ -644,7 +644,7 @@ def _confirmed_not_found_evidence(
 
 
 def normalize_input_model(data: dict[str, Any]) -> dict[str, Any]:
-    """Accept v1.0 input while normalizing the v1.1 source/transaction model."""
+    """Accept v1.0 input while normalizing the v1.1+ source/transaction model."""
     run = data.setdefault("run", {})
     if not isinstance(data.get("scope"), dict):
         data["scope"] = {
@@ -966,7 +966,25 @@ def validate_activity_and_handoffs(data: dict[str, Any]) -> list[str]:
 
 def load_input(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as handle:
-        data = normalize_input_model(json.load(handle))
+        raw_data = json.load(handle)
+    parallel_review = raw_data.get("_parallel_review")
+    if (
+        isinstance(parallel_review, dict)
+        and parallel_review.get("global_reconciliation_required") is not False
+    ):
+        raise ValueError(
+            "Parallelentwurf ist nicht global konsolidiert; "
+            "Paketbau erst nach global_reconciliation_required=false zulässig."
+        )
+    if (
+        isinstance(parallel_review, dict)
+        and raw_data.get("person_account_proposals")
+    ):
+        raise ValueError(
+            "Personenkontenvorschläge sind noch nicht final konsolidiert; "
+            "vor dem Paketbau in vollständige master_records überführen oder verwerfen."
+        )
+    data = normalize_input_model(raw_data)
     run = data.get("run", {})
     required = [
         "beraternummer", "mandantennummer", "buchungsmonat",
