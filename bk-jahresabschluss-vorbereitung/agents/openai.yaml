@@ -1,0 +1,11 @@
+interface:
+  display_name: "B&K Abschlussvorbereitung"
+  short_description: "Prüft buchhalterische Startklarheit zum Abschluss"
+  default_prompt: "Nutze $bk-jahresabschluss-vorbereitung, um die Konten- und Themencheckliste vor Beginn des Jahresabschlusses des genannten Mandanten abzuarbeiten."
+policy:
+  allow_implicit_invocation: true
+  products:
+    - "chatgpt"
+    - "codex"
+    - "api"
+    - "atlas"
