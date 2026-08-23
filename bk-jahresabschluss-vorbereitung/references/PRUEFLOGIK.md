@@ -57,8 +57,8 @@ Prüfung:
 1. Saldo zum Abschlussstichtag ermitteln.
 2. Alle offenen Komponenten des Saldos auf Einzelbuchungsebene erklären.
 3. Soweit verfügbar, die ersten 31 Tage des Folgejahres auf eindeutige Gegenbuchungen prüfen.
-4. Saldo null: `OK`.
-5. Eindeutig dokumentierter Banklaufzeitunterschied: `FACHLICH_ZU_KLAEREN` mit Gegenbuchung und Datum; nicht automatisch umbuchen.
+4. Saldo null: `AUF_NULL`.
+5. Eindeutig dokumentierter Banklaufzeitunterschied: `ABGESTIMMT` mit Gegenbuchung und Datum als Nachweis (`evidence_refs`); nicht automatisch umbuchen.
 6. Ungeklärter oder dauerhaft stehengebliebener Betrag: `FACHLICH_ZU_KLAEREN` mit konkreter Mitarbeiteraufgabe.
 
 ## 3. Durchlaufende Posten

@@ -59,7 +59,7 @@ def checklist_item(topic_id: str) -> dict:
 
 def valid_data() -> dict:
     return {
-        "schema_version": "0.3.0",
+        "schema_version": "0.3.1",
         "execution_status": "preparation_only",
         "overall_status": "ENTWURF",
         "mandant": {"number": "12345", "datev_client_id": "guid", "name": "Test"},
@@ -203,6 +203,67 @@ class ReviewValidationTests(unittest.TestCase):
         data["posting_proposals"].append(proposal)
         errors = validate_review_data.validate_review_data(data)
         self.assertTrue(any("Live-Kontenplanprüfung" in error for error in errors))
+
+    def test_sharepoint_source_requires_protocol_fields(self) -> None:
+        data = valid_data()
+        data["sources"].append(
+            {
+                "id": "SP-1",
+                "kind": "sharepoint",
+                "uri": "https://burchardtkollegen.sharepoint.com/sites/Wissen/Mandantenbesonderheiten/Mandantenprofile/12345.md",
+                "retrieved_at": "2026-08-23T12:00:00+02:00",
+                "complete": True,
+            }
+        )
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("file_id" in error for error in errors))
+        self.assertTrue(any("sha256" in error for error in errors))
+
+    def test_sharepoint_source_with_protocol_fields_is_valid(self) -> None:
+        data = valid_data()
+        data["sources"].append(
+            {
+                "id": "SP-1",
+                "kind": "sharepoint",
+                "uri": "https://burchardtkollegen.sharepoint.com/sites/Wissen/Mandantenbesonderheiten/Mandantenprofile/12345.md",
+                "retrieved_at": "2026-08-23T12:00:00+02:00",
+                "complete": True,
+                "file_id": "b!abc123",
+                "file_name": "12345.md",
+                "modified_at": "2026-08-20T09:00:00+02:00",
+                "sha256": "a" * 64,
+            }
+        )
+        self.assertEqual(validate_review_data.validate_review_data(data), [])
+
+    def test_proposal_requires_posting_reference(self) -> None:
+        data = valid_data()
+        add_datev_source(data)
+        proposal = small_amount_proposal()
+        del proposal["rule_id"]
+        del proposal["source_posting_id"]
+        proposal["source_refs"] = []
+        data["posting_proposals"].append(proposal)
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("source_posting_id oder mindestens eine source_ref" in error for error in errors))
+
+    def test_proposal_rejects_insufficient_confidence(self) -> None:
+        data = valid_data()
+        add_datev_source(data)
+        proposal = small_amount_proposal()
+        proposal["confidence"] = "hoch"
+        data["posting_proposals"].append(proposal)
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("nicht ausreichend" in error for error in errors))
+
+    def test_small_amount_rule_rejects_empty_target_account(self) -> None:
+        data = valid_data()
+        add_datev_source(data)
+        proposal = small_amount_proposal()
+        proposal["functional_target_account"] = ""
+        data["posting_proposals"].append(proposal)
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("Zielkonto der Kleinbetragsregel" in error for error in errors))
 
     def test_missing_prior_year_requires_gate(self) -> None:
         data = valid_data()

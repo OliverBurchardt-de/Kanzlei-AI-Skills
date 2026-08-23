@@ -3,7 +3,7 @@ name: bk-jahresabschluss-vorbereitung
 description: Bereitet den Start der eigentlichen Jahresabschlussbearbeitung vor: bindet DATEV und SharePoint mandantengenau, deckt alle bebuchten oder nicht auf null stehenden Bilanzkonten ab und arbeitet eine verbindliche Konten- und Themencheckliste einschließlich OPOS, Bank/Kasse, 1360/1590, Lohnkonten 1740/1741/1742, Steuerabstimmung, ARAP/PRAP und Vorjahrshinweisen ab. Verwenden für buchhalterische Startklarheit und Vorarbeiten, nicht für allgemeine Datenanalyse, einen vollständigen Jahresabschlussreview, endgültige Bilanzierung, Steuererklärungen oder automatischen DATEV-Import.
 ---
 
-# B&K Abschlussvorbereitung – Startklarheit v0.3.0
+# B&K Abschlussvorbereitung – Startklarheit v0.3.1
 
 ## Ziel und Grenze
 

@@ -10,7 +10,7 @@ Das folgende Beispiel zeigt die Struktur gekürzt. Ein gültiger Lauf enthält a
 
 ```json
 {
-  "schema_version": "0.3.0",
+  "schema_version": "0.3.1",
   "execution_status": "preparation_only",
   "overall_status": "ENTWURF",
   "mandant": {
@@ -79,6 +79,24 @@ Das folgende Beispiel zeigt die Struktur gekürzt. Ein gültiger Lauf enthält a
 }
 ```
 
+## Gesamtstatus
+
+`overall_status` kennt genau vier Werte:
+
+- `ENTWURF`: Ergebnis vor Produktivfreigabe des Skills; Review-Sheet-Vorlage, Kanzleiparameter oder Pilotfreigabe stehen noch aus.
+- `VORBEREITUNG_OFFEN`: Der Lauf ist abgeschlossen, aber offene Startblocker oder fehlende Unterlagen verhindern die Startklarheit.
+- `STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG`: Alle Kernthemen vorhanden, alle Bilanzkonten klassifiziert, kein offener Eintrag mit `blocks_start: true`.
+- `BLOCKIERT`: Mandant oder Zielwirtschaftsjahr ist nicht eindeutig gebunden; keine DATEV-abhängige Gesamtaussage zulässig.
+
+## Quellen
+
+Jede Quelle benötigt `id`, `kind` (`datev`, `sharepoint`, `upload`, `calculation`), `uri`, `retrieved_at` und `complete`. Quellen mit `kind: "sharepoint"` benötigen zusätzlich nach dem Quellenprotokoll aus `MCP_UND_SHAREPOINT.md`:
+
+- `file_id` als Datei-/Dokument-ID,
+- `file_name`,
+- `modified_at` als Änderungszeitpunkt,
+- `sha256` der gelesenen Rohdatei als 64-stelliger Hex-Wert.
+
 `prior_fiscal_year` darf `null` sein, wenn DATEV kein Vorjahr bereitstellt. Dann muss ein Gate mit `NICHT_PRUEFBAR` und konkretem Grund vorhanden sein.
 
 `preparation_checklist` muss mindestens die `topic_id`-Werte `quellen_datenstand`, `bilanzkonten_abdeckung`, `opos_debitoren`, `opos_kreditoren`, `bank_kasse`, `geldtransit`, `durchlaufende_posten`, `lohnkonten`, `steuerkonten`, `abgrenzungen` und `vorjahr_rollforward` enthalten. Ein nicht einschlägiges Thema bleibt mit `NICHT_ANWENDBAR` sichtbar; es wird nicht weggelassen.
@@ -124,7 +142,9 @@ Zusätzlich erforderlich:
 - `amount`, `currency`, `date`, `account`, `contra_account`, `debit_credit`,
 - `document_field1`, `posting_text`, `tax_key`,
 - `reason`, `confidence`, `approved: false`,
-- `source_posting_id` oder ein konkreter Quellennachweis.
+- `source_posting_id` oder mindestens eine `source_ref` als konkreter Quellennachweis.
+
+`confidence` kennt für Buchungsvorschläge nur den Wert `sicher`: fachlich und rechnerisch eindeutig nach der bestätigten Kanzleiregel. Ein nicht sicherer Fall ist kein `BUCHUNGSVORSCHLAG`, sondern `FACHLICH_ZU_KLAEREN`.
 
 Für die 100-EUR-Regel gilt zusätzlich:
 

@@ -115,7 +115,7 @@ def validate_review_data(data: Any) -> list[str]:
     if not isinstance(data, dict):
         return ["Wurzel muss ein JSON-Objekt sein."]
 
-    require(data.get("schema_version") == "0.3.0", "schema_version muss 0.3.0 sein.", errors)
+    require(data.get("schema_version") == "0.3.1", "schema_version muss 0.3.1 sein.", errors)
     require(data.get("execution_status") == "preparation_only", "execution_status muss preparation_only sein.", errors)
     require(data.get("overall_status") in {"ENTWURF", "VORBEREITUNG_OFFEN", "STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG", "BLOCKIERT"}, "overall_status ist unzulässig.", errors)
 
@@ -181,6 +181,10 @@ def validate_review_data(data: Any) -> list[str]:
             require(isinstance(source.get("uri"), str) and bool(source["uri"]), f"{path}.uri fehlt.", errors)
             require(isinstance(source.get("retrieved_at"), str) and bool(source["retrieved_at"]), f"{path}.retrieved_at fehlt.", errors)
             require(isinstance(source.get("complete"), bool), f"{path}.complete muss boolesch sein.", errors)
+            if source.get("kind") == "sharepoint":
+                for field in ("file_id", "file_name", "modified_at"):
+                    require(isinstance(source.get(field), str) and bool(source.get(field)), f"{path}.{field} ist für SharePoint-Quellen erforderlich.", errors)
+                require(isinstance(source.get("sha256"), str) and bool(re.fullmatch(r"[0-9a-fA-F]{64}", source.get("sha256") or "")), f"{path}.sha256 muss ein 64-stelliger Hex-Wert sein.", errors)
 
     ids: set[str] = set()
     for collection in ROW_COLLECTIONS:
@@ -289,13 +293,17 @@ def validate_review_data(data: Any) -> list[str]:
             parse_iso_date(row.get("date"), f"{path}.date", errors)
             require(isinstance(row.get("currency"), str) and bool(re.fullmatch(r"[A-Z]{3}", row.get("currency", ""))), f"{path}.currency muss ein dreistelliger ISO-Code sein.", errors)
             require(row.get("debit_credit") in {"S", "H"}, f"{path}.debit_credit muss S oder H sein.", errors)
-            require(row.get("confidence") in {"sicher", "hoch"}, f"{path}.confidence ist für einen Buchungsvorschlag nicht ausreichend.", errors)
+            require(row.get("confidence") == "sicher", f"{path}.confidence ist für einen Buchungsvorschlag nicht ausreichend.", errors)
+            source_refs = row.get("source_refs", [])
+            has_posting_ref = isinstance(row.get("source_posting_id"), str) and bool(row.get("source_posting_id"))
+            has_source_ref = isinstance(source_refs, list) and bool(source_refs)
+            require(has_posting_ref or has_source_ref, f"{path}: Buchungsvorschlag benötigt source_posting_id oder mindestens eine source_ref.", errors)
             if row.get("rule_id") == "K-1590-LT100":
                 if amount is not None:
                     require(abs(amount) < Decimal("100.00"), f"{path}: K-1590-LT100 verlangt abs(Betrag) < 100.00.", errors)
                 require(row.get("tax_key") == "", f"{path}: Kleinbetragsregel verlangt leeren tax_key.", errors)
-                require(row.get("functional_source_account") in {"1590", "1370"} or bool(row.get("functional_source_account")), f"{path}: Quellkonto der Kleinbetragsregel ist nicht bestätigt.", errors)
-                require(row.get("functional_target_account") in {"4980", "6850"} or bool(row.get("functional_target_account")), f"{path}: Zielkonto der Kleinbetragsregel ist nicht bestätigt.", errors)
+                require(isinstance(row.get("functional_source_account"), str) and bool(row.get("functional_source_account")), f"{path}: Quellkonto der Kleinbetragsregel ist nicht bestätigt.", errors)
+                require(isinstance(row.get("functional_target_account"), str) and bool(row.get("functional_target_account")), f"{path}: Zielkonto der Kleinbetragsregel ist nicht bestätigt.", errors)
                 require(isinstance(row.get("account_mapping_source"), str) and bool(row.get("account_mapping_source")), f"{path}: Nachweis der Live-Kontenplanprüfung fehlt.", errors)
                 require(isinstance(row.get("source_posting_id"), str) and bool(row.get("source_posting_id")), f"{path}: source_posting_id fehlt.", errors)
 
@@ -332,7 +340,7 @@ def main() -> None:
         for error in errors:
             print(f"FEHLER: {error}")
         raise SystemExit(1)
-    print("Vorbereitungsdaten gültig: preparation_only | schema_version 0.3.0")
+    print("Vorbereitungsdaten gültig: preparation_only | schema_version 0.3.1")
 
 
 if __name__ == "__main__":
