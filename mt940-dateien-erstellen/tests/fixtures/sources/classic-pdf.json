@@ -1,0 +1,28 @@
+{
+  "source_type": "pdf",
+  "transaction": {
+    "booking_date": "2026-08-03",
+    "value_date": "2026-08-03",
+    "amount": "-1200.00",
+    "currency": "EUR",
+    "transaction_category": "transfer",
+    "booking_text": "Überweisung",
+    "purpose": "Miete Bürofläche August 2026",
+    "counterparty_name": "Vermietung Beispiel GmbH",
+    "counterparty_iban": null,
+    "references": ["MIETE-2026-08"],
+    "raw_source_lines": [
+      "Überweisung",
+      "Vermietung Beispiel GmbH",
+      "Miete Bürofläche August 2026 MIETE-2026-08"
+    ],
+    "source_page": 1,
+    "source_text_verified": true,
+    "field_confidence": {
+      "transaction_category": "high",
+      "booking_text": "high",
+      "purpose": "high",
+      "counterparty_name": "high"
+    }
+  }
+}

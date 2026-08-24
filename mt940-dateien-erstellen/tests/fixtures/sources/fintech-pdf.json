@@ -1,0 +1,28 @@
+{
+  "source_type": "pdf",
+  "transaction": {
+    "booking_date": "2026-08-03",
+    "value_date": "2026-08-03",
+    "amount": "-70.80",
+    "currency": "EUR",
+    "transaction_category": "fee",
+    "booking_text": "Entgelt",
+    "purpose": "Abonnement / Zusatzgebühren",
+    "counterparty_name": "Qonto",
+    "counterparty_iban": null,
+    "references": [],
+    "raw_source_lines": [
+      "Entgelt",
+      "Abonnement / Zusatzgebühren",
+      "Qonto"
+    ],
+    "source_page": 1,
+    "source_text_verified": true,
+    "field_confidence": {
+      "transaction_category": "high",
+      "booking_text": "high",
+      "purpose": "high",
+      "counterparty_name": "high"
+    }
+  }
+}

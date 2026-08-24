@@ -1,66 +1,109 @@
-# Technischer Aufbau einer MT940-Datei für DATEV
+# Technischer Aufbau institutsunabhängiger MT940-Dateien für DATEV
 
-## Zweck und Status
+## Inhalt
 
-MT940 ist ein zeilenorientiertes SWIFT-Format für elektronische Kontoauszüge. DATEV kann MT940-Swift-Dateien importieren. Eine formal korrekte Datei beweist jedoch weder die richtige DATEV-Anzeige bankindividueller Buchungsinformationen noch einen bereinigten DATEV-Bankbestand.
+1. Zielarchitektur
+2. Kodierungsvertrag
+3. Allgemeine MT940-Felder
+4. Kanonisches Umsatzmodell
+5. Strukturierter DATEV-Renderer für `:86:`
+6. Semantischer Rundlauf
+7. DATEV-Zielprofile
+8. Fingerprint und Doppelimportsperre
+9. Validierung und Freigabe
 
-Seit dem 23. November 2025 ist MT940 kein Standard der Deutschen Kreditwirtschaft mehr; für neue Bankbereitstellungen ist `camt.053` der aktuelle DK-Standard. Wenn der Anwender ausdrücklich MT940 benötigt, nicht stillschweigend auf CAMT wechseln. Eine native Bankdatei trotzdem vor einer PDF-Rekonstruktion bevorzugen.
+## 1. Zielarchitektur
 
-## Feldfolge
-
-| Tag | Bedeutung | Pflicht | Regel |
-| --- | --- | --- | --- |
-| `:20:` | auszugsspezifische Referenz | ja | höchstens 16 Zeichen, deterministisch |
-| `:25:` | Kontoidentifikation | ja | IBAN aus Manifest und Dateiname |
-| `:28C:` | Auszugs-/Sequenznummer | ja | fünf-/dreistellig |
-| `:60F:` | Anfangssaldo | ja | ausschließlich Anfangssaldodatum/-betrag |
-| `:61:` | Buchungszeile | je Umsatz | exakt gegen Manifest prüfen |
-| `:86:` | Buchungsinformation | je Umsatz | unmittelbar nach zugehörigem `:61:` |
-| `:62F:` | Endbestand | ja | ausschließlich Endbestandsdatum/-betrag |
-
-## Auszugsreferenz `:20:`
-
-Schema mit maximal 16 Zeichen:
+Die Verarbeitung besteht aus fünf getrennten Ebenen:
 
 ```text
-MT + JJMMTT des Auszugsendes + letzte 6 IBAN-Zeichen + zweistellige Auszugsnummer
+MT940 / CAMT / CSV / PDF / Bild / manuelle Liste
+                    ↓
+               Quellenleser
+                    ↓
+        unveränderter Quellnachweis
+                    ↓
+     kanonisches, institutsneutrales Modell
+                    ↓
+         DATEV-Zielprofil und Renderer
+                    ↓
+          MT940-Bytes und Validator
 ```
+
+Bankname, Logo, Dateiname, IBAN-Präfix, Layoutkoordinaten und institutsspezifische Überschriften dürfen nur dem Quellenleser helfen. Sie dürfen keine Renderer- oder Profilentscheidung auslösen.
+
+Native MT940-Felder können im Modus `native` unverändert erhalten bleiben. Rekonstruierte Quellen verwenden nach der Quellenlesung dasselbe kanonische Modell.
+
+## 2. Kodierungsvertrag
+
+| Verarbeitungsebene | Verbindliche Kodierung |
+| --- | --- |
+| Quellenlesung und internes Modell | Unicode NFC |
+| Manifest, JSON-Sidecar, Markdown-Bericht | UTF-8 ohne BOM |
+| DATEV-STA | Windows-1252/CP1252 ohne BOM |
+| DATEV-STA-Zeilenenden | ausschließlich CRLF |
+
+Vor dem Rendern jeden Ausgabetext mit `unicodedata.normalize("NFC", text)` normalisieren. Anschließend ausschließlich streng kodieren:
+
+```python
+payload = text.encode("cp1252", errors="strict")
+```
+
+Nicht darstellbare Zeichen führen zu einem Klärungsfall. Keine stillen Ersatzzeichen, Transliteration oder Ersetzung durch `?`, `+` oder Leerzeichen zulassen.
+
+### Bytevertrag für DATEV
+
+Der Generator und Validator prüfen:
+
+- keine UTF-8-BOM `EF BB BF`
+- keine UTF-16-BOM `FF FE` oder `FE FF`
+- ausschließlich CRLF `0D 0A`, einschließlich Dateiende
+- exakte Übereinstimmung mit den erwarteten CP1252-Bytes
+- CP1252-Rücklauf zum erwarteten kanonischen MT940-Text
+- keine UTF-8-Mehrbytefolgen für deutsche Sonderzeichen
 
 Beispiel:
 
 ```text
-:20:MT26073152432107
+Unicode:      Zusatzgebühren
+CP1252 ü:     FC
+unzulässig:   C3 BC   (UTF-8)
 ```
 
-Identische Quelldaten erzeugen immer dieselbe Referenz. Keine Zufalls-, Laufzeit- oder Chat-ID verwenden. Die Referenz verhindert keinen DATEV-Doppelimport; dafür Fingerprint und Prozesssperre verwenden.
+Eine bloße CP1252-Dekodierung reicht nicht als Prüfung, weil fast jede Bytefolge als CP1252 interpretierbar ist. Deshalb immer den vollständigen Rohbytevergleich gegen das kanonische Modell durchführen.
 
-## Auszugsnummer `:28C:`
+## 3. Allgemeine MT940-Felder
+
+| Tag | Bedeutung | Regel |
+| --- | --- | --- |
+| `:20:` | Auszugsreferenz | deterministisch, höchstens 16 Zeichen |
+| `:25:` | Konto | IBAN aus Manifest und Dateiname |
+| `:28C:` | Auszugs-/Sequenznummer | fünf-/dreistellig |
+| `:60F:` | Anfangssaldo | ausschließlich Anfangssaldatum und -betrag |
+| `:61:` | Buchungszeile | Daten, Betrag, SWIFT-Code und Referenzen |
+| `:86:` | Buchungsinformation | unmittelbar nach zugehörigem `:61:` |
+| `:62F:` | Endsaldo | ausschließlich Endbestandsdatum und -betrag |
+
+### Referenz `:20:`
+
+```text
+MT + JJMMTT des Auszugsendes + letzte sechs IBAN-Zeichen + zweistellige Auszugsnummer
+```
+
+Die Referenz ist kein Schutz gegen Doppelimporte.
+
+### Auszugsnummer `:28C:`
 
 ```text
 :28C:<statement_number fünfstellig>/<sequence_number dreistellig>
 ```
 
-Beispiel für Auszug 7, Sequenz 1:
+### Saldenfelder
 
 ```text
-:28C:00007/001
+:60F:CJJMMTTEUR1000,00
+:62F:CJJMMTTEUR750,00
 ```
-
-Keine feste Standardzeile in produktiven DATEV-Ausgaben verwenden.
-
-## Saldenfelder
-
-```text
-:60F:C260630EUR83077,77
-:62F:C260731EUR33444,84
-```
-
-- `C`: positiver Saldo
-- `D`: negativer Saldo
-- Datum: `JJMMTT`
-- Betrag: Dezimalkomma, kein Tausendertrennzeichen
-
-`opening_balance_date` ausschließlich nach `:60F:` und `closing_balance_date` ausschließlich nach `:62F:` übernehmen. Weder Datum noch Betrag des Anfangssaldos aus der ersten Buchung ableiten.
 
 Technische Rechnung:
 
@@ -68,190 +111,183 @@ Technische Rechnung:
 Anfangssaldo + Summe(C-Buchungen) - Summe(D-Buchungen) = Endsaldo
 ```
 
-Eine bestehende FIBU-Differenz separat klären. Keine künstliche MT940-Ausgleichsbuchung erzeugen.
+Keine Ausgleichsbuchung zur Kaschierung einer Differenz erzeugen.
 
-## Buchungsfeld `:61:`
+## 4. Kanonisches Umsatzmodell
 
-Beispiel:
+Jeder rekonstruierte Umsatz enthält mindestens:
+
+| Feld | Bedeutung |
+| --- | --- |
+| `booking_date` | Buchungsdatum |
+| `value_date` | Valutadatum |
+| `amount` | vorzeichenbehafteter Dezimalstring |
+| `currency` | derzeit `EUR` |
+| `transaction_category` | institutsneutrale Kategorie |
+| `booking_text` | kurzer belegter Buchungstext |
+| `purpose` | vollständiger Verwendungszweck |
+| `counterparty_name` | belegter Zahlungspartner oder `null` |
+| `counterparty_iban` | belegte Gegen-IBAN oder `null` |
+| `references` | Referenzen in Quellreihenfolge |
+| `raw_source_lines` | unveränderte Originalzeilen |
+| `source_page`/`source_location` | Fundstelle |
+| `source_text_verified` | bestätigter Quellenabgleich |
+| `field_confidence` | Konfidenz je semantischem Feld |
+
+Zulässige Kategorien:
+
+- `fee`
+- `transfer`
+- `direct_debit`
+- `card`
+- `cash`
+- `interest`
+- `other`
+
+Konfidenzen sind `high`, `medium` oder `low`. Eine produktive DATEV-Datei erfordert `high` für Kategorie, Buchungstext, Verwendungszweck und einen vorhandenen Zahlungspartner. Unsichere Trennungen nicht erfinden; belegten Gesamttext im Verwendungszweck erhalten und Testdatei beziehungsweise Klärungsfall ausgeben.
+
+## 5. Strukturierter DATEV-Renderer für `:86:`
+
+Der Modus `datev_structured_v1` ist ein DATEV-Zielmodus, kein Bankprofil.
+
+Logischer Aufbau:
 
 ```text
-:61:2607010701D100,00NDDTVERTRAG123//000000001
+:86:<GVC>?00<Buchungstext>?20<Verwendungszweck>...?31<Gegenkonto>?32<Partner>?33<Partnerfortsetzung>
 ```
 
-| Bestandteil | Beispiel | Bedeutung |
+### Unterfeldbelegung
+
+| Unterfeld | Inhalt | Einzelkapazität |
 | --- | --- | --- |
-| Valutadatum | `260701` | 01.07.2026 |
-| Buchungstag | `0701` | 01.07.; Jahr aus Valutadatum |
-| Soll/Haben | `D` | Belastung; `C` ist Gutschrift |
-| Betrag | `100,00` | ohne Vorzeichen |
-| Code | `NDDT` | vierstelliger SWIFT-Code mit `N` |
-| Kundenreferenz | `VERTRAG123` | normalisiert auf höchstens 16 Zeichen |
-| Bankreferenz | `//000000001` | innerhalb des Auszugs eindeutig |
+| `?00` | Buchungstext | 27 Zeichen |
+| `?20` bis `?29` | Verwendungszweck und Referenzen | je 27 Zeichen |
+| `?31` | Gegen-IBAN | 34 Zeichen |
+| `?32`, `?33` | Zahlungspartner | je 27 Zeichen |
 
-Vorhandene `EREF`, `MREF`, Rechnungs- oder Zahlungsreferenzen bevorzugen. Die vollständige Referenz zusätzlich im `:86:`-Text erhalten. `NONREF` nur verwenden, wenn die Quelle keine belastbare Referenz enthält.
+Das konkrete Zielprofil enthält die verbindlichen Längen. Zweck und Referenzen über `?20` bis `?29`, Zahlungspartner über `?32` und `?33` verlustfrei verteilen.
 
-Jede erzeugte `:61:`-Zeile gegen Valuta, Buchungsdatum, Betrag, Code und Referenzen des Manifests prüfen. Nicht nur die Gesamtsumme vergleichen.
+Beim Verteilen:
 
-## Informationsfeld `:86:`
+- keine stille Kürzung
+- keine Änderung der Quellreihenfolge
+- kein Wort oder Referenzbestandteil an einer Unterfeldgrenze teilen
+- Unterfeldkennzeichen nicht beschädigen
+- Nutzwerte beim Rücklesen exakt zusammensetzen
 
+Das Fragezeichen ist reserviert. Bei `?` im belegten Nutztext nur mit nachgewiesener zulässiger Behandlung fortfahren; andernfalls Klärungsfall.
 
-### Verbindliche PDF-Quellenkette
+### GVC
 
-Die technische Rundlaufpr?fung beginnt bei PDF-Quellen nicht erst am Manifest. F?r jeden Umsatz diese Kette erzwingen:
+GVC ausschließlich aus der kanonischen `transaction_category` und der zentralen Tabelle des DATEV-Zielprofils bestimmen. Nur bei hoher Konfidenz einen spezifischen Tabellenwert verwenden. Sonst `835` setzen und `gvc_source: fallback` im Bericht ausweisen.
+
+Nie aus Bankname, Zahlungspartner, Logo oder IBAN ableiten.
+
+### Physische Zeilen
+
+- höchstens 65 Zeichen je physischer Zeile
+- `:86:` zählt in der ersten Zeile mit
+- erste Nutztextzeile höchstens 61 Zeichen
+- höchstens fünf Fortsetzungszeilen mit je 65 Zeichen
+- insgesamt höchstens 386 logische Zeichen nach `:86:`
+- ausschließlich CRLF
+
+Physische Zeilenumbrüche verändern den logischen Feldinhalt nicht.
+
+## 6. Semantischer Rundlauf
+
+Den strukturierten Text nach der Erzeugung erneut parsen und getrennt vergleichen:
 
 ```text
-gerenderte PDF-Seite
-? source_description_lines in sichtbarer Reihenfolge
-? kanonischer Manifesttext
-? physische :86:-Zeilen
-? zur?ckgelesener Nutztext
+?00            → booking_text
+?20 bis ?29    → purpose + references
+?31            → counterparty_iban
+?32 und ?33    → counterparty_name
+GVC            → ermittelter GVC
 ```
 
-`source_page`, `source_description_lines` und `source_text_verified: true` sind f?r jeden PDF-/Bildumsatz Pflicht. Den kanonischen Text ausschlie?lich durch Zusammenf?gen dieser sichtbaren Zeilen mit je einem Leerzeichen bilden. Ein vorhandenes `description` muss kanonisch exakt gleich sein.
+Zusätzlich Reihenfolge, Unterfeldlängen und erlaubte beziehungsweise erforderliche Felder gegen das Zielprofil prüfen. Jede Abweichung mit Status `3` abbrechen.
 
-Die Software kann die visuelle Richtigkeit einer menschlichen Transkription nicht aus eigener Kraft beweisen. Deshalb die gerenderte Seite vor dem Setzen von `source_text_verified` pr?fen. Bei uneindeutigen Spaltengrenzen, abgeschnittenem Text, OCR-Abweichungen oder unklarem Buchungsblock mit Status `2` abbrechen.
-
-Im Bericht Textanfang und Textende ausweisen. Dadurch werden insbesondere fehlende erste W?rter, abgeschnittene Referenzenden und dem falschen Umsatz zugeordnete Folgezeilen in der Abnahme sichtbar.
-### Verlustfreie generische Ausgabe
-
-Kanonische Ausgangsform:
-
-1. führende und nachfolgende Leerzeichen entfernen;
-2. interne Folgen beliebiger Leerzeichen auf ein Leerzeichen reduzieren;
-3. Windows-1252-Darstellbarkeit prüfen;
-4. ohne Zeichenverlust an echten Positionen aufteilen.
-
-Physische Grenzen:
-
-- höchstens sechs Zeilen
-- erste Nutztextzeile höchstens 61 Zeichen wegen des Tags `:86:`
-- fünf Fortsetzungszeilen mit jeweils höchstens 65 Zeichen
-- damit höchstens 386 Nutztextzeichen ohne Überschreitung der Zeilengrenzen
-- keine Fortsetzungszeile mit `:` beginnen lassen
-
-Nach dem Schreiben alle Nutztextteile wieder zusammensetzen und exakt mit der kanonischen Quelle vergleichen. Kürzungen nie still durchführen. Zu lange oder nicht darstellbare Texte als Klärungsfall mit Status `2` ausgeben.
-
-Je Umsatz im Bericht speichern:
+Der Prüfbericht weist pro Umsatz mindestens aus:
 
 ```text
 transaction_number
-source_page
+source_page oder source_location
 source_line_count
 source_to_manifest_match
-source_text_start
-source_text_end
-source_description_length
-encoded_description_length
+field86_mode
+gvc
+gvc_source
+underfield_order
+semantic_values
+low_confidence_fields
 roundtrip_match
 truncated
 ```
 
-### DATEV-Modi
+## 7. DATEV-Zielprofile
 
-| Modus | Bedeutung | Produktive DATEV-Freigabe |
-| --- | --- | --- |
-| `native` | Syntax aus elektronischer Originaldatei | nur mit unveränderter Quelle |
-| `generic_unstructured` | generisches MT940 | keine Anzeigegarantie |
-| `datev_verified:<profil>` | dokumentierter erfolgreicher Test | ja, für genau diese Variante |
-| `unverified` | unbekannte PDF-/manuelle Variante | nur eintägige Testdatei |
+Ein Zielprofil enthält mindestens:
 
-Keine Unterfelder wie `?00`, `?10`, `?20` oder `?32` erfinden. Im generischen und unverifizierten Modus sind strukturierte Unterfeldkennzeichen unzulässig. In einem verifizierten Profil ausschließlich die dort erlaubten Kennzeichen verwenden.
-
-## DATEV-Profilfixture
-
-Eine Profil-JSON muss mindestens enthalten:
-
-- `profile_name` und `bank_name`
-- anonymisierte vollständige `:61:`-/`:86:`-Beispiele
-- erwartete DATEV-Anzeige
-- Zeichensatz und Zeilenumbrüche
+- `profile_name`
+- `target_system`
+- `target_import_path`
+- `charset`
+- `line_endings`
+- erlaubte und erforderliche Unterfelder
+- Unterfeldlängen
+- GVC-Regeln
+- maximale physische Zeilenlänge und `:86:`-Zeilenzahl
+- getestete Quellformate
 - Datum und Ergebnis des Probeimports
-- Prüfergebnisse für Anfangssaldo, Test-Endsaldo, Buchungszahl/Vorzeichen, vollständigen Verwendungszweck und Steuerzeichen
-- Bestätigung, dass die Testumsätze anschließend gelöscht wurden
-- Liste erlaubter strukturierter Unterfelder
+- Prüfergebnisse und Löschung der Testumsätze
 
-`datev_verified:<profil>` nur akzeptieren, wenn alle Prüfpunkte erfolgreich und die Testumsätze gelöscht sind. Die Datei [unverified-example.json](../profiles/unverified-example.json) ist ausschließlich eine offene Vorlage und kein verifiziertes Profil.
+Ein `bank_name` ist unzulässig. Das mitgelieferte Profil `datev-mt940-structured-v1` bleibt bis zum echten DATEV-Probeimport unverifiziert.
 
-## Technischer Fingerprint
+Modi:
+
+| Modus | Verwendung |
+| --- | --- |
+| `datev_structured_v1` | technisch geprüfte Testdatei |
+| `datev_verified:datev-mt940-structured-v1` | erst nach echtem Probeimport |
+| `native` | unveränderte native `:86:`-Syntax |
+| `generic_unstructured` | generischer Alt-/Nicht-DATEV-Fall |
+
+Automatisierte Tests dürfen ein ausdrücklich als Testfixture markiertes verifiziertes Profil verwenden. Das ist keine Produktivfreigabe.
+
+## 8. Fingerprint und Doppelimportsperre
 
 SHA-256 über kanonisches JSON bilden aus:
 
-- IBAN
-- Auszugs- und Sequenznummer
-- Auszugsbeginn/-ende
-- Anfangssaldodatum/-betrag
-- Endbestandsdatum/-betrag
-- allen Buchungen in Quellreihenfolge mit Daten, Betrag, Code, Referenzen und kanonischem `:86:`-Text
+- Konto, Zeitraum, Auszugs-/Sequenznummer
+- Anfangs- und Endbestandsdaten und -beträge
+- allen Umsätzen in Quellreihenfolge
+- Daten, Betrag, Kategorie, Buchungstext, Zweck, Referenzen, Gegenkonto und Zahlungspartner
 
-Den Hash in der Prüfzusammenfassung und JSON-Sidecar speichern, niemals als Bankfeld. Vor jeder Erzeugung Sidecars im Ausgabeordner und aktuellen Arbeitsverzeichnis durchsuchen. Identischen Hash mit Status `5` sperren; Überschreibung nur nach dokumentierter Löschung des früheren DATEV-Imports.
+Hash in JSON-Sidecar speichern, niemals als Bankfeld. Vor jeder Erzeugung Sidecars im Ausgabe- und Arbeitsverzeichnis suchen. Identischen Hash mit Status `5` sperren. Überschreibung nur nach bestätigter Löschung des früheren DATEV-Imports.
 
-## Datei- und Zeichensatzregeln
+## 9. Validierung und Freigabe
 
-- Endung `.sta`
-- Windows-1252
-- ausschließlich CRLF (`0D 0A`), einschließlich Dateiende
-- höchstens 65 Zeichen je physischer Zeile
-- genau ein Konto je Datei
-- keine Unterstriche in den Standarddateinamen
+Der Validator prüft:
 
-Monatsdatei:
+1. separate Auszugs- und Saldendaten
+2. jedes `:61:` gegen das kanonische Modell
+3. jede strukturierte `:86:`-Semantik
+4. GVC und Unterfeldprofil
+5. Buchungszahl und chronologische Reihenfolge
+6. eindeutige Bankreferenzen
+7. centgenaue Saldenrechnung
+8. maximale Feld- und Zeilenlängen
+9. NFC, CP1252, BOM und CRLF
+10. vollständige Rohbytegleichheit
+11. Fingerprint und Doppelimportsperre
+12. technischen Status getrennt vom DATEV-Praxistest
 
-```text
-MT940 <IBAN> <TT.MM.JJJJ> bis <TT.MM.JJJJ>.sta
-```
-
-Testdatei:
-
-```text
-MT940 Test <IBAN> <TT.MM.JJJJ>.sta
-```
-
-Sidecar:
-
-```text
-MT940 Prüfung <IBAN> <TT.MM.JJJJ> bis <TT.MM.JJJJ>.json
-```
-
-## Mindestprüfung
-
-1. `:20:` gegen das Manifest prüfen und Länge auf 16 begrenzen.
-2. IBAN in Manifest, `:25:` und Dateiname vergleichen.
-3. `:28C:` gegen Auszugs-/Sequenznummer prüfen.
-4. `:60F:` und `:62F:` exakt gegen getrennte Saldendaten prüfen.
-5. Jedes `:61:` und `:86:` in Quellreihenfolge vergleichen.
-6. Zahlen der Quellumsätze, `:61:`- und `:86:`-Felder vergleichen.
-7. Referenzen eindeutig halten, soweit die Quelle dies ermöglicht.
-8. `:86:`-Rundlauf, Profilunterfelder und Steuerzeichen prüfen.
-9. Windows-1252, ausschließlich CRLF, 65 Zeichen und sechs `:86:`-Zeilen prüfen.
-10. Saldenrechnung centgenau prüfen.
-11. Fingerprint ausweisen und auf Duplikate prüfen.
-12. Technischen Status und DATEV-Praxistest getrennt berichten.
-
-## Referenzfall Juli 2026
-
-```text
-:25:DE43300501101009524321
-:28C:00007/001
-:60F:C260630EUR83077,77
-:62F:C260731EUR33444,84
-transactions = 64
-transaction_total = -49632.93
-```
-
-Für den Testtag 01.07.2026:
-
-```text
-opening = 83077.77
-transactions = 6
-transaction_total = -4139.53
-closing = 78938.24
-```
-
-Ein DATEV-Anfangsbestand von `91356.83` lässt sich als `83077.77 + 4139.53 + 4139.53` erklären und ist als Mehrfachimport zu behandeln. Eine bereits bestehende FIBU-Differenz von `0.30` bleibt davon getrennt.
+Der DATEV-Probeimport muss mindestens Sonderzeichen, langen Zahlungspartner und mehrere Referenzen enthalten. Erst nach korrekter Anzeige, dokumentierten Salden/Buchungen und Löschung der Testumsätze das Zielprofil produktiv freigeben.
 
 ## Quellen
 
-- DATEV, Dokument 1030312, Import von MT940-Swift-Dateien: https://wissensplattform.apps.datev.de/help/document/1030312
-- DATEV, Dokument 1036444, elektronische Bankkontoumsätze ohne DATEV-Schnittstelle: https://wissensplattform.apps.datev.de/help/document/1036444
-- SWIFT, Message Reference Guide Category 9: https://www2.swift.com/knowledgecentre/rest/v1/publications/us9m_20190719/2.0/us9m_20190719.pdf
-- Deutsche Kreditwirtschaft/EBICS, Format LifeCycle: https://www.ebics.de/de/datenformate/format-lifecycle
+- DATEV, Formatbeschreibung MT940-SWIFT, Dokument 9226962: https://wissensplattform.apps.datev.de/help/document/9226962
+- DATEV, Import von MT940-Swift-Dateien, Dokument 1030312: https://wissensplattform.apps.datev.de/help/document/1030312
+- Goldman Sachs, MT940 mit GVC und strukturiertem Feld `:86:`: https://developer.gs.com/docs/services/transaction-banking/mt940-gvc-intro/
+- Holvi, MT940 account statements service description: https://holvi-developer.zendesk.com/hc/en-gb/articles/15110599182738-Holvi-SWIFT-MT-940-account-statements-service-description
