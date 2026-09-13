@@ -1,0 +1,306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Neutrales Austauschmodell für DATEV LuG Zeitwirtschaft, Version 1.0",
+  "description": "Kein natives DATEV-Format. Semantische Bereichs- und Datumsprüfungen ergänzt scripts/zeitwirtschaft.py.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mandantennummer",
+    "abrechnungsmonat",
+    "personalnummer_typ",
+    "korrekturmodus",
+    "zuordnungsnachweis",
+    "datensaetze"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "beraternummer": {
+      "type": "string",
+      "const": "413885",
+      "default": "413885"
+    },
+    "mandantennummer": {
+      "type": "string",
+      "pattern": "^[0-9]{1,5}$"
+    },
+    "abrechnungsmonat": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"
+    },
+    "personalnummer_typ": {
+      "enum": [
+        "datev",
+        "betrieblich"
+      ]
+    },
+    "datev_version": {
+      "type": "string"
+    },
+    "korrekturmodus": {
+      "enum": [
+        "original",
+        "monat_differenz",
+        "kalender_vollmonat"
+      ]
+    },
+    "korrekturnachweis": {
+      "type": "string"
+    },
+    "zuordnungsnachweis": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "datensaetze": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "personalnummer",
+          "quelle"
+        ],
+        "properties": {
+          "personalnummer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kalendertag": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2
+          },
+          "ausfallschluessel": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2
+          },
+          "lohnart": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 4
+          },
+          "stunden": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^$|^-?[0-9]+(?:\\.[0-9]{1,2})?$"
+          },
+          "tage": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^$|^-?[0-9]+(?:\\.[0-9]{1,2})?$"
+          },
+          "wert": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^$|^-?[0-9]+(?:\\.[0-9]{1,2})?$"
+          },
+          "faktor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^$|^-?[0-9]+(?:\\.[0-9]{1,2})?$"
+          },
+          "lohnveraenderung": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^$|^-?[0-9]+(?:\\.[0-9]{1,2})?$"
+          },
+          "kostenstelle": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 8
+          },
+          "kostentraeger": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 8
+          },
+          "bemerkung": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 30
+          },
+          "quelle": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "werteinheit": {
+            "enum": [
+              "betrag",
+              "stunden",
+              "tage",
+              "kilometer",
+              "sonstiges",
+              "",
+              null
+            ]
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "ausfallschluessel"
+              ],
+              "properties": {
+                "ausfallschluessel": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "kalendertag"
+              ],
+              "properties": {
+                "kalendertag": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,2}$"
+                },
+                "wert": {
+                  "enum": [
+                    "",
+                    null
+                  ]
+                },
+                "werteinheit": {
+                  "enum": [
+                    "",
+                    null
+                  ]
+                }
+              }
+            },
+            "else": {
+              "required": [
+                "lohnart",
+                "wert",
+                "werteinheit"
+              ],
+              "properties": {
+                "lohnart": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,4}$"
+                },
+                "wert": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "werteinheit": {
+                  "enum": [
+                    "betrag",
+                    "stunden",
+                    "tage",
+                    "kilometer",
+                    "sonstiges"
+                  ]
+                },
+                "kalendertag": {
+                  "enum": [
+                    "",
+                    null
+                  ]
+                },
+                "stunden": {
+                  "enum": [
+                    "",
+                    null
+                  ]
+                },
+                "tage": {
+                  "enum": [
+                    "",
+                    null
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "mandanten_lohnarten": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[0-9]{1,4}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "bezeichnung",
+          "quelle"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "bezeichnung": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "quelle": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "werteinheit": {
+            "enum": [
+              "betrag",
+              "stunden",
+              "tage",
+              "kilometer",
+              "sonstiges"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "korrekturmodus": {
+            "enum": [
+              "monat_differenz",
+              "kalender_vollmonat"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "korrekturnachweis"
+        ],
+        "properties": {
+          "korrekturnachweis": {
+            "pattern": "\\S"
+          }
+        }
+      }
+    }
+  ]
+}

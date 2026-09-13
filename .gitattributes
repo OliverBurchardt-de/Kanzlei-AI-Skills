@@ -1,0 +1,4 @@
+# Preserve source hashes and DATEV encoding/CRLF across Git checkouts.
+datev-lohn-gehalt-import/** -text whitespace=cr-at-eol
+# Extracted PDF text intentionally preserves the original layout whitespace.
+datev-lohn-gehalt-import/references/**/*.txt -whitespace

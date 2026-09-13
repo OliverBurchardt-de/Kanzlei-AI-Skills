@@ -1,0 +1,21 @@
+{
+  "geprueft_am": "2026-09-13",
+  "unittest_faelle": 18,
+  "unittest_status": "bestanden",
+  "skill_quick_validate": "bestanden",
+  "json_schema_draft_2020_12": "gültig",
+  "beispiel_und_normalisiertes_json": "Schema-validiert",
+  "relative_markdown_verweise": "geprüft",
+  "pdf_original_sha256": "8c3cb9c000f357ed9e7c6d3880cd29d5d9a583f1da9ca6a32af734352ee43629",
+  "datev_probeimport": "nicht durchgeführt",
+  "stammdaten_satzbeschreibung": "nicht enthalten; separate versionsbezogene Quelle erforderlich",
+  "version": "1.1.0",
+  "kataloge": {
+    "ausfallschluessel": 90,
+    "baulohnarten": 84,
+    "standardlohnarten": 479
+  },
+  "kanzlei_beraternummer": "413885",
+  "mcp_vertraege": "Klardaten-Payroll-Metadaten geprüft; kein konkreter Mandantenabruf",
+  "pdf_sichtpruefung": "Ergänzend Baulohn S. 6-7: Versionshinweise 8380-8384 geprüft"
+}

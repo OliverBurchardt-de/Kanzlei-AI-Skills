@@ -1,0 +1,614 @@
+=== PDF-SEITE 1 ===
+ DATEV-Hilfe                                                                                                                             Dok.-Nr.: 9225689
+ Anleitung vom 06.08.2026
+
+
+ Betriﬀt Produkte:
+ DATEV Lohn und Gehalt
+
+
+
+ Tabelle der DATEV-Standardlohnarten für Baulohn
+
+
+
+
+             Hinweis
+             Navigieren innerhalb der Tabelle
+
+             Die Tabelle enthält einige Spalten, die i. d. R. nicht komplett am Bildschirm angezeigt werden können. Sie können
+             zum Navigieren innerhalb der Tabelle auch die Pfeiltasten                ,     ,     oder       nutzen.
+
+
+
+
+   Thema              LA-      Lohnart-               LA-       Fakt      A    Z    Zula    Loh      Steu    SV       Durchschnit       Pfä     Fol    Bei
+                      Nr.      Bezeichnung            Kern      or-       M    v    ge      n- v.    er               ts- einstg.       n-      ge-    tr.-
+                                                                schl.                                                                   dun     LA     UV
+                                                                                                                                        g
+
+
+   Baulohn -          800      Bau,Url.,Tg,Url.A      BAUU      BUG       --   --   ----    ----     frei    frei     ----              unpf    ----   frei
+   Urlaub             0        nspar,Autom.           G         W                                                                       b
+
+
+   Baulohn -          800      Urlaubslohn,           BAUUJ     ST01      --   --   ----    ----     lfd     lfd      DU01,DU10,        nopf    ----   pﬂ
+   Urlaub             1        Jugendl/Auslernj                                                                       Std/Betr          b
+
+
+   Baulohn -          800      Bau,Url,Tg,            BAUU      BUG       --   --   ----    ----     frei    frei     ----              unpf    ----   frei
+   Urlaub             3        Url.Anspr.auszah       P         W                                                                       b
+                               len
+
+
+   Baulohn -          800      Bau, Urlaub Vj.,       BAUU      BT00      --   --   ----    ----     frei    frei     ----              unpf    ----   frei
+   Urlaub             5        Betr.                  V                                                                                 b
+
+
+   Baulohn -          800      Bau,                   BAUU      TG01      --   --   ----    ----     frei    frei     ----              unpf    ----   frei
+   Urlaub             8        Urlaubsabgeltun        A                                                                                 b
+                               g, Tg.
+
+
+   Baulohn -          801      Urlaubsl., VJ          BAUVJ     ST01      --   --   ----    ----     lfd     lfd      DU01,DU10,        nopf    ----   pﬂ
+   Urlaub             0        Jugendl/Auslernj                                                                       Std/Betr,         b
+                                                                                                                      DU11, DU12,
+                                                                                                                      DU13 Betr
+
+
+   Baulohn -          801      Urlaubsausgl.b.        BAUU      USKR      --   --   ----    ----     ----    ----     ----              ----    ----   ----
+   Urlaub             1        Krankheit,Std.         S
+
+
+   Baulohn -          801      Urlaubsausgl.b.        BAUU      USW       --   --   ----    ----     ----    ----     ----              ----    ----   ----
+   Urlaub             2        Wehrübung,Std.         S         E
+
+
+
+
+Dokument 9225689                                                                                                                                Seite 1 von 8
+
+=== PDF-SEITE 2 ===
+   Thema                LA-      Lohnart-                 LA-        Fakt       A    Z    Zula     Loh      Steu     SV        Durchschnit        Pfä      Fol     Bei
+                        Nr.      Bezeichnung              Kern       or-        M    v    ge       n- v.    er                 ts- einstg.        n-       ge-     tr.-
+                                                                     schl.                                                                        dun      LA      UV
+                                                                                                                                                  g
+
+
+   Baulohn -            801      Urlaubsausgl.b.          BAUU       USW        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               3        Winterausgl,Std          S          A
+
+
+   Baulohn -            801      Urlaubsausgl.b.          BAUU       USKU       --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               4        Kurzarbeit,Std.          S
+
+
+   Baulohn -            801      Urlaubsausgl.b.          BAUU       USU        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               5        Überbrück.,Std           S          G
+
+
+   Baulohn -            802      Urlaubsausgl.            BAUU       UTW        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               0        b.Wehrübung,             T          E
+                                 Tage
+
+
+   Baulohn -            802      Urlaubsausgl.            BAUU       UTKR       --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               1        b.Krankheit, Tg.         T
+
+
+   Baulohn -            802      Url.ausgl.Krank          BAUU       UTKB       --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               2        Betr.unfall,Tg           T
+
+
+   Baulohn -            802      Urlaubsausg.b.           BAUU       UTSO       --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               3        Sonst.Ausfall,Tg.        T
+
+
+   Baulohn -            803      Urlaubsausgl.Kra         BAUU       UWK        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               1        nkheit, Wo.              W          R
+
+
+   Baulohn -            803      Url.ausgl.Krank          BAUU       UWK        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               2        Betr.unfall,Wo           W          B
+
+
+   Baulohn -            803      Urlaubsausgl.            BAUU       UWW        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               3        Wehrübung,Wo.            W          E
+
+
+   Baulohn -            803      Urlaubsausgl.b.          BAUU       UWK        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               4        Kurzarbeit,Wo.           W          U
+
+
+   Baulohn -            803      Urlaubsausgl.            BAUU       UWS        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               5        Schlechtwetter,W         W          K
+                                 o
+
+
+   Baulohn -            803      Urlaubsausgl.            BAUU       UWM        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               6        Muttersch.gd,Wo          W          S
+                                 .
+
+
+   Baulohn -            803      Urlaubsausgl.b.          BAUU       UWW        --   --   ----     ----     ----     ----      ----               ----     ----    ----
+   Urlaub               7        Weiterbild.,Wo.          W          B
+
+
+   Baulohn -            804      Urlaubslohn              BAUA       TG01       --   --   ----     ----     lfd      lfd       DU01,DU10,         nopf     ----    pﬂ
+   Urlaub               1        Vorjahr, Tage            Z                                                                    Tage/Betr          b
+
+
+
+
+
+
+
+Dokument 9225689                                                                                                                                           Seite 2 von 8
+
+=== PDF-SEITE 3 ===
+   Thema               LA-     Lohnart-                LA-        Fakt      A     Z   Zula     Loh      Steu    SV       Durchschnit        Pfä     Fol     Bei
+                       Nr.     Bezeichnung             Kern       or-       M     v   ge       n- v.    er               ts- einstg.        n-      ge-     tr.-
+                                                                  schl.                                                                     dun     LA      UV
+                                                                                                                                            g
+
+
+   Baulohn -           804     Zusätzl.                BAUZ       BT00      --    --  ----     ----     son     jhrl     ----               u/h     ----    pﬂ
+   Urlaub              2       Urlaubsgeld             U
+                               Vorjahr
+
+
+   Baulohn -           804     Urlaubslohn lfd.        BAUA       TG01      --    --  ----     ----     lfd     lfd      DU01,DU10,         nopf    ----    pﬂ
+   Urlaub              5       Jahr, Tg.               Z                                                                 Tage/Betr          b
+
+
+   Baulohn -           804     Zusätzl.                BAUZ       BT00      --    --  ----     ----     son     jhrl     ----               u/h     ----    pﬂ
+   Urlaub              6       Urlaubsgeld lfd.        U
+                               Jahr
+
+
+   Baulohn -           805     Bau,Urlaubsabg          BAUA       BT00      --    --  ----     ----     son     jhrl     ----               nopf    ----    pﬂ
+   Urlaub              0       eltung, Betr.VJ         B                                                                                    b
+
+
+   Baulohn -           805     Bau,Urlaubsabg          BAUA       BT00      --    --  ----     ----     son     jhrl     ----               nopf    ----    pﬂ
+   Urlaub              1       elt., Betr.lfd.J.       B                                                                                    b
+
+
+   Baulohn -           805     Bau,                    BAUA       BT00      --    --  ----     ----     frei    jhrl     ----               nopf    ----    pﬂ
+   Urlaub              2       Urlaubsabgeltun         S                                                                                    b
+                               g SOKA
+
+
+   Baulohn -           805     Zusätzl.Urlaubsg        BAUZ       BT00      --    --  ----     ----     son     jhrl     ----               u/h     ----    pﬂ
+   Urlaub              3       d. a.Abgelt.Vj          A
+
+
+   Baulohn -           805     Zusätz.Url.geld         BAUZ       BT00      --    --  ----     ----     son     jhrl     ----               u/h     ----    pﬂ
+   Urlaub              4       a.Abgelt.lfd.J          A
+
+
+   Baulohn -           805     Bau,Urlaubsl,Tg,        BAUA       DU11      6     1   ----     ----     lfd     lfd      DU11               nopf    ----    pﬂ
+   Urlaub              5       DU11 M/1 vers.          F                                                                 Std./Betr          b
+
+
+   Baulohn -           805     Bau,Urlaubsl,Tg,        BAUA       DU13      6     1   ----     ----     lfd     lfd      ----               nopf    ----    pﬂ
+   Urlaub              6       Steinmetze              F                                                                                    b
+
+
+   Baulohn -           805     Bau,Urlaubsl,Tg,        BAUA       DU12      6     1   ----     ----     lfd     lfd      ----               nopf    ----    pﬂ
+   Urlaub              7       GALA                    F                                                                                    b
+
+
+   Baulohn –           808     Url.ausgl.b.Streik      BAUU       ST01      --    --  ----     ----     ---     ---      ----               ---     ----    ---
+   Urlaub              0       m.Beitr.ber             B
+
+
+   Baulohn -           808     Bau,Urlaubsl,Std        BAUA       ST01      --    --  ----     ----     lfd     lfd      DU01,DU10,         nopf    808     pﬂ
+   Urlaub              1       ,Dachdeck               U                                                                 Betr, DU11         b       6
+                                                                                                                         Std./Betr
+
+
+   Baulohn -           808     Urlaubsl.               BAUA       TG01      --    --  ----     ----     lfd     lfd      DU01,DU10,         nopf    808     pﬂ
+   Urlaub              2       lfd,Tg,Dach,            Z                                                                 Betr/Tage,         b       6
+                               Automat.                                                                                  DU11
+                                                                                                                         Std./Betr
+
+
+
+
+
+
+
+
+Dokument 9225689                                                                                                                                    Seite 3 von 8
+
+=== PDF-SEITE 4 ===
+   Thema              LA-      Lohnart-                LA-       Fakt      A    Z    Zula     Loh     Steu     SV       Durchschnit       Pfä      Fol    Bei
+                      Nr.      Bezeichnung             Kern      or-       M    v    ge       n- v.   er                ts- einstg.       n-       ge-    tr.-
+                                                                 schl.                                                                    dun      LA     UV
+                                                                                                                                          g
+
+
+   Baulohn -          808      Urlaubsl.               BAUA      ST01      --   --   ----     ----    lfd      lfd      DU01,DU10,        nopf     ----   pﬂ
+   Urlaub             3        lfd,Std,Dach,Aut        U                                                                DU11,             b
+                               omat                                                                                     Std./Betr
+
+
+   Baulohn -          808      Zus.Urlaubsgeld,        BAUZ      BT00      --   --   ----     LVB     son      jhrl     ----              u/h      ----   pﬂ
+   Urlaub             6        Dachdecker              U                                      U
+
+
+   Baulohn -          809      Urlaubsabgelt.          BAUAJ     ST01      --   --   ----     ----    son      jhrl     ----              nopf     ----   pﬂ
+   Urlaub             0        Jugendl/Auslernj
+
+
+   Baulohn -          809      Urlaubsabg. VJ          BAUV      ST01      --   --   ----     ----    son      jhrl     DU11, DU13        nopf     ----   pﬂ
+   Urlaub             1        Jugendl/Auslernj        A                                                                Betr              b
+
+
+   Baulohn -          809      Urlaubslohn             BAUA      TG01      --   --   ----     ----    lfd      lfd      DU1,DU10          u/h      ----   pﬂ
+   Urlaub             2        Vorvorjahr, Tage        Z                                                                Betr./Tage,
+                                                                                                                        DU12 Betr
+
+
+   Baulohn -          809      Zusätzl.Urlaubsg        BAUZ      BT00      --   --   ----     ----    son      jhrl     DU11, DU13        nopf     ----   pﬂ
+   Urlaub             3        eld Vorvorjahr          U                                                                Betr              b
+
+
+   Baulohn -          809      Bau,Urlaubsabg.         BAUA      BT00      --   --   ----     ----    son      jhrl     DU11, DU13        u/h      ----   pﬂ
+   Urlaub             4        Betr.VVJ                B                                                                Betr
+
+
+   Baulohn -          809      Zusätzl.Urlgeld         BAUZ      BT00      --   --   ----     ----    son      jhrl     ----              nopf     ----   pﬂ
+   Urlaub             5        a.Abgelt.VVj            A                                                                                  b
+
+
+   Baulohn -          809      Bau, Url.Tage           BAUU      BUG       --   --   ----     ----    frei     frei     ----              unpf     ----   Fre
+   Urlaub             8        gew. Azubi BHG          Z         W                                                                        b               i
+
+
+   Baulohn -          809      Zus.Urlaubsgd.          BAUZ      BUG       --   --   ----     ----    son      jhrl     ----              u/h      ----   pﬂ
+   Urlaub             9        Lfd. Jahr,Azubi         Z         W
+
+
+   Baulohn -          810      Winterausfallgel        BAUW      BT00      --   --   ----     ----    frei     frei     ----              unpf     ----   frei
+   Wintergeld         0        d                       G                                                                                  b
+
+
+   Baulohn -          810      Zuschuss-               BAUZ      ZU00      --   --   ZUZ      ----    frei     frei     ----              nopf     ----   frei
+   Wintergeld         1        Wintergeld              W                             W                                                    b
+
+
+   Baulohn -          810      Mehraufwands-           BAUM      ZU00      --   --   ZUM      ----    frei     frei     ----              nopf     ----   frei
+   Wintergeld         2        Wintergeld              W                             W                                                    b
+
+
+   Baulohn -          810      Krankengeld             BAUK      BT00      --   --   ----     ----    frei     frei     ----              unpf     ----   frei
+   Wintergeld         3        i.H.Winterausfall       G                                                                                  b
+
+
+   Baulohn -          810      LFZ                     BAUW      SO01      --   --   ----     LVV     lfd      lfd      ----              nopf     ----   pﬂ
+   Wintergeld         4        Winterausfall-VL/       A                                      L                                           b
+                               Überbrück
+
+
+
+
+
+
+
+Dokument 9225689                                                                                                                                  Seite 4 von 8
+
+=== PDF-SEITE 5 ===
+   Thema               LA-      Lohnart-                LA-        Fakt      A     Z    Zula     Loh     Steu     SV       Durchschnit        Pfä      Fol    Bei
+                       Nr.      Bezeichnung             Kern       or-       M     v    ge       n- v.   er                ts- einstg.        n-       ge-    tr.-
+                                                                   schl.                                                                      dun      LA     UV
+                                                                                                                                              g
+
+
+   Baulohn -           810      Winterausfall-VL/       BAUW       SO01      --    --   ----     LVV     lfd      lfd      ----               nopf     ----   pﬂ
+   Wintergeld          5        Überbrückung            L                                        L                                            b
+
+
+   Baulohn -           811      Saison-Kug              BAUW       BT00      --    --   ----     ----    frei     frei     ----               nopf     ----   frei
+   Wintergeld          0                                G                                                                                     b
+
+
+   Baulohn -           812      Krankengeld             BAUK       BT00      --    --   ----     ----    frei     frei     ----               nopf     ----   frei
+   Wintergeld          0        i.H.d. Saison-Kug       G                                                                                     b
+
+
+   Baulohn -           818      Bau,                    BAUZS      BT00      --    --   ----     ----    BAV      frei     ----               unpf     ----   frei
+   ZVK                 1        Beitr.ZVK,autom.,                                                                                             b
+                                k.Gesbto.
+
+
+   Baulohn -           818      Beitr.ZVK,§40b          BAUZ       BT00      --    --   ----     ----    PKp      frei     ----               unpf     ----   St
+   ZVK                 2        EStG                    P                                                                                     b
+
+
+   Baulohn -           818      ZVK,stfr,sv-            BAUZF      BT00      --    --   ----     ----    BAV      lfd      ----               unpf     ----   frei
+   ZVK                 3        lfd.zusätzl.Grenz                                                                                             b
+                                e
+
+
+   Baulohn -           818      Beitr.ZVK,lfd           BAUZ       BT00      --    --   ----     ----    lfd      lfd      ----               unpf     ----   pﬂ
+   ZVK                 4                                P                                                                                     b
+
+
+   Baulohn -           818      Bau,Beitr.ZVK,st-       BAUZ       BT00      --    --   ----     ----    frei     frei     ----               unpf     ----   frei
+   ZVK                 5        +sv-frei                K                                                                                     b
+
+
+   Baulohn -           819      Bau,Unterbringu         BAUU       BT00      --    --   ----     ----    lfd      lfd      ----               nopf     ----   pﬂ
+   ZVK                 0        ngs-/Fahrtkost.         F                                                                                     b
+
+
+   Baulohn -           819      Ausfallgeld             BAUB       SO01      --    --   ----     ----    lfd      lfd      ----               nopf     ----   pﬂ
+   Lohnausgleic        5                                F                                                                                     b
+   h
+
+
+   Baulohn -           819      Ausfallgeld,            BAUB       ST01      --    --   ----     ----    lfd      lfd      ----               nopf     ----   pﬂ
+   Lohnausgleic        6        o.Erstatt               O                                                                                     b
+   h
+
+
+   Baulohn -           820      Lohnausgleich,St        BAULS      DU01      1     1    ----     ----    ----     ----     ----                        ----
+   Lohnausgleic        0        d., autom.Ber.
+   h
+
+
+   Baulohn -           820      Lohnausgleich,          BAULP      BT00      --    --   ----     ----    lfd      lfd      ----               nopf     ----   pﬂ
+   Lohnausgleic        1        st+sv-pﬂ.                                                                                                     b
+   h
+
+
+   Baulohn -           820      Lohnausgleich,          BAULF      BT00      --    --   ----     ----    lfd      frei     ----               nopf     ----   frei
+   Lohnausgleic        2        stpﬂ, sv-frei                                                                                                 b
+   h
+
+
+
+
+
+
+Dokument 9225689                                                                                                                                       Seite 5 von 8
+
+=== PDF-SEITE 6 ===
+   Thema              LA-      Lohnart-               LA-        Fakt      A    Z    Zula    Loh      Steu    SV       Durchschnit       Pfä     Fol     Bei
+                      Nr.      Bezeichnung            Kern       or-       M    v    ge      n- v.    er               ts- einstg.       n-      ge-     tr.-
+                                                                 schl.                                                                   dun     LA      UV
+                                                                                                                                         g
+
+
+   Baulohn -          820      Lohnausgl.stfr.,s      BAUL       BT00      --   --   ----    ----     frei    lfd      ----              nopf    ----    pﬂ
+   Lohnausgleic       3        v-pﬂ, k.Ges.           K                                                                                  b
+   h
+
+
+   Baulohn -          825      Bau, AG-Anteil         BAUV       BT00      --   --   ----    ----     lfd     lfd      ----              unpf    ----    pﬂ
+   Vermögensbil       1        VWL geleist.Std.       W                                                                                  b
+   dung
+
+
+   Baulohn - 13.      829      13.                    BAUM       BT00      --   --   ----    ----     son     jhrl     ----              nopf    ----    pﬂ
+   Monatseinko        5        Monatseinkomm          K                                                                                  b
+   mmen                        en, autom.
+
+
+   Baulohn - 13.      829      13.                    BAUM       BT00      --   --   ----    ----     son     jhrl     ----              nopf    ----    pﬂ
+   Monatseinko        6        Monatseinkomm          K                                                                                  b
+   mmen                        en, manuell
+
+
+   Baulohn - 13.      829      13.                    BAUM       BT00      --   --   ----    ----     son     jhrl     ----              nopf    ----    pﬂ
+   Monatseinko        7        Monatseinkomm          D                    --   --                                                       b
+   mmen                        en,Dachdecker
+
+
+   Baulohn -          830      Jahressonderzhg        BAUJS      BT00      --   --   ----    ----     son     jhrl     ----              nopf    ----    pﬂ
+   Jahressonder       0        , autom.Berechn.                                                                                          b
+   zhg
+
+
+   Baulohn -          830      Jahressonderzah        BAUJS      BT00      --   --   ----    ----     son     jhrl     ----              nopf    ----    pﬂ
+   Jahressonder       1        lung, manuell                                                                                             b
+   zhg
+
+
+   Baulohn -          838      Bau,ZVK bzw.           BAUN       BT00      --   --   ----    ----     Ohn     frei     ----              unpf    ----    frei
+   Allgemeine         0        Urlaub n.Austritt      A                                               eSt                                b
+   Lohnart            [neu
+                      ab
+                      Vers
+                      ion
+                      16.1
+                      ]
+
+
+   Baulohn -          838      Bau,Beitr.ZVK,aut      BAUZ       BT00      --   --   ----    ----     BAV     frei     ----              unpf    ----    frei
+   ZVK                1        o,k.Gb (jhrl)          1                                                                                  b
+                      [neu
+                      ab
+                      Vers
+                      ion
+                      16.1
+                      ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dokument 9225689                                                                                                                                 Seite 6 von 8
+
+=== PDF-SEITE 7 ===
+   Thema               LA-      Lohnart-                 LA-        Fakt      A     Z    Zula     Loh      Steu     SV       Durchschnit        Pfä      Fol    Bei
+                       Nr.      Bezeichnung              Kern       or-       M     v    ge       n- v.    er                ts- einstg.        n-       ge-    tr.-
+                                                                    schl.                                                                       dun      LA     UV
+                                                                                                                                                g
+
+
+   Baulohn -           838      Beitr.ZVK, §40b          BAUZ       BT00      --    --   ----     ----     PKp      frei     ----               unpf     ----   frei
+   ZVK                 2        EStG (jhrl)              2                                                                                      b
+                       [neu
+                       ab
+                       Vers
+                       ion
+                       16.1
+                       ]
+
+
+   Baulohn -           838      ZVK,stfr,sv-             BAUZ       BT00      --    --   ----     ----     BAV      jhrl     ----               unpf     ----   pﬂ
+   ZVK                 3        jhrl.zusätz.Grenz        3                                                                                      b
+                       [neu     e
+                       ab
+                       Vers
+                       ion
+                       16.1
+                       ]
+
+
+   Baulohn -           838      Beitrag ZVK, jhrl.       BAUZ       BT00      --    --   ----     ----     son      jhrl     ----               unpf     ----   pﬂ
+   ZVK                 4                                 4                                                                                      b
+                       [neu
+                       ab
+                       Vers
+                       ion
+                       16.1
+                       ]
+
+
+   Baulohn -           840      Lfd.Bez.,Betr.m.V        BAUL       BT00      --    --   ----     ----     lfd      lfd      DU03,DU06,         nopf     ----   pﬂ
+   Allgemeine          0        erteil.a.Std.            B                                                                   DU09,DU11,         b
+   Lohnart                                                                                                                   DU13, Betr
+
+
+   Statistiklohna      862      Statistik-LA,            STK01      SO01      --    --   ----     ----     ----     ----     ----               ----     ----   ----
+   rt                  0        Std.,bes.Behandl                              --    --
+
+
+   Baulohn -           870      Bau, Korrektur           STK03      SO01      --    --   ----     ----     ----     ----     ----               ----     ----   ----
+   Urlaub              0        Beschäftig.tage
+
+
+   Baulohn -           871      Statistik-               STK01      SO01      --    --   ----     ----     ----     ----     ----               ----     ----   ----
+   Jahressonder        0        LA,geleist.
+   zhg                          Std,GALA
+
+
+   Baulohn -           990      Abzug                    NET01      BT00      --    --   ----     ----     ----     ----     ----               ----     ----   ----
+   Urlaub              0        Urlaubsabgeltun
+                                g, SOKA
+
+
+   Baulohn -           991      Winterbesch.-            NET30      BT00      --    --   ----     ----     ----     ----     ----               ----     ----   ----
+   Winterbeschä        0        Umlage AN-
+   ftigung                      Anteil
+
+
+
+ Tabelle der Besonderheiten der Standardlohnarten für Baulohn
+
+ Tabelle der Lohnartenkerne für Baulohn
+
+ Tabelle der Ausfallschlüssel und deren zulässige Lohnarten
+
+Dokument 9225689                                                                                                                                         Seite 7 von 8
+
+=== PDF-SEITE 8 ===
+ Abkürzungsverzeichnis
+
+
+
+                                                                                                                             Copyright © DATEV eG
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dokument 9225689                                                                                                                          Seite 8 von 8

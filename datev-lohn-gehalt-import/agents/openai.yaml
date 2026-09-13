@@ -1,0 +1,4 @@
+interface:
+  display_name: "DATEV Lohn und Gehalt Import"
+  short_description: "LuG-Importdateien aus Fremddaten erstellen und prüfen"
+  default_prompt: "Verwende $datev-lohn-gehalt-import, um meine Daten für DATEV Lohn und Gehalt aufzubereiten und passende Importdateien zu erstellen."
