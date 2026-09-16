@@ -1,0 +1,16 @@
+{
+  "profile_name": "dortmunder-volksbank-v1",
+  "status": "blocked",
+  "reason": "GVC fehlt; Name/Zweck in falschen Unterfeldern. DATEV zeigte sichtbares ?20 und abgeschnittenen Text.",
+  "replacement": "dortmunder-volksbank-pdf-2025-v3",
+  "probe_import": {
+    "result": "failed",
+    "checks": {
+      "opening_balance_correct": null,
+      "test_closing_balance_correct": null,
+      "transaction_count_and_signs_correct": null,
+      "description_complete": false,
+      "no_visible_control_characters": false
+    }
+  }
+}

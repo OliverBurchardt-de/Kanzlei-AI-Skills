@@ -1,0 +1,34 @@
+:20:DV202500001
+:25:DE74441600140000000001
+:28C:00001/001
+:60F:C250201EUR0,00
+:61:2502070207C2300,00NMSCNONREF
+:86:051?00öberweisungsgutschr.?20Testeinlage FIKTIV A
+?32Muster Beteiligung UG
+:61:2502280228D17,80NMSCNONREF
+:86:805?00Abschluss lt. Anlage 1
+:62F:C250228EUR2282,20
+-
+:20:DV202500002
+:25:DE74441600140000000001
+:28C:00002/001
+:60F:C250228EUR2282,20
+:61:2503060306D142,71NMSCNONREF
+:86:020?00öberweisungsauftrag?20Testrechnung DEMO-A SecureG
+?21o plus Ende A?32Beispielkanzlei Am Marktpla?33tz
+:61:2503090309D319,42NMSCNONREF
+:86:020?00öberweisungsauftrag?20Testrechnung DEMO-B SecureG
+?21o plus Ende B?32Beispielkanzlei Am Marktpla?33tz
+:61:2503120312C4700,00NMSCNONREF
+:86:051?00öberweisungsgutschr.?20Testeinlage FIKTIV B
+?32Muster Holding UG (haftungs?33beschrÑnkt) i. Gr.
+:61:2503180318C680,00NMSCNONREF
+:86:051?00öberweisungsgutschr.?20Testeinlage FIKTIV C
+?32Beispiel Beteiligung UG
+:61:2503240324D73,26NMSCNONREF
+:86:118?00EchtzeitÅberweisung?20DEMO-REF-Z Testrechnung End?21e Z
+?32Beispiel Zahlstelle
+:61:2503310331D21,90NMSCNONREF
+:86:805?00Abschluss lt. Anlage 1
+:62F:C250331EUR7104,91
+-
