@@ -14,6 +14,8 @@ Die Matrix nach `STARTKLARHEITS_CHECKLISTE.md` ist der führende Arbeitsplan.
 
 ## 1. Debitoren, Kreditoren und OPOS
 
+Verbindlich zuerst [OPOS_ABGLEICH.md](OPOS_ABGLEICH.md) anwenden: beide OPOS-Seiten je Posten, Personenkonto und Sammelkonto mit dem letzten verfügbaren Buchhaltungsstand abstimmen. Den historischen Abschlussstichtag und die Fortschreibung bis zum aktuellen Stand separat belegen. Die nachfolgende Kandidatensuche ersetzt diese Abstimmung nicht.
+
 ### Inventar
 
 Zum Abschlussstichtag getrennt ausgeben:
@@ -57,7 +59,7 @@ Prüfung:
 1. Saldo zum Abschlussstichtag ermitteln.
 2. Alle offenen Komponenten des Saldos auf Einzelbuchungsebene erklären.
 3. Soweit verfügbar, die ersten 31 Tage des Folgejahres auf eindeutige Gegenbuchungen prüfen.
-4. Saldo null: `OK`.
+4. Saldo null: `AUF_NULL`.
 5. Eindeutig dokumentierter Banklaufzeitunterschied: `FACHLICH_ZU_KLAEREN` mit Gegenbuchung und Datum; nicht automatisch umbuchen.
 6. Ungeklärter oder dauerhaft stehengebliebener Betrag: `FACHLICH_ZU_KLAEREN` mit konkreter Mitarbeiteraufgabe.
 

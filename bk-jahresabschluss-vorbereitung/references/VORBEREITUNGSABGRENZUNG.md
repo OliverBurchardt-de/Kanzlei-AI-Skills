@@ -7,9 +7,10 @@ Diese Stufe räumt klar bestimmbare Vorarbeiten weg, bevor die eigentliche Jahre
 ## Verbindlich im Scope
 
 - Mandant und Zielwirtschaftsjahr eindeutig binden.
+- Eröffnungswerte des Zieljahres je vorhandenem Handels-/Steuerrechtsbereich gegen die endgültigen Vorjahres-Schlusswerte desselben Bereichs abstimmen oder fehlende bereichsspezifische Nachweise als Startblocker ausweisen.
 - Mandantenbesonderheiten und Abgrenzungsregister direkt aus SharePoint lesen.
 - Alle im Zieljahr bebuchten oder am Stichtag nicht auf null stehenden Bilanzkonten inventarisieren und einem Vorbereitungsthema zuordnen.
-- Debitoren, Kreditoren und OPOS auflisten.
+- Debitoren- und Kreditoren-OPOS auf Posten-, Personenkonten- und Sammelkontenebene gegen denselben letzten verfügbaren Buchhaltungsstand abstimmen; historischen Stichtag und Folgeausgleiche getrennt nachweisen.
 - Eindeutige Auszifferungskandidaten vorbereiten, aber nicht ausführen.
 - Geldtransit 1360 beziehungsweise funktionales SKR04-Konto 1460 aufräumorientiert prüfen.
 - Durchlaufende Posten 1590 beziehungsweise funktionales SKR04-Konto 1370 einschließlich bestätigter 100-EUR-Kanzleiregel bearbeiten.
@@ -34,7 +35,7 @@ In dieser Stufe nicht vollständig prüfen, berechnen oder beurteilen:
 - Steuerkontenverprobung, Steuerberechnung und Ertragsteuern; nur vorhandene Nachweise abstimmen,
 - Eigenkapital, Ergebnisverwendung und rechtsformabhängige Abschlussbuchungen,
 - Haftungsverhältnisse und Ereignisse nach dem Abschlussstichtag,
-- Handels-/Steuerbilanz-Abweichungen, Wahlrechte, E-Bilanz und Steuererklärungen,
+- Inhaltliche Handels-/Steuerbilanz-Abweichungen, Wahlrechte, E-Bilanz und Steuererklärungen; der bloße Eröffnungswertabgleich **innerhalb** jedes Bereichs gehört dagegen zur Vorbereitung,
 - Gesamturteil, ob Buchführung oder Jahresabschluss vollständig, richtig oder abschlussreif sind.
 
 Ebenfalls nicht im Scope sind Rechnungsnummernlücken, generische Doppelbuchungssuchen, allgemeine Gegenkonto-Anomalien und sonstige nicht an einen konkreten Abschlussvorbereitungspunkt gebundene Datenanalysen.

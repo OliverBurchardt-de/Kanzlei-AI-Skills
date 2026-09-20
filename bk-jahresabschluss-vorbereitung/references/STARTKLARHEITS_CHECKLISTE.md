@@ -27,9 +27,10 @@ Sie ist keine allgemeine Datenanalyse. Rechnungsnummernlücken, generische Doppe
 | `topic_id` | Thema | Regelmäßige Kontenbeispiele | Erwartung und Vorbereitungsergebnis |
 |---|---|---|---|
 | `quellen_datenstand` | Datenstand und Pflichtquellen | keine | Mandant, Zieljahr, Kontenplan, Summen und Salden, Einzelbuchungen, OPOS, Mandantenprofil und erforderliche Register sind eindeutig gebunden und mit Abrufstand dokumentiert. |
+| `eroeffnungsbilanz` | Eröffnungsbilanz und Bereichsabdeckung | Handelsrecht und Steuerrecht getrennt | Je Prüflinie endgültige Schlusswerte gegen Eröffnungswerte kontengleich, mit zulässigen Gruppen oder final belegter Ergebnisbrücke abstimmen. Unvollständige steuerliche Herleitung ist TEILNACHWEIS und Startblocker. Bei EÜR begründet nicht anwendbar. |
 | `bilanzkonten_abdeckung` | Vollständige Kontenabdeckung | alle bebuchten oder nicht auf null stehenden Bilanzkonten | Jedes Konto ist genau einem Thema zugeordnet. Unklassifizierte Konten blockieren den Start. |
-| `opos_debitoren` | Debitoren und offene Forderungen | Personenkonten | OPOS vollständig aufgelistet; eindeutige Auszifferungen getrennt; übrige Posten mit nächstem Schritt versehen. Keine Wertberichtigung vornehmen. |
-| `opos_kreditoren` | Kreditoren und offene Verbindlichkeiten | Personenkonten | Wie Debitoren; keine automatische Debitor-/Kreditor-Verrechnung. |
+| `opos_debitoren` | Debitoren und offene Forderungen | Personenkonten und belegte Sammelkonten | Posten, Personenkontensalden und Sammelkonten zum gleichen letzten Buchhaltungsstand abstimmen; Abschlussstichtag und spätere Ausgleiche separat nachweisen. Differenzen/Quellenlücken blockieren. Auszifferungsvorschläge separat. |
+| `opos_kreditoren` | Kreditoren und offene Verbindlichkeiten | Personenkonten und belegte Sammelkonten | Gleicher dreistufiger Abgleich wie Debitoren; keine Verrechnung zwischen Seiten. |
 | `bank_kasse` | Banken, Kassen und Zahlungsdienstleister | aus Mandantenprofil und Live-Kontenplan | Stichtagssalden gegen Bankauszug, Kassenbuch beziehungsweise Anbieterabrechnung abstimmen. Kassen dürfen zu keinem Zeitpunkt negativ sein. |
 | `geldtransit` | Geldtransit | SKR03 1360, SKR04 1460 | `NULL_ODER_NACHWEIS`: Null oder centgenau erklärter Banklaufzeitunterschied mit Gegenbuchung und Datum. |
 | `durchlaufende_posten` | Durchlaufende Posten | SKR03 1590, SKR04 1370 | `NULL_ODER_NACHWEIS`: Jeder Restposten ist einzeln erklärt. Die bestätigte Unter-100-EUR-Regel anwenden. |
@@ -73,5 +74,4 @@ Jeder Checklisteneintrag wird genau einer Arbeitsspur zugeordnet:
 - `UNTERLAGE_ANFORDERN`: für die Vorbereitung erforderlicher Nachweis fehlt; regelmäßig `blocks_start: true`.
 - `IM_ABSCHLUSS_PRUEFEN`: Unterlagen und Saldo sind vorbereitet, die fachliche Bilanzierungs-/Bewertungsentscheidung gehört in den eigentlichen Abschluss; `blocks_start: false`.
 
-`STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG` ist nur zulässig, wenn alle Kernthemen vorkommen, kein Bilanzkonto unklassifiziert ist und kein Checklisteneintrag mit `blocks_start: true` offen bleibt. Dieser Status bestätigt ausdrücklich nicht die Vollständigkeit oder Richtigkeit des Jahresabschlusses.
-
+`STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG` ist nur zulässig, wenn alle Kernthemen vorkommen, bei Bilanzierung beide Prüflinien Handelsrecht und Steuerrecht abgestimmt oder fachlich nachgewiesen nicht anwendbar sind, beide OPOS-Seiten aktuell und zum Abschlussstichtag abgestimmt sind, kein Bilanzkonto unklassifiziert ist und kein Checklisteneintrag mit `blocks_start: true` offen bleibt. Dieser Status bestätigt ausdrücklich nicht die Vollständigkeit oder Richtigkeit des Jahresabschlusses.

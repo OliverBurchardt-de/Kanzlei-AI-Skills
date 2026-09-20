@@ -1,7 +1,7 @@
 interface:
   display_name: "B&K Abschlussvorbereitung"
-  short_description: "Prüft buchhalterische Startklarheit zum Abschluss"
-  default_prompt: "Nutze $bk-jahresabschluss-vorbereitung, um die Konten- und Themencheckliste vor Beginn des Jahresabschlusses des genannten Mandanten abzuarbeiten."
+  short_description: "Prüft Eröffnungsbilanz HGB/Steuerrecht und OPOS"
+  default_prompt: "Nutze $bk-jahresabschluss-vorbereitung für den genannten Mandanten und das Wirtschaftsjahr: Lies die SharePoint-Mandantenbesonderheiten, prüfe die Eröffnungsbilanz getrennt nach Handels- und Steuerrecht und stimme OPOS mit dem letzten Buchhaltungsstand ab."
 policy:
   allow_implicit_invocation: true
   products:

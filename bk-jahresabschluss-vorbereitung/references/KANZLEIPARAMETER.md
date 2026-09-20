@@ -48,7 +48,11 @@ Die SharePoint-Ablage ist derzeit konfiguriert als:
 - Mandantenprofil: `Mandantenprofile/<Mandantennummer>.md`
 - Abgrenzungsregister: `Abgrenzungsregister/<Mandantennummer>.md`
 
-Vor Produktivfreigabe ist zu bestätigen, dass dieselbe Ablage auch für die vorgeschalteten Aufräumarbeiten maßgeblich bleibt.
+Diese Ablage ist auch für die Abschlussvorbereitung verbindlich. Die eigenständige Bibliothek wurde am 20.09.2026 live bestätigt; einzelne Mandantenprofile werden erst mit eindeutigem Mandanten direkt gelesen. Ein gleichnamiger Ordner unter `Freigegebene Dokumente` ist kein Ersatz.
+
+### Eröffnungsbilanz und OPOS
+
+Handelsrecht und Steuerrecht getrennt nachweisen. Standardtoleranz für EUR-Abgleiche: `0.005 EUR`, keine Wesentlichkeitsgrenze. Eigenständiges Eröffnungsbilanz-Arbeitspapier nach `EROEFFNUNGSBILANZ.md` erstellen. OPOS beider Seiten zusätzlich zum historischen Abschlussstichtag gegen den letzten verfügbaren Buchhaltungsstand abstimmen; die 31-Tage-Frist des Geldtransits gilt dafür nicht.
 
 ## Noch zu entscheiden
 

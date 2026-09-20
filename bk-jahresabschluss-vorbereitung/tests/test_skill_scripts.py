@@ -23,6 +23,7 @@ validate_review_data = load_module("validate_review_data", ROOT / "scripts" / "v
 
 CORE_TOPICS = (
     "quellen_datenstand",
+    "eroeffnungsbilanz",
     "bilanzkonten_abdeckung",
     "opos_debitoren",
     "opos_kreditoren",
@@ -58,8 +59,8 @@ def checklist_item(topic_id: str) -> dict:
 
 
 def valid_data() -> dict:
-    return {
-        "schema_version": "0.3.0",
+    data = {
+        "schema_version": "0.5.0",
         "execution_status": "preparation_only",
         "overall_status": "ENTWURF",
         "mandant": {"number": "12345", "datev_client_id": "guid", "name": "Test"},
@@ -72,6 +73,12 @@ def valid_data() -> dict:
         },
         "prior_fiscal_year": {"id": "20250101", "start": "2025-01-01", "end": "2025-12-31"},
         "sources": [],
+        "opening_balance_review": {
+            "area_inventory_status": "NICHT_PRUEFBAR",
+            "area_inventory_source_refs": [],
+            "expected_areas": [],
+            "areas": [],
+        },
         "account_inventory": {"debitors": [], "creditors": [], "balance_sheet_accounts": []},
         "open_items": {"receivable": [], "payable": [], "clearing_candidates": []},
         "preparation_checklist": [checklist_item(topic) for topic in CORE_TOPICS],
@@ -82,6 +89,103 @@ def valid_data() -> dict:
         "employee_tasks": [],
         "gates": [],
     }
+    opening_row = next(row for row in data["preparation_checklist"] if row["topic_id"] == "eroeffnungsbilanz")
+    opening_row.update(
+        {
+            "status": "NICHT_PRUEFBAR",
+            "work_lane": "UNTERLAGE_ANFORDERN",
+            "blocks_start": True,
+            "next_action": "Bereichsinventar und bereichsspezifische Auswertungen anfordern.",
+        }
+    )
+    data["open_items"]["reconciliation"] = [
+        {"side": side, "basis": basis, "status": "NICHT_PRUEFBAR", "next_action": "Vollständigen Abgleich beschaffen."}
+        for side in ("receivable", "payable") for basis in ("current", "closing")
+    ]
+    for row in data["preparation_checklist"]:
+        if row["topic_id"] in {"opos_debitoren", "opos_kreditoren"}:
+            row.update(status="NICHT_PRUEFBAR", work_lane="UNTERLAGE_ANFORDERN", blocks_start=True)
+    return data
+
+
+def add_opening_source(data: dict, source_id: str, area_id: str | None, year_id: str) -> None:
+    source = {
+        "id": source_id,
+        "kind": "upload",
+        "uri": f"test://{source_id}",
+        "retrieved_at": "2026-09-20T12:00:00+02:00",
+        "complete": True,
+        "fiscal_year_id": year_id,
+        "proof_kind": "direct_area",
+    }
+    if area_id is not None:
+        source["accounting_area_id"] = area_id
+    data["sources"].append(source)
+
+
+def reconciled_area(area_id: str) -> dict:
+    return {
+        "area_id": area_id,
+        "status": "ABGESTIMMT",
+        "evidence_extent": "vollstaendig",
+        "prior_close_source_ref": f"{area_id}-VORJAHR",
+        "current_opening_source_ref": f"{area_id}-EB",
+        "prior_close_final": True,
+        "comparison_complete": True,
+        "compared_account_count": 1,
+        "account_comparisons": [
+            {
+                "prior_account": "1200",
+                "opening_account": "1200",
+                "prior_balance": "100.00",
+                "opening_balance": "100.00",
+                "currency": "EUR",
+            }
+        ],
+        "differences": [],
+        "unmapped_accounts": [],
+        "next_action": "Keine.",
+    }
+
+
+def set_two_area_opening(data: dict) -> None:
+    add_opening_source(data, "BEREICHE", None, "20260101")
+    for area_id in ("handelsrecht", "steuerrecht"):
+        add_opening_source(data, f"{area_id}-VORJAHR", area_id, "20250101")
+        add_opening_source(data, f"{area_id}-EB", area_id, "20260101")
+    data["opening_balance_review"] = {
+        "area_inventory_status": "BEKANNT",
+        "area_inventory_source_refs": ["BEREICHE"],
+        "expected_areas": ["handelsrecht", "steuerrecht"],
+        "areas": [reconciled_area("handelsrecht"), reconciled_area("steuerrecht")],
+    }
+    opening_row = next(row for row in data["preparation_checklist"] if row["topic_id"] == "eroeffnungsbilanz")
+    opening_row.update(
+        {
+            "status": "ABGESTIMMT",
+            "source_refs": ["BEREICHE"],
+            "evidence_refs": ["BEREICHE", "handelsrecht-EB", "steuerrecht-EB"],
+            "work_lane": "ERLEDIGT",
+            "blocks_start": False,
+            "next_action": "Keine.",
+        }
+    )
+
+
+def set_reconciled_opos(data: dict) -> None:
+    for row in data["open_items"]["reconciliation"]:
+        as_of = data["target_fiscal_year"]["end"] if row["basis"] == "closing" else "2027-02-28"
+        snapshot_id = f"TEST-{row['side']}-{row['basis']}"
+        refs = []
+        for role in ("opos", "personenkonten", "sammelkonten"):
+            source_id = f"{snapshot_id}-{role}"
+            refs.append(source_id)
+            data["sources"].append({"id": source_id, "kind": "upload", "uri": f"test://{source_id}", "retrieved_at": "2027-03-01T10:00:00+01:00", "complete": True, "as_of": as_of, "snapshot_id": snapshot_id, "side": row["side"], "reconciliation_role": role})
+        row.update(status="ABGESTIMMT", complete=True, snapshot_consistent=True, item_check_complete=True, control_check_complete=True, opos_as_of=as_of, ledger_as_of=as_of, snapshot_id=snapshot_id, source_refs=refs, historical_method="historical_export", unresolved_items=[], control_differences=[], expected_accounts=[], account_comparisons=[])
+    for row in data["preparation_checklist"]:
+        if row["topic_id"] in {"opos_debitoren", "opos_kreditoren"}:
+            refs = data["open_items"]["reconciliation"][0 if row["topic_id"] == "opos_debitoren" else 2]["source_refs"]
+            row.update(status="ABGESTIMMT", evidence_refs=refs, source_refs=refs, work_lane="ERLEDIGT", blocks_start=False)
 
 
 def small_amount_proposal(amount: str = "99.99", tax_key: str = "") -> dict:
@@ -168,6 +272,68 @@ class SharePointTargetTests(unittest.TestCase):
 class ReviewValidationTests(unittest.TestCase):
     def test_valid_minimum(self) -> None:
         self.assertEqual(validate_review_data.validate_review_data(valid_data()), [])
+
+    def test_two_reconciled_opening_areas_allow_ready(self) -> None:
+        data = valid_data()
+        set_two_area_opening(data)
+        set_reconciled_opos(data)
+        data["overall_status"] = "STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG"
+        self.assertEqual(validate_review_data.validate_review_data(data), [])
+
+    def test_missing_tax_area_is_rejected_even_if_checklist_says_reconciled(self) -> None:
+        data = valid_data()
+        set_two_area_opening(data)
+        data["opening_balance_review"]["areas"].pop()
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("Eröffnungsbilanzbereiche fehlen" in error for error in errors))
+        self.assertTrue(any("nicht ABGESTIMMT" in error for error in errors))
+
+    def test_tax_area_cannot_use_trade_area_source(self) -> None:
+        data = valid_data()
+        set_two_area_opening(data)
+        data["opening_balance_review"]["areas"][1]["current_opening_source_ref"] = "handelsrecht-EB"
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("passende Bereichskennung" in error for error in errors))
+
+    def test_reconciled_area_rejects_account_difference(self) -> None:
+        data = valid_data()
+        set_two_area_opening(data)
+        data["opening_balance_review"]["areas"][0]["account_comparisons"][0]["opening_balance"] = "99.99"
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("abweichenden Kontenbeträgen" in error for error in errors))
+
+    def test_opening_source_from_wrong_year_is_rejected(self) -> None:
+        data = valid_data()
+        set_two_area_opening(data)
+        source = next(source for source in data["sources"] if source["id"] == "steuerrecht-EB")
+        source["fiscal_year_id"] = "20250101"
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("passenden Wirtschaftsjahr" in error for error in errors))
+
+    def test_euer_has_no_opening_balance_area(self) -> None:
+        data = valid_data()
+        data["target_fiscal_year"]["accounting_method"] = "euer"
+        data["opening_balance_review"]["area_inventory_status"] = "NICHT_ANWENDBAR"
+        opening_row = next(row for row in data["preparation_checklist"] if row["topic_id"] == "eroeffnungsbilanz")
+        opening_row.update({"status": "NICHT_ANWENDBAR", "work_lane": "ERLEDIGT", "blocks_start": False})
+        self.assertEqual(validate_review_data.validate_review_data(data), [])
+
+    def test_ready_rejects_unknown_area_inventory(self) -> None:
+        data = valid_data()
+        data["overall_status"] = "STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG"
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("abgestimmte Eröffnungsbilanz" in error for error in errors))
+
+    def test_unresolved_tax_area_blocks_start(self) -> None:
+        data = valid_data()
+        set_two_area_opening(data)
+        data["opening_balance_review"]["areas"][1].update(
+            {"status": "NICHT_PRUEFBAR", "current_opening_source_ref": None, "comparison_complete": False}
+        )
+        data["overall_status"] = "STARTKLAR_FUER_ABSCHLUSSBEARBEITUNG"
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("Fehlende Eröffnungsbilanz-Bereichsabdeckung" in error for error in errors))
+        self.assertTrue(any("STARTKLAR verlangt die abgestimmte Eröffnungsbilanz" in error for error in errors))
 
     def test_small_amount_rule_rejects_100_eur(self) -> None:
         data = valid_data()
