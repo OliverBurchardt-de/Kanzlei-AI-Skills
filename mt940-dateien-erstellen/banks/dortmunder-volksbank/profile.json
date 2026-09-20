@@ -1,0 +1,52 @@
+{
+  "profile_id": "dortmunder-volksbank-pdf-2025-v3",
+  "bank_name": "Dortmunder Volksbank eG",
+  "blz": "44160014",
+  "bic": "GENODEM1DOR",
+  "source_variant": "Kontokorrent EUR PDF 2025",
+  "currency": "EUR",
+  "encoding": "cp850",
+  "line_endings": "CRLF",
+  "reference_file": "reference.sta",
+  "reference_sha256": "403eabadf2a84ade1cfd5f0f626ce596bbcda675f28ace3395e24210349512c0",
+  "reference_kind": "synthetic_reconstruction_not_native_bank_export",
+  "allowed_gvc": [
+    "020",
+    "051",
+    "118",
+    "805",
+    "835"
+  ],
+  "field86": {
+    "prefix": "three_digit_gvc",
+    "delimiter": "?",
+    "booking_text": "00",
+    "purpose": [
+      "20",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29"
+    ],
+    "counterparty": [
+      "32",
+      "33"
+    ],
+    "max_subfield_length": 27,
+    "max_physical_line_length_including_tag": 65,
+    "max_physical_lines": 6
+  },
+  "datev_import": {
+    "status": "not_verified",
+    "checks": "Public synthetic reference has no DATEV import acceptance. Private client evidence is not distributed."
+  },
+  "rejected_previous_profiles": [
+    "dortmunder-volksbank-v1",
+    "dortmunder-volksbank-pdf-2025-v2"
+  ]
+}

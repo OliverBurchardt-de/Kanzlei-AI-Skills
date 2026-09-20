@@ -1,0 +1,120 @@
+[
+  {
+    "reference": "DV202500001",
+    "iban": "DE74441600140000000001",
+    "number": 1,
+    "opening": {
+      "date": "2025-02-01",
+      "amount": "0.00"
+    },
+    "closing": {
+      "date": "2025-02-28",
+      "amount": "2282.20"
+    },
+    "transactions": [
+      {
+        "booking_date": "2025-02-07",
+        "value_date": "2025-02-07",
+        "amount": "2300.00",
+        "code": "NMSC",
+        "gvc": "051",
+        "type": "Überweisungsgutschr.",
+        "counterparty": "Muster Beteiligung UG",
+        "purpose": "Testeinlage FIKTIV A",
+        "customer_reference": "NONREF"
+      },
+      {
+        "booking_date": "2025-02-28",
+        "value_date": "2025-02-28",
+        "amount": "-17.80",
+        "code": "NMSC",
+        "gvc": "805",
+        "type": "Abschluss lt. Anlage 1",
+        "counterparty": "",
+        "purpose": "",
+        "customer_reference": "NONREF"
+      }
+    ]
+  },
+  {
+    "reference": "DV202500002",
+    "iban": "DE74441600140000000001",
+    "number": 2,
+    "opening": {
+      "date": "2025-02-28",
+      "amount": "2282.20"
+    },
+    "closing": {
+      "date": "2025-03-31",
+      "amount": "7104.91"
+    },
+    "transactions": [
+      {
+        "booking_date": "2025-03-06",
+        "value_date": "2025-03-06",
+        "amount": "-142.71",
+        "code": "NMSC",
+        "gvc": "020",
+        "type": "Überweisungsauftrag",
+        "counterparty": "Beispielkanzlei Am Marktplatz",
+        "purpose": "Testrechnung DEMO-A SecureGo plus Ende A",
+        "customer_reference": "NONREF"
+      },
+      {
+        "booking_date": "2025-03-09",
+        "value_date": "2025-03-09",
+        "amount": "-319.42",
+        "code": "NMSC",
+        "gvc": "020",
+        "type": "Überweisungsauftrag",
+        "counterparty": "Beispielkanzlei Am Marktplatz",
+        "purpose": "Testrechnung DEMO-B SecureGo plus Ende B",
+        "customer_reference": "NONREF"
+      },
+      {
+        "booking_date": "2025-03-12",
+        "value_date": "2025-03-12",
+        "amount": "4700.00",
+        "code": "NMSC",
+        "gvc": "051",
+        "type": "Überweisungsgutschr.",
+        "counterparty": "Muster Holding UG (haftungsbeschränkt) i. Gr.",
+        "purpose": "Testeinlage FIKTIV B",
+        "customer_reference": "NONREF"
+      },
+      {
+        "booking_date": "2025-03-18",
+        "value_date": "2025-03-18",
+        "amount": "680.00",
+        "code": "NMSC",
+        "gvc": "051",
+        "type": "Überweisungsgutschr.",
+        "counterparty": "Beispiel Beteiligung UG",
+        "purpose": "Testeinlage FIKTIV C",
+        "customer_reference": "NONREF"
+      },
+      {
+        "booking_date": "2025-03-24",
+        "value_date": "2025-03-24",
+        "amount": "-73.26",
+        "code": "NMSC",
+        "gvc": "118",
+        "type": "Echtzeitüberweisung",
+        "counterparty": "Beispiel Zahlstelle",
+        "purpose": "DEMO-REF-Z Testrechnung Ende Z",
+        "customer_reference": "NONREF"
+      },
+      {
+        "booking_date": "2025-03-31",
+        "value_date": "2025-03-31",
+        "amount": "-21.90",
+        "code": "NMSC",
+        "gvc": "805",
+        "type": "Abschluss lt. Anlage 1",
+        "counterparty": "",
+        "purpose": "",
+        "customer_reference": "NONREF"
+      }
+    ]
+  }
+]

@@ -1,286 +1,244 @@
-from __future__ import annotations
-
+"""Bank-specific regression tests; the stored reference is never regenerated."""
 import copy
+import hashlib
 import importlib.util
 import json
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/"scripts"))
+from bank_routing import model
+BANK=ROOT/"banks"/"dortmunder-volksbank"
 
-ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = ROOT / "scripts"
-FIXTURES = Path(__file__).resolve().parent / "fixtures"
-sys.path.insert(0, str(SCRIPTS))
+class VolksbankTests(unittest.TestCase):
+    def setUp(self):
+        self.data=json.loads((BANK/"reference-input.json").read_text(encoding="utf-8"))
+        self.expected=json.loads((BANK/"reference-expected.json").read_text(encoding="utf-8"))
+        self.ref=(BANK/"reference.sta").read_bytes()
+        self.m=model(self.data)
 
+    def test_stored_reference_independent_semantics(self):
+        self.assertEqual(self.m.DECODER.parse(self.ref),self.expected)
+        self.assertEqual(hashlib.sha256(self.ref).hexdigest(),"403eabadf2a84ade1cfd5f0f626ce596bbcda675f28ace3395e24210349512c0")
 
-def load_script(name: str, filename: str):
-    spec = importlib.util.spec_from_file_location(name, SCRIPTS / filename)
-    module = importlib.util.module_from_spec(spec)
-    assert spec and spec.loader
-    spec.loader.exec_module(module)
-    return module
+    def test_new_generation_all_fields(self):
+        payload,report=self.m.build(self.data)
+        self.assertEqual(self.m.DECODER.parse(payload),self.expected)
+        self.assertEqual(report["transaction_count"],8)
+        self.assertEqual(report["month_counts"],{"2025-02":2,"2025-03":6})
+        self.assertEqual(report["datev_import_status"],"not_verified")
 
+    def test_original_statement_numbers_in_one_file(self):
+        payload,_=self.m.build(self.data)
+        self.assertEqual(payload.count(b":28C:"),2)
+        self.assertIn(b":28C:00002/001",payload)
 
-build_module = load_script("build_mt940", "build-mt940.py")
-validate_module = load_script("validate_mt940", "validate-mt940.py")
-from mt940_common import MT940Error, normalize_manifest, output_filename  # noqa: E402
+    def test_gvc_required(self):
+        with self.assertRaises(ValueError):
+            self.m.DECODER.parse(self.ref.replace(b":86:051?",b":86:?"))
 
+    def test_wrong_counterparty_subfields_detected(self):
+        mutated=self.ref.replace(b"?32Muster Beteiligung",b"?30Muster Beteiligung")
+        with self.assertRaises(ValueError):
+            self.m.validate(self.data,mutated)
 
-def add_pdf_source_evidence(data: dict) -> dict:
-    for number, tx in enumerate(data["transactions"], 1):
-        words = tx["description"].split()
-        split_at = len(words) // 2
-        visible_lines = (
-            [" ".join(words[:split_at]), " ".join(words[split_at:])]
-            if len(words) >= 8
-            else [tx["description"]]
-        )
-        tx.setdefault("source_page", 1 + ((number - 1) // 10))
-        tx.setdefault("source_description_lines", visible_lines)
-        tx.setdefault("source_text_verified", True)
-    return data
+    def test_cut_text_detected_even_with_same_balances(self):
+        with self.assertRaises(ValueError):
+            self.m.validate(self.data,self.ref.replace(b"DEMO-REF-Z",b"DEMO"))
 
+    def test_missing_february_rejected(self):
+        self.data["statements"]=self.data["statements"][1:]
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-def reference_day() -> dict:
-    data = json.loads((FIXTURES / "reference-day.json").read_text(encoding="utf-8"))
-    return add_pdf_source_evidence(data)
+    def test_missing_transaction_rejected(self):
+        self.data["statements"][1]["transactions"].pop(2)
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
+    def test_independent_month_count(self):
+        self.data["source_month_counts"]["2025-02"]=0
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-def full_july_manifest() -> dict:
-    data = reference_day()
-    data.update(
-        {
-            "statement_end": "2026-07-31",
-            "closing_balance_date": "2026-07-31",
-            "closing_balance": "33444.84",
-            "field86_mode": "datev_verified:automated-test-profile",
-            "output_scope": "full",
-        }
-    )
-    data["source_evidence"].update(
-        {
-            "statement_end": "2026-07-31",
-            "closing_balance_date": "2026-07-31",
-            "closing_balance": "33444.84",
-        }
-    )
-    transactions = data["transactions"]
-    for number in range(7, 64):
-        day = 2 + ((number - 7) // 2)
-        transactions.append(
-            {
-                "value_date": f"2026-07-{day:02d}",
-                "booking_date": f"2026-07-{day:02d}",
-                "amount": "-100.00",
-                "code": "NMSC",
-                "customer_reference": f"REF{number:04d}",
-                "description": f"Juli-Umsatz {number:04d} mit eindeutiger Referenz REF{number:04d}",
-            }
-        )
-    transactions.append(
-        {
-            "value_date": "2026-07-31",
-            "booking_date": "2026-07-31",
-            "amount": "-39793.40",
-            "code": "NTRF",
-            "customer_reference": "REF0064",
-            "description": "Abschlussumsatz Juli Referenz REF0064",
-        }
-    )
-    return add_pdf_source_evidence(data)
+    def test_control_debit_credit_totals(self):
+        self.data["source_inventory"][1]["debits"]="1.00"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
+    def test_unknown_bank_no_fallback(self):
+        self.data["bank"]["name"]="Andere Volksbank eG"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-class MT940Tests(unittest.TestCase):
-    profile_dir = FIXTURES / "profiles"
+    def test_unknown_profile_no_fallback(self):
+        self.data["profile_id"]="andere-bank"
+        with self.assertRaises(ValueError):
+            model(self.data)
 
-    def write_and_validate(self, data: dict) -> tuple[Path, dict]:
-        normalized = normalize_manifest(data, self.profile_dir)
-        payload, _ = build_module.build(data, self.profile_dir)
-        temp_dir = tempfile.TemporaryDirectory()
-        self.addCleanup(temp_dir.cleanup)
-        path = Path(temp_dir.name) / output_filename(normalized)
-        path.write_bytes(payload)
-        return path, validate_module.validate(path, data, self.profile_dir)
+    def test_old_profile_blocked(self):
+        self.data["profile_id"]="dortmunder-volksbank-v1"
+        with self.assertRaises(ValueError):
+            model(self.data)
 
-    def test_complete_july_statement(self):
-        data = full_july_manifest()
-        path, result = self.write_and_validate(data)
-        text = path.read_bytes().decode("cp1252")
-        self.assertIn(":20:MT26073152432107\r\n", text)
-        self.assertIn(":25:DE43300501101009524321\r\n", text)
-        self.assertIn(":28C:00007/001\r\n", text)
-        self.assertIn(":60F:C260630EUR83077,77\r\n", text)
-        self.assertIn(":62F:C260731EUR33444,84\r\n", text)
-        self.assertEqual(result["transactions"], 64)
-        self.assertEqual(result["transaction_total"], "-49632.93")
+    def test_cp1252_v2_profile_blocked(self):
+        self.data["profile_id"]="dortmunder-volksbank-pdf-2025-v2"
+        with self.assertRaises(ValueError):
+            model(self.data)
 
-    def test_reference_day_probe_file(self):
-        data = reference_day()
-        path, result = self.write_and_validate(data)
-        self.assertEqual(path.name, "MT940 Test DE43300501101009524321 01.07.2026.sta")
-        self.assertEqual(result["transactions"], 6)
-        self.assertEqual(result["opening"], "83077.77")
-        self.assertEqual(result["transaction_total"], "-4139.53")
-        self.assertEqual(result["closing"], "78938.24")
+    def test_complete_synthetic_year_in_one_file(self):
+        import calendar
+        from decimal import Decimal
+        template = copy.deepcopy(self.data["statements"][0]["transactions"])
+        self.data["statements"] = []
+        self.data["source_inventory"] = []
+        self.data["source_month_counts"] = {}
+        opening = {"date": "2025-01-01", "amount": "0.00"}
+        for month in range(1, 13):
+            end = f"2025-{month:02d}-{calendar.monthrange(2025, month)[1]}"
+            txs = copy.deepcopy(template)
+            for tx in txs:
+                tx["booking_date"] = tx["value_date"] = end
+            closing = {"date": end, "amount": str(Decimal(opening["amount"]) + Decimal("2282.20"))}
+            self.data["statements"].append({"number": month, "opening": opening.copy(), "closing": closing.copy(), "transactions": txs})
+            self.data["source_inventory"].append({"number": month, "count": 2, "debits": "17.80", "credits": "2300.00", "opening": opening.copy(), "closing": closing.copy()})
+            self.data["source_month_counts"][end[:7]] = 2
+            opening = closing
+        payload, report = self.m.build(self.data)
+        self.assertEqual(payload.count(b":28C:"), 12)
+        self.assertEqual(report["transaction_count"], 24)
+        self.assertEqual(report["month_counts"]["2025-02"], 2)
+        self.assertEqual(report["closing"]["amount"], "27386.40")
 
-    def test_wrong_opening_balance_date_fails_source_check(self):
-        data = reference_day()
-        data["opening_balance_date"] = "2026-07-01"
-        with self.assertRaises(MT940Error) as raised:
-            normalize_manifest(data, self.profile_dir)
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("source evidence", str(raised.exception))
+    def test_synthetic_reference_is_not_import_approval(self):
+        payload, report = self.m.build(self.data)
+        self.assertEqual(payload, self.ref)
+        self.assertEqual(report["datev_import_status"], "not_verified")
+        self.assertEqual(report["bank_model_import_status"], "not_verified")
+        self.assertIsNone(report["acceptance_evidence"])
 
-    def test_hard_coded_statement_number_fails(self):
-        data = reference_day()
-        normalized = normalize_manifest(data, self.profile_dir)
-        payload, _ = build_module.build(data, self.profile_dir)
-        payload = payload.replace(b":28C:00007/001", b":28C:00001/001")
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir) / output_filename(normalized)
-            path.write_bytes(payload)
-            with self.assertRaises(MT940Error) as raised:
-                validate_module.validate(path, data, self.profile_dir)
-        self.assertEqual(raised.exception.exit_code, 3)
+    def test_wrong_encoding_recreates_datev_error_and_is_rejected(self):
+        wrong=self.ref.decode("cp850").encode("cp1252")
+        self.assertIn("beschrõnkt",wrong.decode("cp850"))
+        with self.assertRaises(ValueError):
+            self.m.validate(self.data,wrong)
 
-    def test_duplicate_fingerprint_returns_status_five(self):
-        data = reference_day()
-        with tempfile.TemporaryDirectory() as temp_dir:
-            directory = Path(temp_dir)
-            manifest_path = directory / "manifest.json"
-            manifest_path.write_text(json.dumps(data), encoding="utf-8")
-            output = directory / output_filename(normalize_manifest(data, self.profile_dir))
-            build_module.write_artifacts(
-                data, manifest_path, output, profile_dir=self.profile_dir
-            )
-            with self.assertRaises(MT940Error) as raised:
-                build_module.write_artifacts(
-                    data, manifest_path, output, profile_dir=self.profile_dir
-                )
-        self.assertEqual(raised.exception.exit_code, 5)
+    def test_invalid_date_not_normalized(self):
+        self.data["statements"][0]["transactions"][1]["value_date"]="2025-02-30"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-    def test_field86_roundtrip_preserves_allianz_text(self):
-        data = reference_day()
-        path, result = self.write_and_validate(data)
-        metric = result["field86"][0]
-        self.assertTrue(metric["roundtrip_match"])
-        self.assertFalse(metric["truncated"])
-        text = path.read_bytes().decode("cp1252")
-        for fragment in ("Allianz", "AG", "AS-", "SA01A000000095207172"):
-            self.assertIn(fragment, text)
+    def test_unconfirmed_original_date_change_rejected(self):
+        self.data["statements"][0]["transactions"][1]["source_value_date"]="2025-02-30"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-    def test_field86_loss_is_detected(self):
-        data = reference_day()
-        normalized = normalize_manifest(data, self.profile_dir)
-        payload, _ = build_module.build(data, self.profile_dir)
-        payload = payload.replace(b"Allianz", b"XXXXXXX", 1)
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir) / output_filename(normalized)
-            path.write_bytes(payload)
-            with self.assertRaises(MT940Error):
-                validate_module.validate(path, data, self.profile_dir)
+    def test_confirmed_date_change_keeps_provenance(self):
+        tx=self.data["statements"][0]["transactions"][1]
+        tx["source_value_date"]="2025-02-30"
+        tx["value_date_correction"]={"confirmed":True,"authority":"synthetic test instruction","reason":"fixture only"}
+        self.m.build(self.data)
+        self.assertEqual(tx["source_value_date"],"2025-02-30")
 
-    def test_unverified_pdf_cannot_create_full_month(self):
-        data = full_july_manifest()
-        data["field86_mode"] = "unverified"
-        with self.assertRaises(MT940Error) as raised:
-            build_module.build(data, self.profile_dir)
-        self.assertEqual(raised.exception.exit_code, 4)
+    def test_long_name_not_truncated(self):
+        self.data["statements"][1]["transactions"][2]["counterparty"]="A"*55
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-    def test_datev_legacy_dates_are_not_migrated(self):
-        data = reference_day()
-        data["period_start"] = data.pop("statement_start")
-        data["period_end"] = data.pop("statement_end")
-        data.pop("opening_balance_date")
-        data.pop("closing_balance_date")
-        with self.assertRaises(MT940Error) as raised:
-            normalize_manifest(data, self.profile_dir)
-        self.assertEqual(raised.exception.exit_code, 2)
+    def test_long_purpose_not_truncated(self):
+        self.data["statements"][1]["transactions"][2]["purpose"]="A"*271
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-    def test_legacy_generic_manifest_remains_supported(self):
-        data = {
-            "iban": "DE89370400440532013000",
-            "period_start": "2025-01-01",
-            "period_end": "2025-01-31",
-            "opening_balance": "100.00",
-            "closing_balance": "125.00",
-            "currency": "EUR",
-            "transactions": [
-                {
-                    "value_date": "2025-01-02",
-                    "booking_date": "2025-01-02",
-                    "amount": "25.00",
-                    "description": "Legacy generic transaction",
-                }
-            ],
-        }
-        payload, report = build_module.build(data)
-        self.assertIn(b":28C:00001/001\r\n", payload)
-        self.assertEqual(report["transaction_total"], "25.00")
+    def test_umlauts_and_physical_encoding(self):
+        payload,_=self.m.build(self.data)
+        self.assertIn("beschränkt".encode("cp850"),payload)
+        self.assertNotIn(b"\xef\xbb\xbf",payload)
+        self.assertNotIn(b"\n",payload.replace(b"\r\n",b""))
+        self.assertTrue(all(len(x)<=65 for x in payload.split(b"\r\n")))
 
+    def test_delimiter_in_source_rejected(self):
+        self.data["statements"][1]["transactions"][2]["purpose"]="Text ?20 literal"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
+    def test_pdf_requires_visual_confirmation(self):
+        self.data["source_kind"]="pdf"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
+    def test_source_line_join_without_inserted_space(self):
+        tx=copy.deepcopy(self.data["statements"][1]["transactions"][0])
+        tx.update(counterparty="Beispiel",purpose="SecureGo",source_page=1,
+                  source_reviewed=True,source_lines=["Beispiel","Sec","ureGo"],source_joiners=[" ",""])
+        self.m.check_source(tx,"pdf")
+        tx["source_joiners"]=[" "," "]
+        with self.assertRaises(ValueError):
+            self.m.check_source(tx,"pdf")
 
-    def test_pdf_requires_visually_verified_source_lines(self):
-        data = reference_day()
-        data["transactions"][0].pop("source_description_lines")
-        with self.assertRaises(MT940Error) as raised:
-            normalize_manifest(data, self.profile_dir)
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("source_description_lines", str(raised.exception))
+    def test_no_fictitious_fee_counterparty(self):
+        decoded=self.m.DECODER.parse(self.ref)
+        self.assertEqual(decoded[0]["transactions"][1]["counterparty"],"")
+        self.assertEqual(decoded[0]["transactions"][1]["type"],"Abschluss lt. Anlage 1")
 
-    def test_pdf_description_must_match_visible_source_lines(self):
-        data = reference_day()
-        data["transactions"][0]["description"] = "Falscher Anfang und falsches Ende"
-        with self.assertRaises(MT940Error) as raised:
-            normalize_manifest(data, self.profile_dir)
-        self.assertEqual(raised.exception.exit_code, 2)
-        self.assertIn("differs from", str(raised.exception))
+    def test_value_date_independent_from_booking(self):
+        self.data["statements"][1]["transactions"][4]["value_date"]="2025-04-01"
+        payload,_=self.m.build(self.data)
+        last=self.m.DECODER.parse(payload)[1]["transactions"][4]
+        self.assertEqual(last["booking_date"],"2025-03-24")
+        self.assertEqual(last["value_date"],"2025-04-01")
 
-    def test_pdf_source_match_is_reported_with_text_edges(self):
-        data = reference_day()
-        _, result = self.write_and_validate(data)
-        metric = result["field86"][0]
-        self.assertEqual(metric["source_page"], 1)
-        self.assertGreaterEqual(metric["source_line_count"], 2)
-        self.assertTrue(metric["source_to_manifest_match"])
-        self.assertTrue(metric["source_text_start"].startswith("Allianz"))
-        self.assertTrue(metric["source_text_end"].endswith("SA01A000000095207172"))
+    def test_lf_only_reference_rejected(self):
+        with self.assertRaises(ValueError):
+            self.m.DECODER.parse(self.ref.replace(b"\r\n",b"\n"))
 
-    def test_native_field86_lines_are_preserved_exactly(self):
-        data = {
-            "iban": "DE89370400440532013000",
-            "statement_start": "2025-01-01",
-            "statement_end": "2025-01-31",
-            "opening_balance_date": "2024-12-31",
-            "opening_balance": "100.00",
-            "closing_balance_date": "2025-01-31",
-            "closing_balance": "75.00",
-            "statement_number": 1,
-            "sequence_number": 1,
-            "currency": "EUR",
-            "source_type": "native_mt940",
-            "target_system": "DATEV",
-            "field86_mode": "native",
-            "transactions": [
-                {
-                    "value_date": "2025-01-02",
-                    "booking_date": "2025-01-02",
-                    "amount": "-25.00",
-                    "code": "NMSC",
-                    "native_field86_lines": [
-                        ":86:?00ORIGINAL?20Unver?ndert",
-                        "Fortsetzung aus der Bankdatei",
-                    ],
-                }
-            ],
-        }
-        path, result = self.write_and_validate(data)
-        text = path.read_bytes().decode("cp1252")
-        self.assertIn(":86:?00ORIGINAL?20Unver?ndert\r\n", text)
-        self.assertEqual(result["transactions"], 1)
+    def test_gvc_sign_mismatch_rejected(self):
+        self.data["statements"][0]["transactions"][0]["gvc"]="020"
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
 
-if __name__ == "__main__":
+    def pdf_fixture(self):
+        self.data["source_kind"]="pdf"
+        for s,control in zip(self.data["statements"],self.data["source_inventory"]):
+            control.update(source_file="synthetic.pdf",source_file_sha256="0"*64,
+                           page_count=2,reviewed_pages=[1,2])
+            for tx in s["transactions"]:
+                lines=[v for v in (tx["counterparty"],tx["purpose"]) if v]
+                tx.update(source_reviewed=True,source_page=1,source_lines=lines,
+                          source_joiners=[" "]*max(0,len(lines)-1))
+
+    def test_all_pages_and_continuation_transactions(self):
+        self.pdf_fixture()
+        self.data["statements"][1]["transactions"][-1]["source_page"]=2
+        payload,report=self.m.build(self.data)
+        self.assertEqual(report["transaction_count"],8)
+        self.assertEqual(report["transaction_audit"][-1]["source_page"],2)
+
+    def test_unreviewed_page_rejected(self):
+        self.pdf_fixture()
+        self.data["source_inventory"][1]["reviewed_pages"]=[1]
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
+
+    def test_transaction_outside_page_inventory_rejected(self):
+        self.pdf_fixture()
+        self.data["statements"][1]["transactions"][0]["source_page"]=3
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
+
+    def test_control_totals_catch_balanced_missing_pair(self):
+        # Removing a debit and credit of equal value preserves the balance,
+        # but must still fail source count/control totals.
+        pair=copy.deepcopy(self.data["statements"][1]["transactions"][:1])*2
+        pair[0]=copy.deepcopy(pair[0])
+        pair[0].update(amount="100.00",gvc="051",type="Überweisungsgutschr.")
+        pair[1]=copy.deepcopy(pair[1])
+        pair[1].update(amount="-100.00")
+        self.data["statements"][1]["transactions"][0:0]=pair
+        with self.assertRaises(ValueError):
+            self.m.build(self.data)
+
+if __name__=="__main__":
     unittest.main()
