@@ -1,0 +1,12 @@
+# Never version client cases or generated working packages.
+/cases/
+/output/
+/tmp/
+/.work/
+
+# Artifact-tool inspection sidecars are local QA output.
+*.inspect.ndjson
+
+# Python test cache.
+__pycache__/
+*.pyc
