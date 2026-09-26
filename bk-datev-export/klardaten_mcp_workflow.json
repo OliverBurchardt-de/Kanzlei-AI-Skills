@@ -1,0 +1,43 @@
+{
+  "name": "klardaten_datev_preflight",
+  "required_when_available": true,
+  "steps": [
+    {
+      "step": 1,
+      "resource": "datev://accounting/clients",
+      "purpose": "Mandant anhand Nummer und Name auflösen"
+    },
+    {
+      "step": 2,
+      "resource": "datev://accounting/fiscal_years",
+      "purpose": "Verfügbares Wirtschaftsjahr auflösen"
+    },
+    {
+      "step": 3,
+      "resource": "datev://accounting/general_ledger_accounts",
+      "purpose": "Mandantenspezifischen Kontenplan prüfen"
+    },
+    {
+      "step": 4,
+      "resource": "datev://accounting/accounting_sums_and_balances",
+      "purpose": "Salden und Monatswerte abrufen"
+    },
+    {
+      "step": 5,
+      "resource": "datev://accounting/account_postings",
+      "purpose": "EB und Einzelbuchungen prüfen"
+    },
+    {
+      "step": 6,
+      "resource": "datev://accounting/accounting_sequences_processed",
+      "purpose": "Vorhandene Abschlussbuchungsstapel prüfen"
+    }
+  ],
+  "hard_rules": [
+    "clientId und fiscalYearId niemals erfinden",
+    "fehlender Monatswert ist nicht automatisch Saldo null",
+    "nur Differenz zum bereits gebuchten Endbestand buchen",
+    "Konten und Gegenkonten aus Mandantenkontenplan ableiten",
+    "bei nicht verfügbarem Connector keine DATEV-Werte schätzen"
+  ]
+}
