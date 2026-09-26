@@ -1,0 +1,4 @@
+interface:
+  display_name: "B&K Humanizer"
+  short_description: "Texte entschwurbeln und in Olivers Stimme bringen"
+  default_prompt: "Nutze $bk-humanizer, um diesen Entwurf von erkennbaren KI-Mustern zu befreien und in meine Schreibstimme zu bringen."
