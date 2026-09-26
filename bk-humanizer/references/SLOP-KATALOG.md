@@ -38,6 +38,7 @@ nicht, wer ihn geschrieben hat.
 
 **Sprachliche Muster**
 8. [Kopula-Vermeidung](#8-kopula-vermeidung)
+8a. [Legalese](#8a-legalese)
 9. [Partizipialschwänze](#9-partizipialschwänze)
 10. [Negativparallelen](#10-negativparallelen)
 11. [Dreierketten](#11-dreierketten)
@@ -261,6 +262,40 @@ Statt „ist" und „hat" treten aufwendige Fügungen auf: „stellt … dar",
 > Zugewinnausgleich bleibt nach § 5 ErbStG erbschaftsteuerfrei.
 
 `slop_scan.py` meldet die Häufung ab 2 Stellen je 1000 Wörter.
+
+---
+
+## 8a. Legalese
+
+`[DE]` — kein KI-Muster im engeren Sinn, sondern die hauseigene Gefahr. Ein
+Sprachmodell, das auf Steuerliteratur zurückgreift, erzeugt sie zuverlässig
+mit, und sie lässt einen Text genauso austauschbar wirken wie jede Floskel.
+
+**Suche:**
+
+- Paragraphenketten;
+- ungeklärte Abkürzungen;
+- Nominalstil;
+- lange Sätze, die Norm, Urteil, Ausnahme und Folge in einen Satz packen;
+- Formulierungen, die nur gelehrt klingen.
+
+**Ersatz: die Reihenfolge Klartext, Fachbegriff, Beleg, Folge.** Ausführlich
+in `STIMME-FACHTEXT.md`.
+
+Die schärfste Einzelprüfung: **Streiche in einem Absatz die Klammer mit der
+Fundstelle. Bleibt er verständlich?** Wenn nicht, trägt die Fundstelle die
+Erklärung, und das ist zu wenig.
+
+> statt: Nach § 13 Abs. 1 Nr. 4b ErbStG i. V. m. §§ 9, 11 ErbStG und unter
+> Berücksichtigung der Rspr. des BFH (II R 18/20) setzt die Befreiung die
+> Selbstnutzung durch den Erblasser im Zeitpunkt der Steuerentstehung voraus,
+> sofern keine zwingenden Gründe i. S. d. Vorschrift entgegenstehen.
+> so: Der Erblasser muss die Wohnung bis zum Erbfall selbst bewohnt haben
+> oder aus zwingenden Gründen daran gehindert gewesen sein. Was als zwingender
+> Grund gilt, hat der BFH eng gefasst: objektive Unmöglichkeit oder
+> Unzumutbarkeit, nicht bloße Zweckmäßigkeit (BFH vom 01.12.2021 – II R 18/20).
+
+Ein Paragraph ersetzt keine Erklärung.
 
 ---
 

@@ -149,6 +149,14 @@ Zum Schluss der Durchgang, für den es kein Skript gibt und keinen geben
 wird. Lies den Text Satz für Satz und frage bei jedem: Zwingt er mich zum
 nächsten?
 
+Für den Fachtext gibt es dafür eine brauchbare Probe: **Würde Oliver diesen
+Satz einem Mandanten am Telefon so sagen?** Am Telefon gibt es keinen
+Nominalstil, keine Paragraphenkette und keine Floskel, weil der andere sonst
+nachfragt. Was man laut nicht sagen würde, schreibt man auch nicht.
+
+In der Belletristik lautet die Probe anders: Lies die Dialoge laut. Hört man,
+wer spricht, ohne den Begleitsatz?
+
 Konkrete Prüfungen:
 
 - Steht am Anfang eine Behauptung, die jemand bestreiten könnte, oder eine
@@ -158,6 +166,28 @@ Konkrete Prüfungen:
 - Gibt es eine Stelle, an der die Leserin den Satz nicht vorhersagen kann?
 - Wäre der Text schwächer, wenn der Name des Autors darunter fehlte? Wenn
   nicht, fehlt er auch darin.
+
+### 7. Abschlussfragen
+
+Sechs Fragen, die vor der Abgabe alle mit Ja beantwortet sein müssen. Steht
+irgendwo ein Nein, geht der Text noch einmal in den betroffenen Durchgang
+zurück.
+
+1. Versteht ein kluger Laie die praktische Folge?
+2. Bleiben die notwendigen Fachbegriffe erhalten und erklärt?
+3. Trägt jeder Absatz eine neue Information?
+4. Ist jede Zahl belegt oder als Modellannahme markiert?
+5. Ist jede Praxisaussage freigegeben?
+6. Klingt der Text wie ein eigener Text zu diesem Problem und nicht wie die
+   nächste Ausgabe derselben Vorlage?
+
+Frage 6 lässt sich allein am Text nicht beantworten. Sie braucht den
+Vergleich mit den letzten Arbeiten; das Verfahren steht in `KORPUS.md`,
+Abschnitt *Serienprüfung*.
+
+In der Belletristik treten an die Stelle von 4 und 5 zwei andere Fragen:
+Bleiben die Regeln des Buches eingehalten, und nimmt diese Szene einer
+späteren nichts weg?
 
 ## Echtheit
 

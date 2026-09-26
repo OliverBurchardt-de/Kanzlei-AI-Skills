@@ -207,6 +207,33 @@ Der Humor kommt aus der Sache, nie aus einem angehängten Scherz.
 
 ---
 
+## Fachliche Autorität, woran sie hängt
+
+Die Züge oben beschreiben einzelne Bewegungen. Dieser Abschnitt sagt, worauf
+sie zusammen hinauslaufen.
+
+**Expertise zeigt sich durch:**
+
+- die richtige Abgrenzung zweier ähnlich klingender Regeln;
+- ein Beispiel, das eine unerwartete Folge sichtbar macht;
+- ein starkes Gegenargument, das fair behandelt wird;
+- die klare Benennung dessen, was gesichert und was offen ist;
+- eine konkrete Handlung, die aus der Analyse folgt.
+
+**Nicht durch:**
+
+- lange Normketten;
+- unnötige lateinische Wendungen;
+- ungeklärte Abkürzungen;
+- maximalistische Vollständigkeit;
+- Aussagen wie „zweifellos", „immer" oder „in jedem Fall", wenn Ausnahmen
+  möglich sind.
+
+Der Unterschied zwischen den beiden Listen ist immer derselbe: Die erste
+verlangt, dass jemand den Stoff durchdacht hat. Die zweite lässt sich
+erzeugen, ohne ihn verstanden zu haben — und genau deshalb erzeugt ein
+Sprachmodell sie von allein.
+
 ## Satzbau
 
 - Klare Verben statt Nominalkonstruktionen.
