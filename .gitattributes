@@ -2,3 +2,6 @@
 datev-lohn-gehalt-import/** -text whitespace=cr-at-eol
 # Extracted PDF text intentionally preserves the original layout whitespace.
 datev-lohn-gehalt-import/references/**/*.txt -whitespace
+# Bank adapter SHA-256 values must survive checkout unchanged.
+mt940-dateien-erstellen/profiles/*.py -text whitespace=cr-at-eol
+mt940-dateien-erstellen/tests/fixtures/profiles/*.py -text whitespace=cr-at-eol

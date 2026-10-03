@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -22,6 +23,7 @@ from mt940_common import (
     transaction_metrics,
     underfields,
 )
+from source_check import compare_source, read_source_review
 
 
 FIELD20_RE = re.compile(r"^:20:(.{1,16})$")
@@ -50,7 +52,9 @@ def _field86_groups(lines: list[str]) -> list[list[str]]:
     return groups
 
 
-def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = None) -> dict[str, Any]:
+def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = None,
+             source_review_path: Path | None = None) -> dict[str, Any]:
+    review = read_source_review(source_review_path)
     normalized = normalize_manifest(manifest, profile_dir)
     try:
         raw = path.read_bytes()
@@ -68,6 +72,8 @@ def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = No
     if not lines:
         raise MT940Error("File is empty", 3)
     for number, line in enumerate(lines, 1):
+        if contains_unexpected_controls(line):
+            raise MT940Error(f"Line {number} contains an unexpected control character", 3)
         if len(line) > 65:
             raise MT940Error(f"Line {number} exceeds 65 characters", 3)
 
@@ -113,25 +119,29 @@ def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = No
     for number, (group, tx) in enumerate(zip(groups, normalized["_transactions"]), 1):
         reconstructed = group[0][4:] + "".join(group[1:])
         source = tx["_field86"].canonical_description
-        if reconstructed != source:
+        decoded = reconstructed if mode == "native" else normalized["_profile"]["_adapter"].decode_field86(group)["description"]
+        if decoded != source:
             raise MT940Error(f"Transaction {number} failed the :86: roundtrip", 3)
         found_underfields = underfields(reconstructed)
-        if mode in {"generic_unstructured", "unverified"} and found_underfields:
-            raise MT940Error(
-                f"Transaction {number} contains invented/structured underfields: "
-                f"{sorted(found_underfields)}",
-                3,
-            )
-        if mode.startswith("datev_verified:") and not found_underfields <= allowed:
+        if not found_underfields <= allowed:
             raise MT940Error(
                 f"Transaction {number} uses underfields not allowed by the DATEV profile",
                 3,
             )
-        if mode == "generic_unstructured" and contains_unexpected_controls(reconstructed):
-            raise MT940Error(f"Transaction {number} contains a visible control character", 3)
+
+    source_check = compare_source(lines, manifest, normalized, review)
+    probe_verified = normalized["_profile"].get("status") == "verified" and mode != "native"
+    production_ready = normalized["_output_scope"] == "full" and (
+        normalized["_target_system"] != "DATEV" or mode == "native" or probe_verified
+    ) and not normalized["_profile"].get("test_fixture_only", False)
 
     result = {
-        "status": "technically_and_arithmetically_valid",
+        "status": "source_fields_technically_and_arithmetically_valid",
+        "delivery_approved": production_ready,
+        "mt940_sha256": hashlib.sha256(raw).hexdigest(),
+        "bank_model": {key: manifest[key] for key in ("bank_id", "source_variant", "bank_profile", "profile_version")},
+        "bank_model_sha256": normalized["_profile"]["_model_sha256"],
+        "source_check": source_check,
         "exit_code": 0,
         "iban": normalized["iban"],
         "statement_number": normalized["_statement_number"],
@@ -145,7 +155,7 @@ def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = No
         "field86": transaction_metrics(normalized),
         "datev_practical_test": (
             "documented in verified profile"
-            if normalized.get("_profile")
+            if probe_verified and not normalized["_profile"].get("test_fixture_only", False)
             else "not confirmed by a probe import"
         ),
     }
@@ -157,20 +167,24 @@ def main() -> None:
     parser.add_argument("file", type=Path)
     parser.add_argument("manifest", type=Path)
     parser.add_argument("--profile-dir", type=Path)
+    parser.add_argument("--source-review", type=Path)
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
+    report_path = args.report or default_report_path(args.file)
     try:
         manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
-        result = validate(args.file, manifest, args.profile_dir)
         normalized = normalize_manifest(manifest, args.profile_dir)
         report_path = args.report or args.file.parent / sidecar_filename(normalized)
+        result = validate(args.file, manifest, args.profile_dir, args.source_review)
         report_path.write_text(
             json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
     except MT940Error as exc:
+        write_failure_report(report_path, exc)
         print(f"status=error\nexit_code={exc.exit_code}\nmessage={exc}", file=sys.stderr)
         raise SystemExit(exc.exit_code) from exc
     except (OSError, json.JSONDecodeError) as exc:
+        write_failure_report(report_path, MT940Error(str(exc), 2))
         print(f"status=error\nexit_code=2\nmessage={exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     for key in (
@@ -184,6 +198,31 @@ def main() -> None:
     ):
         print(f"{key}={result[key]}")
     print(f"report={report_path}")
+
+
+def write_failure_report(path: Path, error: MT940Error) -> None:
+    """Replace a stale success report, including readable field mismatches."""
+    report = {"status": "delivery_blocked", "delivery_approved": False,
+              "exit_code": error.exit_code, "error": str(error), "source_check": error.details}
+    try:
+        previous = json.loads(path.read_text(encoding="utf-8"))
+        digest = previous.get("fingerprint_sha256")
+        if isinstance(digest, str) and re.fullmatch(r"[a-f0-9]{64}", digest):
+            report["fingerprint_sha256"] = digest
+    except (OSError, json.JSONDecodeError, AttributeError):
+        pass
+    try:
+        path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except OSError as exc:
+        print(f"Cannot save blocked report {path}: {exc}; do not reuse an earlier report", file=sys.stderr)
+
+
+def default_report_path(path: Path) -> Path:
+    test = re.fullmatch(r"MT940 Test ([A-Z0-9]+) (\d{2}\.\d{2}\.\d{4})", path.stem)
+    if test:
+        iban, day = test.groups()
+        return path.parent / f"MT940 Prüfung {iban} {day} bis {day}.json"
+    return path.parent / ("MT940 Prüfung " + path.stem.removeprefix("MT940 ") + ".json")
 
 
 if __name__ == "__main__":

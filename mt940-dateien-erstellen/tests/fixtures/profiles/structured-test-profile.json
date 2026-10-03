@@ -1,10 +1,13 @@
 {
-  "profile_name": "automated-test-profile",
+  "profile_name": "structured-test-profile",
   "bank_name": "Automated test bank - not a production profile",
-  "source_variant": "synthetic-pdf-v1",
+  "source_variant": "synthetic-structured-v1",
   "charset": "Windows-1252",
   "line_endings": "CRLF",
-  "allowed_underfields": [],
+  "allowed_underfields": [
+    "20",
+    "32"
+  ],
   "test_fixture_only": true,
   "examples": [
     {
@@ -14,12 +17,15 @@
         "amount": "-1000.00",
         "code": "NDDT",
         "customer_reference": "SA01A000000095207172",
-        "description": "Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicherung ME-LS 2028, Referenz SA01A000000095207172"
+        "description": "Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicherung ME-LS 2028, Referenz SA01A000000095207172",
+        "source_fields": {
+          "counterparty": "Empfänger 1"
+        }
       },
       "mt940": [
         ":61:2607010701D1000,00NDDTSA01A00000009520//000000001",
-        ":86:Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicher",
-        "ung ME-LS 2028, Referenz SA01A000000095207172"
+        ":86:?20Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versic",
+        "herung ME-LS 2028, Referenz SA01A000000095207172?32Empfänger 1"
       ],
       "expected_datev_display": "Synthetic fixture only, not a real DATEV test"
     }
@@ -38,7 +44,7 @@
     "test_transactions_deleted": true,
     "note": "Synthetic unit-test fixture; it is not evidence of a real DATEV import."
   },
-  "bank_id": "synthetic-bank",
+  "bank_id": "synthetic-other-bank",
   "profile_version": 1,
   "source_types": [
     "pdf",
@@ -53,7 +59,7 @@
     "bank_reference": "source_or_sequence_9"
   },
   "missing_customer_reference": "NONREF",
-  "adapter": "synthetic-bank-text.py",
+  "adapter": "synthetic-bank-structured.py",
   "reference_basis": {
     "kind": "native_bank_file",
     "reference": "Synthetic fixture, never a real bank reference",
@@ -75,7 +81,8 @@
     "code": "Synthetic fixture explicit mapping: code",
     "customer_reference": "Synthetic fixture explicit mapping: customer_reference",
     "bank_reference": "Synthetic fixture explicit mapping: bank_reference",
-    "description": "Synthetic fixture explicit mapping: description"
+    "description": "Synthetic fixture explicit mapping: description",
+    "counterparty": "Synthetic counterparty -> ?32"
   },
-  "adapter_sha256": "0fcb9776f19fed91ed346a51291edf31c9e0c80cd5d83c17066346d0143aebe8"
+  "adapter_sha256": "c2c8255c365c21d71c5176be5cf9213bc9f9e7cafa109644a7913ade98b87ad9"
 }

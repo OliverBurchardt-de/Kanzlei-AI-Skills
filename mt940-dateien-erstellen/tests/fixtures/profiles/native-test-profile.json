@@ -1,25 +1,33 @@
 {
-  "profile_name": "automated-test-profile",
+  "profile_name": "native-test-profile",
   "bank_name": "Automated test bank - not a production profile",
-  "source_variant": "synthetic-pdf-v1",
+  "source_variant": "synthetic-native-v1",
   "charset": "Windows-1252",
   "line_endings": "CRLF",
-  "allowed_underfields": [],
+  "allowed_underfields": [
+    "00",
+    "20"
+  ],
   "test_fixture_only": true,
   "examples": [
     {
       "source_transaction": {
-        "value_date": "2026-07-01",
-        "booking_date": "2026-07-01",
-        "amount": "-1000.00",
-        "code": "NDDT",
-        "customer_reference": "SA01A000000095207172",
-        "description": "Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicherung ME-LS 2028, Referenz SA01A000000095207172"
+        "value_date": "2025-01-02",
+        "booking_date": "2025-01-02",
+        "amount": "-25.00",
+        "code": "NMSC",
+        "customer_reference": "ORIGINALREF",
+        "bank_reference": "BANKREF1",
+        "native_field86_lines": [
+          ":86:?00ORIGINAL?20Unverändert",
+          "Fortsetzung aus der Bankdatei"
+        ],
+        "description": "?00ORIGINAL?20UnverändertFortsetzung aus der Bankdatei"
       },
       "mt940": [
-        ":61:2607010701D1000,00NDDTSA01A00000009520//000000001",
-        ":86:Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicher",
-        "ung ME-LS 2028, Referenz SA01A000000095207172"
+        ":61:2501020102D25,00NMSCORIGINALREF//BANKREF1",
+        ":86:?00ORIGINAL?20Unverändert",
+        "Fortsetzung aus der Bankdatei"
       ],
       "expected_datev_display": "Synthetic fixture only, not a real DATEV test"
     }
@@ -41,19 +49,15 @@
   "bank_id": "synthetic-bank",
   "profile_version": 1,
   "source_types": [
-    "pdf",
-    "image",
-    "structured_list",
-    "manual"
+    "native_mt940"
   ],
   "status": "verified",
-  "statement_reference_rule": "deterministic_mt",
+  "statement_reference_rule": "source",
   "reference_rules": {
-    "customer_reference": "upper_alnum_16",
-    "bank_reference": "source_or_sequence_9"
+    "customer_reference": "exact",
+    "bank_reference": "exact"
   },
   "missing_customer_reference": "NONREF",
-  "adapter": "synthetic-bank-text.py",
   "reference_basis": {
     "kind": "native_bank_file",
     "reference": "Synthetic fixture, never a real bank reference",
@@ -76,6 +80,5 @@
     "customer_reference": "Synthetic fixture explicit mapping: customer_reference",
     "bank_reference": "Synthetic fixture explicit mapping: bank_reference",
     "description": "Synthetic fixture explicit mapping: description"
-  },
-  "adapter_sha256": "0fcb9776f19fed91ed346a51291edf31c9e0c80cd5d83c17066346d0143aebe8"
+  }
 }

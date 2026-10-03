@@ -1,19 +1,51 @@
 {
   "profile_name": "unverified-example",
-  "bank_name": "Beispielbank (anonymisiert)",
-  "source_variant": "PDF reconstruction with generic unstructured :86:",
+  "bank_id": null,
+  "bank_name": null,
+  "source_variant": null,
+  "profile_version": 1,
+  "source_types": [],
+  "status": "draft",
+  "template_only": true,
+  "reference_basis": {
+    "kind": null,
+    "reference": null,
+    "verified_against_reference": false
+  },
   "charset": "Windows-1252",
   "line_endings": "CRLF",
+  "field_mappings": {
+    "statement_reference": null,
+    "iban": null,
+    "statement_number": null,
+    "sequence_number": null,
+    "opening_balance_date": null,
+    "opening_balance": null,
+    "closing_balance_date": null,
+    "closing_balance": null,
+    "currency": null,
+    "value_date": null,
+    "booking_date": null,
+    "amount": null,
+    "code": null,
+    "customer_reference": null,
+    "bank_reference": null,
+    "description": null
+  },
+  "statement_reference_rule": null,
+  "reference_rules": {
+    "customer_reference": null,
+    "bank_reference": null
+  },
+  "missing_customer_reference": null,
   "allowed_underfields": [],
-  "examples": [
-    {
-      "mt940": [
-        ":61:2607010701D100,00NDDTVERTRAG123//000000001",
-        ":86:Versicherung AG Vertrag VS-1234567890 Kfz-Versicherung",
-        "Kennzeichen D-AB 123 Referenz REF000000000001"
-      ],
-      "expected_datev_display": "Noch durch einen echten DATEV-Probeimport zu bestätigen"
-    }
+  "adapter": null,
+  "adapter_sha256": null,
+  "examples": [],
+  "open_questions": [
+    "Bankidentität und Exportvariante aus Originalquelle bestimmen",
+    "Bankbezogene Referenz für Feldzuordnung und Syntax beschaffen",
+    "Schreib-/Leseadapter gegen die Originalreferenz prüfen"
   ],
   "probe_import": {
     "date": null,
@@ -23,7 +55,8 @@
       "test_closing_balance_correct": false,
       "transaction_count_and_signs_correct": false,
       "description_complete": false,
-      "no_visible_control_characters": false
+      "no_visible_control_characters": false,
+      "all_source_fields_correct": false
     },
     "test_transactions_deleted": false
   }

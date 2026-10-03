@@ -12,7 +12,7 @@
   "currency": "EUR",
   "source_type": "pdf",
   "target_system": "DATEV",
-  "field86_mode": "unverified",
+  "field86_mode": "bank_profile",
   "output_scope": "test",
   "source_evidence": {
     "statement_start": "2026-07-01",
@@ -72,5 +72,9 @@
       "customer_reference": "REF0006",
       "description": "Sonstige Belastung Referenz REF0006"
     }
-  ]
+  ],
+  "bank_id": "synthetic-bank",
+  "source_variant": "synthetic-pdf-v1",
+  "profile_version": 1,
+  "bank_profile": "automated-test-profile"
 }

@@ -28,7 +28,10 @@ def build(data: dict[str, Any], profile_dir: Path | None = None) -> tuple[bytes,
     if reconstructed != lines:
         raise MT940Error("Generated file failed the full-file roundtrip check", 3)
     report = {
-        "schema_version": 1,
+        "schema_version": 2,
+        "delivery_approved": False,
+        "bank_model": {key: data[key] for key in ("bank_id", "source_variant", "bank_profile", "profile_version")},
+        "bank_model_sha256": normalized["_profile"]["_model_sha256"],
         "fingerprint_sha256": fingerprint(normalized),
         "iban": normalized["iban"],
         "statement_number": normalized["_statement_number"],
@@ -46,7 +49,7 @@ def build(data: dict[str, Any], profile_dir: Path | None = None) -> tuple[bytes,
         "technical_validation": "generation checks passed; independent validation pending",
         "datev_probe_import": (
             "documented in verified profile"
-            if normalized.get("_profile")
+            if normalized["_profile"].get("status") == "verified" and not normalized["_profile"].get("test_fixture_only", False)
             else "not verified; test import required"
         ),
         "transactions": transaction_metrics(normalized),

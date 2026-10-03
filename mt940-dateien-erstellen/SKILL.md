@@ -1,225 +1,129 @@
 ---
 name: mt940-dateien-erstellen
-description: Erstellt und validiert MT940-/STA-Dateien aus nativen Bankdateien, PDF-Kontoauszügen, Bildern oder strukturierten Umsatzlisten, insbesondere für DATEV. Verwenden, wenn Konto- oder Kreditkartenumsätze als MT940 aufbereitet, bestehende Dateien feldweise gegen Quelldaten geprüft, Salden und Verwendungszwecke abgestimmt, DATEV-Probeimporte vorbereitet oder Mehrfachimporte verhindert werden sollen.
+description: Erstellt und prüft MT940-/STA-Dateien aus Bankdateien, PDF-Kontoauszügen, Bildern oder Umsatzlisten, insbesondere für DATEV. Verwendet zwingend ein eigenes Referenzmodell je Bank und Exportvariante und prüft vor der Auslieferung sämtliche übernommenen Felder gegen die Originalquelle. Verwenden für MT940-Aufbereitung, Feldabgleich und DATEV-Probeimporte.
 ---
 
 # MT940-Dateien erstellen
 
-Aus Quelldaten nachvollziehbare MT940-Dateien erzeugen. Keine Buchung, kein Datum, keinen Saldo und kein DATEV-Profil erfinden. Technische Gültigkeit nie mit einem praktisch erfolgreichen DATEV-Import gleichsetzen.
+MT940 ausschließlich nach dem passenden **bankindividuellen Referenzmodell** erzeugen. Jede Bank erhält ein eigenes Modell; abweichende Kontoarten, Exportwege oder Layoutversionen erhalten eigene Varianten. Ein allgemeingültiges Modell, ein fremdes Bankprofil oder ein spontan erfundenes Format ist kein Ersatz. Allgemeine MT940-Syntax allein belegt keine bankbezogene Feldzuordnung.
 
-## Arbeitsmodus bestimmen
+**Vor jeder Auslieferung die tatsächlich geschriebene Datei erneut einlesen und alle übernommenen Felder je Umsatz mit der Originalquelle vergleichen.** Ein Rundlauf gegen das Erzeugungsmanifest und passende Gesamtsalden reichen nicht aus. Der vollständige Buchungstext ist ein Freigabekriterium.
 
-- **Erstellen:** Kontoauszug oder Umsatzliste in eine `.sta`-Datei umwandeln.
-- **Prüfen:** MT940-Datei feldweise gegen Manifest und Quelle validieren.
-- **Erklären:** [technischer-aufbau.md](references/technischer-aufbau.md) lesen und den Aufbau erläutern.
+## Arbeitsmodus
 
-Bei PDFs zuerst die PDF-Skill-Anweisungen lesen, alle Seiten rendern und visuell prüfen. Textextraktion nur zusammen mit der visuellen Kontrolle verwenden.
+- **Erstellen:** Quelle nach ihrem Bankmodell in eine `.sta`-Datei umwandeln.
+- **Prüfen:** Bestehende Datei gegen Bankmodell und unabhängig geprüfte Quelldaten vergleichen.
+- **Erklären:** [technischer-aufbau.md](references/technischer-aufbau.md) lesen.
 
-## Workflow
+Keine Umsätze, Daten, Salden, Referenzen, SWIFT-Codes oder bestätigten Probeimporte erfinden. Technische Prüfung und erfolgreiche DATEV-Anzeige getrennt ausweisen.
 
-### 1. Native Bankdatei bevorzugen
+## 1. Bank und Referenzmodell zuerst bestimmen
 
-Vor einer PDF-Rekonstruktion ausdrücklich nach einer nativen MT940- oder CAMT-Datei fragen. Eine elektronische Originaldatei der Bank bevorzugen. Wenn ausschließlich PDF, Bild oder manuelle Daten verfügbar sind, die Rekonstruktion als solche kennzeichnen.
+Vor Extraktion und Formatwahl [bankreferenzmodelle.md](references/bankreferenzmodelle.md) lesen und `profiles/` durchsuchen. Bankidentität anhand der Quelle feststellen, nicht aus einer ähnlichen Bankbezeichnung vermuten. Modell nach `bank_id`, `source_variant`, `profile_version` und erfasster Quellenart auswählen und vollständig lesen.
 
-### 2. Wiederholungsimport sperren
+Das Modell bestimmt die Feldzuordnung einschließlich `:61:`, der Bedeutung und Reihenfolge aller `:86:`-Unterfelder, Referenzbehandlung, Zeichen- und Zeilenregeln. Eine Liste erlaubter `?xx`-Kennzeichen allein ist kein Referenzmodell. Modell und zugehörigen Bankadapter anwenden; keine Regeln einer anderen Bank übernehmen und kein bestehendes Modell für den Einzelfall still verändern.
 
-Vor einer korrigierten oder erneut erzeugten Datei fragen:
+**Fehlt ein passendes Modell, ein neues bankbezogenes Modell in `profiles/` mit Status `draft` anlegen.** Belegte Erkenntnisse und offene Feldzuordnungen dort speichern. Als Referenz eine native Originaldatei dieser Bank, deren Dokumentation oder eine bestätigte bankbezogene Testausgabe verwenden. Fehlt diese Evidenz, den Entwurf trotzdem sichern, die benötigte Bankreferenz benennen und die Erzeugung sperren. Kein leeres Modell durch ein generisches Format auffüllen. Die bereitgestellte [Vorlage](profiles/unverified-example.json) ist kein verwendbares Bankmodell.
 
-> Wurde der frühere Import für dieses Konto und diesen Zeitraum aus dem DATEV-Bankbestand gelöscht?
+Bei einer neuen Variante den Bankadapter mit getrennten Schreib- und Lesefunktionen sowie belegten Quelle/Ziel-Beispielen anlegen. Entwurf und unbestätigte Testdatei klar kennzeichnen. Für DATEV erst nach einem erfolgreichen Probeimport und dokumentierter Löschung der Testumsätze produktiv verwenden. Ohne bankbezogene Grundlage auch keine Testsyntax erfinden.
 
-Ein neuer Chat, Dateiname, eine neue `:20:`-Referenz oder eine andere Auszugsnummer bereinigt DATEV nicht. Bei einer bereits vorhandenen Fingerprint-Sidecar-Datei abbrechen. `--allow-duplicate` nur nach bestätigter Löschung und mit `previous_datev_import_removed_confirmed: true` verwenden.
+## 2. Originalquelle sichern und Doppelimporte verhindern
 
-Keine MT940-Ausgleichsbuchung erzeugen, um eine FIBU-Differenz oder einen Mehrfachimport zu verdecken.
+Native MT940- oder CAMT-Dateien bevorzugen; vor einer PDF-Rekonstruktion nach einer solchen Datei fragen, soweit nicht bereits geklärt. Bei PDFs den PDF-Skill lesen, sämtliche Seiten rendern und visuell prüfen. OCR und Textextraktion dienen als Arbeitshilfe.
 
-### 3. Quelldaten getrennt erfassen
+Quelldateien unverändert sichern und SHA-256 dokumentieren. Pro Konto eine eigene Datei erzeugen; Zahlkonto und Kreditkartenkonto getrennt halten.
 
-Je Konto erfassen und gegen die sichtbare Quelle prüfen:
+Vor einer korrigierten oder erneut erzeugten Datei klären, ob ein früherer Import für dasselbe Konto und denselben Zeitraum aus dem DATEV-Bankbestand gelöscht wurde. Ein anderer Dateiname, eine neue `:20:`-Referenz oder ein neuer Chat bereinigt DATEV nicht. Identischen Fingerprint mit Status `5` sperren. `--allow-duplicate` nur nach bestätigter Löschung und mit `previous_datev_import_removed_confirmed: true` verwenden. Keine Ausgleichsbuchung zur Verdeckung einer Differenz erzeugen.
 
-- Kontoinhaber und IBAN
-- Auszugsbeginn und Auszugsende
-- Datum und Betrag des Anfangssaldos
-- Datum und Betrag des Endbestands
-- Auszugsnummer und Sequenznummer
-- jede Buchung in Quellreihenfolge mit Betrag, Vorzeichen, Valuta, Buchungsdatum, Referenz und vollständigem Verwendungszweck
+## 3. Quelle unabhängig erfassen und Manifest aufbauen
 
-Aus jedem Konto eine eigene Datei erzeugen. Kreditkartenkonto und Zahlkonto nicht vermischen.
+Zwei getrennte Nachweise führen:
 
-### 4. Vollständigkeit centgenau prüfen
+- `manifest.json`: Eingabe für den Generator mit ausgewähltem Bankmodell und zugeordneten Werten.
+- `source-review.json`: unabhängig gegen die Originaldatei geprüfte Quellwerte mit Dateihashes und Fundstelle für jeden Umsatz. **Nicht aus dem Manifest, Generatorbericht oder erzeugten MT940 zurückkopieren.** Bei einer Korrektur die Originalquelle erneut prüfen.
 
-Zwingend rechnen:
+Die Pflichtfelder und das Quellprüfschema stehen in [bankreferenzmodelle.md](references/bankreferenzmodelle.md). Je Konto IBAN, Währung, Auszugs-/Sequenznummer, Auszugsbeginn/-ende und getrennte Anfangs-/Endsalden mit deren Daten erfassen. Je Umsatz in Quellreihenfolge Valuta, Buchungsdatum, Betrag/Vorzeichen, Buchungsart/Code, Referenzen und vollständigen Buchungstext erfassen. Namen, Gegenkonto, EREF, MREF, Gläubiger-ID und andere sichtbare Detailfelder zusätzlich nach den benannten Modellzuordnungen als `source_fields` sichern; keine Information wegen eines allgemeinen Schemas verwerfen.
 
-`Anfangssaldo + Summe aller vorzeichenbehafteten Buchungen = Endsaldo`
-
-Zusätzlich Buchungszahl, Reihenfolge, Datumsgrenzen, Seitenwechsel, Rücklastschriften, Gutschriften und Gebühren prüfen. Bei einer Differenz nicht runden, keine Ausgleichsbuchung erzeugen und keine Datei freigeben.
-
-### 5. Manifest erstellen
-
-Für DATEV ein UTF-8-JSON mit getrennten Auszugs- und Saldendaten verwenden:
-
-```json
-{
-  "iban": "DE43300501101009524321",
-  "account_name": "JS Logistik GmbH - Stadtsparkasse Düsseldorf",
-  "statement_start": "2026-07-01",
-  "statement_end": "2026-07-31",
-  "opening_balance_date": "2026-06-30",
-  "opening_balance": "83077.77",
-  "closing_balance_date": "2026-07-31",
-  "closing_balance": "33444.84",
-  "statement_number": 7,
-  "sequence_number": 1,
-  "currency": "EUR",
-  "source_type": "pdf",
-  "target_system": "DATEV",
-  "field86_mode": "unverified",
-  "output_scope": "test",
-  "transactions": []
-}
-```
-
-Für PDF-, Bild- und manuelle Quellen zusätzlich `source_evidence` mit den sichtbaren Datums-, Salden- und Auszugswerten speichern. Der Generator gleicht vorhandene Evidenzfelder gegen das Manifest ab.
-
-
-#### PDF-Buchungstext als Pflichtnachweis erfassen
-
-F?r **jeden** Umsatz aus PDF oder Bild folgende Felder speichern:
+Für **jeden PDF-/Bildumsatz** zusätzlich speichern:
 
 ```json
 {
   "source_page": 3,
   "source_description_lines": [
-    "Allianz Versicherungs-AG Vertrag AS-6170637093,",
-    "Kfz-Versicherung ME-LS 2028,",
-    "Referenz SA01A000000095207172"
+    "Versicherung AG Vertrag VS-1234567890,",
+    "Kfz-Versicherung D-AB 123, Referenz REF000000000001"
   ],
   "source_text_verified": true,
-  "description": "Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicherung ME-LS 2028, Referenz SA01A000000095207172"
+  "description": "Versicherung AG Vertrag VS-1234567890, Kfz-Versicherung D-AB 123, Referenz REF000000000001"
 }
 ```
 
-Dabei zwingend:
+Buchungsblock auf dem Seitenbild abgrenzen und sämtliche Zeilen in sichtbarer Reihenfolge wortgetreu erfassen. Seitenwechsel und Folgezeilen ausdrücklich prüfen. Keine Zeile dem Nachbarumsatz zuordnen. OCR anschließend Zeichen für Zeichen am Bild prüfen. Erst danach `source_text_verified: true` setzen. Bei unklarem Anfang/Ende, unleserlichen Zeichen oder abgeschnittenem Text einen Klärungsfall ausgeben.
 
-- Buchungsblock auf der gerenderten PDF-Seite visuell abgrenzen.
-- Alle sichtbaren Zeilen des Buchungstextes in ihrer Reihenfolge wortgetreu nach `source_description_lines` ?bernehmen.
-- OCR-/Extraktionstext nur als Arbeitshilfe verwenden und anschlie?end Zeichen f?r Zeichen gegen das Seitenbild pr?fen.
-- Namen, Verwendungszweck, IBAN, Mandats-, End-to-End-, Vertrags- und sonstige Referenzen weder umstellen noch zusammenfassen, erg?nzen oder sprachlich ?verbessern?.
-- Sichtbare Wiederholungen, Bindestriche, Satzzeichen und Referenzbestandteile erhalten.
-- Bei unklarem Anfang oder Ende des Buchungsblocks abbrechen und einen Kl?rungsfall ausgeben.
-- `source_text_verified: true` erst nach der visuellen Pr?fung setzen.
+Nur belegte Leerzeichennormalisierung und physische Zeilenaufteilung zulassen. Wörter, Namen, Umlaute, Bindestriche, Satzzeichen, Wiederholungen und vollständige Referenzen erhalten. Text weder umstellen, zusammenfassen noch sprachlich verbessern. Modellbedingt verkürzte technische Referenzen zusätzlich vollständig im Nutztext erhalten. Eine nicht verlustfrei darstellbare Information sperrt die Freigabe.
 
-Der Generator leitet den `:86:`-Ausgangstext ausschlie?lich aus den sichtbaren `source_description_lines` ab. Ein zus?tzlich gespeichertes `description` muss nach der festgelegten Leerzeichennormalisierung exakt ?bereinstimmen; andernfalls mit Status `2` abbrechen. Damit reicht ein intern stimmiger, aber gegen?ber dem PDF falscher Manifesttext nicht mehr aus.
+Manifestregeln:
 
-Pflichtregeln:
+- `bank_id`, `source_variant`, `bank_profile` und `profile_version` sind Pflicht, auch bei nativen Quellen und Testdateien.
+- `opening_balance_date` gehört nach `:60F:`, `closing_balance_date` nach `:62F:`. Nicht aus dem Zeitraum oder der ersten Buchung ableiten.
+- `statement_start`, `statement_end`, `statement_number`, `sequence_number` und Buchungscodes ausdrücklich erfassen. Legacy-Datumsfelder und globale Standardcodes nicht automatisch übernehmen.
+- Beträge als Dezimalstrings mit zwei Stellen speichern; Belastungen negativ, Gutschriften positiv.
+- Quellreihenfolge erhalten. Nicht nach Betrag, Beschreibung oder vermutetem Datum neu sortieren.
+- Abweichende Valutadaten nur mit `value_date_source_confirmed: true` am Umsatz und dessen Nummer unter `review_report.value_date_exceptions` zulassen.
 
-- `opening_balance_date` ausschließlich für `:60F:` verwenden.
-- `closing_balance_date` ausschließlich für `:62F:` verwenden.
-- `statement_start` und `statement_end` für Dateiname, Zeitraumskontrolle und Bericht verwenden.
-- Für DATEV keine fehlenden Saldendaten aus dem Auszugszeitraum ableiten.
-- `statement_number` und das standardmäßig `1` betragende `sequence_number` ausdrücklich speichern.
-- Buchungsdaten innerhalb des Auszugszeitraums halten.
-- Abweichende Valutadaten nur bei belegter Quelle zulassen: am Umsatz `value_date_source_confirmed: true` setzen und die Umsatznummer unter `review_report.value_date_exceptions` nennen.
-- Geldbeträge als Dezimalstrings mit Punkt und zwei Nachkommastellen speichern; Belastungen negativ, Gutschriften positiv.
-- Quellreihenfolge chronologisch beibehalten.
+## 4. Vollständigkeit prüfen und nach dem Modell erzeugen
 
-Legacy-Manifeste mit `period_start` und `period_end` nur im generischen Modus verarbeiten. Bei `target_system: DATEV` ohne die vier getrennten Datumsfelder abbrechen; keine vermutete Migration durchführen.
+Centgenau rechnen:
 
-### 6. Modus für `:86:` festlegen
+`Anfangssaldo + Summe aller vorzeichenbehafteten Umsätze = Endsaldo`
 
-Nur diese Werte verwenden:
+Buchungszahl, Reihenfolge, Seitenwechsel, Datumsgrenzen, Rücklastschriften, Gutschriften und Gebühren prüfen. Keine Differenz runden oder mit einer künstlichen Buchung schließen.
 
-- `native`: Syntax unverändert aus einer elektronischen Originaldatei übernehmen.
-- `generic_unstructured`: formal generisches MT940 ohne DATEV-Anzeigegarantie.
-- `datev_verified:<profilname>`: Profil aus `profiles/<profilname>.json` mit dokumentiert erfolgreichem Probeimport und gelöschten Testumsätzen.
-- `unverified`: ausschließlich für eine Testdatei.
+Zulässige `field86_mode`-Werte:
 
-Keine Unterfelder wie `?00`, `?10`, `?20` oder `?32` erfinden. Strukturierte Unterfelder nur aus einer nativen Bankdatei oder einem verifizierten Profil übernehmen.
+- `native`: Originalsyntax aus `native_mt940` mit passendem Bankmodell erhalten.
+- `bank_profile`: ausgewähltes bankindividuelles Modell anwenden; unbestätigte DATEV-Modelle ausschließlich als Test.
+- `datev_verified:<profilname>`: genau das ausgewählte Bankmodell mit dokumentiert erfolgreichem, bereinigtem DATEV-Probeimport.
 
-Verwendungszwecke kanonisch auf einfache Leerzeichen normalisieren und in Windows-1252 verlustfrei schreiben. Texte außerhalb der physischen Kapazität von sechs Zeilen als Klärungsfall behandeln; nie still kürzen.
-
-### 7. Unbekanntes DATEV-Profil zuerst testen
-
-Bei PDF, Bild oder manueller Umsatzliste mit Ziel DATEV und ohne verifiziertes Profil nur `output_scope: test` zulassen. Die Testdatei darf höchstens einen Buchungstag enthalten und muss mindestens einen langen Verwendungszweck enthalten.
-
-Vor dem Testimport ausdrücklich bestätigen lassen:
-
-> Für das Bankkonto und den Testzeitraum sind keine bereits importierten Bankkontoumsätze mehr vorhanden.
-
-Für den Referenztag 01.07.2026 gelten:
-
-```text
-Anfangssaldo:      83.077,77 EUR
-Umsatzsumme:       -4.139,53 EUR
-Test-Endsaldo:     78.938,24 EUR
-Anzahl Umsätze:             6
-```
-
-Der Dateiname lautet ohne Unterstriche:
-
-`MT940 Test DE43300501101009524321 01.07.2026.sta`
-
-Nach dem Probeimport prüfen und dokumentieren:
-
-- Anfangssaldo in DATEV korrekt
-- Test-Endsaldo korrekt
-- Zahl und Vorzeichen der Umsätze korrekt
-- Verwendungszweck vollständig, ohne fehlende Textteile
-- keine sichtbaren Steuer- oder Unterfeldkennzeichen
-
-Danach ausdrücklich anweisen:
-
-> Die Testumsätze müssen vor dem Import der vollständigen Monatsdatei wieder aus dem DATEV-Bankbestand gelöscht werden.
-
-Ein verifiziertes Profil erst anlegen, wenn diese Prüfungen und die anschließende Löschung dokumentiert sind. Vorher keine vollständige Monatsdatei erzeugen oder freigeben.
-
-### 8. Datei erzeugen und Fingerprint prüfen
+`generic_unstructured` und `unverified` sind als Ausweichmodi gesperrt. Strukturierte Unterfelder nur entsprechend der belegten Feldbedeutung des ausgewählten Modells verwenden. Der Generator enthält bewusst keinen Standardadapter für unbekannte Banken.
 
 ```bash
 python scripts/build-mt940.py manifest.json
 ```
 
-Das Skript erzeugt die `.sta`-Datei und eine JSON-Sidecar-Datei mit SHA-256-Fingerabdruck. Der Fingerabdruck umfasst Konto, Auszugs-/Sequenznummer, Zeitraum, Salden und alle kanonischen Umsätze in Quellreihenfolge. Ihn nie als erfundenes Bankfeld in die MT940-Datei schreiben.
+Die erzeugte `.sta` und Sidecar stehen zunächst auf `delivery_approved: false`. Die Erzeugung ist keine Freigabe.
 
-Generische Monatsdatei:
-
-`MT940 <IBAN> <TT.MM.JJJJ> bis <TT.MM.JJJJ>.sta`
-
-Sidecar:
-
-`MT940 Prüfung <IBAN> <TT.MM.JJJJ> bis <TT.MM.JJJJ>.json`
-
-### 9. Unabhängig gegen das Manifest validieren
+## 5. Pflichtprüfung vor jeder Auslieferung
 
 ```bash
-python scripts/validate-mt940.py "MT940 <IBAN> <Zeitraum>.sta" manifest.json
+python scripts/validate-mt940.py "MT940 <IBAN> <Zeitraum>.sta" manifest.json --source-review source-review.json
 ```
 
-Der Validator prüft unter anderem `:20:`, IBAN, `:28C:`, beide Saldenfelder, jedes `:61:`/`:86:`-Paar, Reihenfolge, Rundlauf, Zeichensatz, CRLF, Zeilenlängen, Saldenrechnung, Profilregeln und Fingerprint.
+Der Validator prüft die Originaldateihashes, liest die **geschriebenen Bytes** zurück und vergleicht mit dem getrennten Quellprüfbericht. Sämtliche Umsätze prüfen, keine Stichprobe. Prüfen:
 
-Exit-Status:
+- IBAN, Währung, Auszugs-/Sequenznummer, Saldendaten und Saldenbeträge;
+- je Umsatz Zuordnung, Reihenfolge, Valuta, Buchungsdatum, Betrag und Vorzeichen;
+- Buchungsart/Code, technische Referenzen und sämtliche benannten Detailfelder gemäß Modell;
+- den **vollständigen** zurückgelesenen Buchungstext einschließlich aller ersten/letzten Wörter und Referenzenden;
+- keine fehlenden, doppelten, vertauschten oder zusätzlich erfundenen Textteile, keine falschen Feldkennzeichen oder unzulässigen Zeichenänderungen;
+- Zeichensatz, CRLF, Zeilen-/Feldgrenzen, Saldenrechnung und Fingerprint.
 
-- `0`: technisch und rechnerisch gültig
-- `2`: Quelldaten oder Salden unvollständig
-- `3`: Struktur- oder Zeichenfehler
-- `4`: DATEV-Profil nicht verifiziert; nur Probeimport zulässig
-- `5`: möglicher Doppelimport erkannt
+Quelle → Manifest und Quelle → zurückgelesene MT940 getrennt nachweisen. Im Prüfbericht Quellfundstelle, Quellwert, Manifestwert, tatsächlichen MT940-Wert und Vergleichsergebnis ausweisen. Textanfang/-ende zusätzlich anzeigen; sie ersetzen den Volltextvergleich nicht. Gleich hohe Beträge berechtigen nicht zur Zuordnung eines Textes zu einem anderen Umsatz.
 
-## Freigabe und Übergabe
+Bei einer Abweichung oder einem fehlenden Nachweis **Auslieferung sperren**, Fundstelle/Feld benennen, beheben und erneut prüfen. Ein technisch stimmiger Rundlauf darf die Quellprüfung nicht ersetzen. Eine spätere Änderung an der MT940 macht den Prüfbericht ungültig; der Bericht bindet sich an deren SHA-256.
 
-Je Konto `.sta`, JSON-Sidecar und eine Prüfzusammenfassung liefern:
+Exit-Status: `0` = Feldvergleich, Technik und Rechnung bestanden; `2` = Quellnachweis/Feldabgleich/Salden unvollständig oder falsch; `3` = Struktur-/Zeichenfehler; `4` = Bankmodell fehlt, passt nicht oder ist für den Umfang unbestätigt; `5` = möglicher Doppelimport. Bei Fehler steht der Prüfbericht auf `delivery_approved: false`.
 
-- IBAN, Auszugsnummer und Zeitraum
-- Anfangssaldodatum/-betrag, Buchungszahl/-summe, Endbestandsdatum/-betrag
-- frühestes/spätestes Valuta- und Buchungsdatum
-- Fingerprint und Ergebnis der technischen Validierung
-- je PDF-Umsatz: Seite, Zahl der sichtbaren Quellzeilen, `source_to_manifest_match`, Textanfang, Textende und `roundtrip_match`
-- PDF-basierte Datei nur freigeben, wenn f?r jeden Umsatz `source_to_manifest_match: true` und `roundtrip_match: true` ausgewiesen sind
-- separater Status des DATEV-Probeimports
-- offene Klärungen und Löschbestätigung für Testumsätze
+## 6. DATEV-Probeimport und Übergabe
 
-Ohne dokumentierten Probeimport exakt sinngemäß formulieren:
+Ein neues DATEV-Modell mit höchstens einem Buchungstag und mindestens einem langen Buchungstext testen. Reale Werte dieser Quelle verwenden; Testzahlen aus `tests/fixtures/` sind keine Bankreferenz. Vor dem Import muss geklärt sein, dass für das Konto und den Testzeitraum keine früher importierten Testumsätze vorhanden sind.
 
-> Technisch und rechnerisch geprüft. Die konkrete Verarbeitung und Anzeige in DATEV ist noch nicht durch einen Probeimport bestätigt. Die Datei ist daher noch nicht für den vollständigen Produktivimport freigegeben.
+Nach dem Probeimport Anfangssaldo, Endsaldo, Zahl/Vorzeichen und **alle** übernommenen Felder samt vollständigen Buchungstexten direkt in DATEV prüfen. Sichtbare `?xx`-Kennzeichen, verschobene Felder oder fehlende Textteile sind Fehler. Prüfergebnis, Datum und anschließend erfolgte Löschung der Testumsätze im Bankmodell dokumentieren. Erst dann `status: verified` und produktive Verarbeitung zulassen.
 
-Ohne Probeimport niemals „DATEV-kompatibel“, „DATEV-geprüft“ oder „erfolgreich importierbar“ behaupten.
+Je Konto `.sta`, Prüf-Sidecar, Manifest und Quellprüfnachweis mitgeben. Kurz nennen: Bankmodell/Version, Konto/Zeitraum, Buchungszahl/-summe, Salden, Quell- und MT940-Hashes, Feldvergleich, DATEV-Status und offene Klärungen. Produktionsdatei nur bei `delivery_approved: true` ausliefern. Eine bestandene Testdatei ausdrücklich als Test ausliefern; sie ist keine produktive Freigabe.
 
-Die vollständigen Feldregeln und Profilanforderungen stehen in [technischer-aufbau.md](references/technischer-aufbau.md).
+Ohne dokumentierten DATEV-Probeimport formulieren:
+
+> Gegen die Quelle sowie technisch und rechnerisch geprüft. Die konkrete Verarbeitung und Anzeige in DATEV ist noch nicht durch einen Probeimport bestätigt. Die Testdatei ist nicht für den vollständigen Produktivimport freigegeben.
+
+„DATEV-kompatibel“, „DATEV-geprüft“ oder „erfolgreich importierbar“ nur mit tatsächlichem Nachweis für dieses Bankmodell behaupten. Bei nativer Originalsyntax die Erhaltung der Quelldaten ausweisen; daraus keinen durchgeführten DATEV-Test ableiten.
