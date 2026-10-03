@@ -1,0 +1,35 @@
+{
+  "technische_pruefung": "bestanden",
+  "datev_probeimport": "nicht durchgeführt",
+  "profil": "zeitwirtschaft-12-felder-v1.1",
+  "beraternummer": "413885",
+  "datencodierung": "cp1252",
+  "ini_codierung": "cp1252",
+  "zeilenende": "CRLF",
+  "datenfelder": 12,
+  "datensaetze": 2,
+  "monatszeilen": 1,
+  "kalenderzeilen": 1,
+  "korrekturmodus": "original",
+  "identische_datenzeilen_zusaetzlich": 0,
+  "monatssummen": [
+    {
+      "lohnart": "2000",
+      "einheit": "betrag",
+      "summe": "2500.00"
+    }
+  ],
+  "sha256": {
+    "eingabe_json": "2b11ff70000fe016c00bec4e51e0785f461ee2c76f3c2b18ceda609e0677202d",
+    "txt": "4e1912b99447ccae21bd234038d8e0708c2887ca8dbb41600d585435bcd449b2",
+    "ini": "3c2cb0b527350577451a73bb4733aab2932c01c53e99439f4e258dc68485e7ba"
+  },
+  "noch_fachlich_zu_pruefen": [
+    "Vollständigkeit und Richtigkeit gegenüber sämtlichen Quelldaten",
+    "Personalnummernzuordnung, Zielstammdaten und ggf. Länge betrieblicher Personalnummern",
+    "Fachliche Lohnartfunktionen, individuelle Grenzen und Änderungen seit den hinterlegten Katalogständen",
+    "Schlüsselspezifische Feldkombinationen, Arbeitstage, Sollzeiten und Fehlzeitenvollständigkeit",
+    "Korrekturdifferenzen bzw. vollständiger Korrekturkalender; Wiederholungsimport",
+    "Eingerichtete Codepage und Interpretation als Dezimalstunden im Zielsystem"
+  ]
+}

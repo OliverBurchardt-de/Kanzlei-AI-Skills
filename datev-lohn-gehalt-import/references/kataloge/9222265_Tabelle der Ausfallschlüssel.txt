@@ -1,0 +1,461 @@
+=== PDF-SEITE 1 ===
+ DATEV-Hilfe                                                                                                                      Dok.-Nr.: 9222265
+ Anleitung vom 30.12.2025
+
+
+ Betriﬀt Produkte:
+ DATEV Lohn und Gehalt
+
+
+
+ Tabelle der Ausfallschlüssel
+
+
+
+
+   Ausfallschlüssel                                         Festbezugskürz        Anspr.       Anw.        Unterbrechungs        Fehlzeit
+                                                            ung                   Lohnz.       Std.        tatbestand            unbezahlt
+
+
+   1                      Zeitlohn                          Nein                  X            X           Nein                  Keine
+
+
+   2                      Zeitlohn 2                        Nein                  X            X           Nein                  Keine
+
+
+   3                      Zeitlohn 3                        Nein                  X            X           Nein                  Keine
+
+
+   4                      Zeitlohn 4                        Nein                  X            X           Nein                  Keine
+
+
+   5                      Zeitlohn 5                        Nein                  X            X           Nein                  Keine
+
+
+   AA                     Arbeitszeitkonto Aufbau           Nein                  --           --          Nein                  Keine
+
+
+   AE                     Arbeitszeitkonto Entnahme         Nein                  X            --          Nein                  Keine
+
+
+   AF                     Arbeitsfrei ohne                  Nach Tagen            --           --          Ja, unbez. Urlaub     Entschuldigt
+                          Lohnanspruch
+
+
+   AM                     Ausbildung zum Meister            Nach Tagen            --           --          Ja, unbez. Urlaub     Entschuldigt
+
+
+   AS                     Aussperrung                       Nach Tagen            --           --          Ja, Arbeitskampf      Entschuldigt
+
+
+   BR                     Betriebsratstätigkeit             Nein                  X            X           Nein                  Keine
+
+
+   EK                     Krank bei Eintritt ohne           Nach Tagen            --           --          Ja                    Entschuldigt
+                          Lohnfortzahlung
+
+
+   EO                     Entgeltfortzahlung wegen          Nein                  X            --          Nein                  Keine
+                          Organ-/Gewebespende
+
+
+   ER                     Einstellung Krankengeld           Nach Tagen            --           --          Ja, Monatsfrist       Entschuldigt
+                          wegen voller
+                          Erwerbsminderungsrente
+
+
+
+
+
+
+
+Dokument 9222265                                                                                                                         Seite 1 von 6
+
+=== PDF-SEITE 2 ===
+   Ausfallschlüssel                                            Festbezugskürz         Anspr.       Anw.         Unterbrechungs         Fehlzeit
+                                                               ung                    Lohnz.       Std.         tatbestand             unbezahlt
+
+
+   ES                      Entgelt in Höhe Kug (SV             Nach Stunden           --           --           Nein                   Entschuldigt
+                           durch AN und AG)
+
+
+   EÜ                      Eignungsübung                       Nach Tagen             --           --           Ja                     Entschuldigt
+
+
+   EZ                      Elternzeit                          Nach Tagen             --           --           Ja                     Entschuldigt
+
+
+   F                       Feiertag                            Nein                   X            --           Nein                   Keine
+
+
+   FE                      Fehlt entschuldigt (bezahlt)        Nein                   X            --           Nein                   Keine
+
+
+   FK                      Feiertag im Kug-Zeitraum            Nach Stunden           --           --           Nein                   Entschuldigt
+                           (SV durch AG)
+
+
+   FN                      Fehlstunden                         Nach Stunden           --           --           Nein                   Unentschuldigt
+                           unbez./unentsch. (k. vollen
+                           Tage)
+
+
+   FR                      Freistellung im Rahmen              Nein                   X            --           Ja,                    Keine
+                           sonst. ﬂexibler AZ-                                                                  Dreimonatsfrist
+                           Regelungen
+
+
+   FS                      Fehlstunden unbezahlt               Nach Stunden           --           --           Nein                   Entschuldigt
+                           (keine vollen Tage)
+
+
+   FU                      Fehltag unentschuldigt              Nach Tagen             --           --           Ja, unbez. Urlaub      Unentschuldigt
+                                                                                                                *)
+
+
+   GR                      Grund- oder freiwilliger            Nach Tagen             --           --           Ja                     Entschuldigt
+                           Wehrdienst
+
+
+   K                       Krankheit                           Nein                   X            --           Nein                   Keine
+                           (Lohnfortzahlung)
+
+
+   K6                      Krankheit mit                       Nach Tagen             --           --           Ja                     Entschuldigt
+                           Kranken(tage)geldanspruch
+
+
+   KA                      Ende Bezug                          Nach Tagen             --           --           Ja, sofort.Abm.        Entschuldigt
+                           Krankengeld/Beginn Bezug
+                           Arbeitslosengeld
+
+
+   KB                      Krankheit Betriebsunfall            Nein                   X            --           Nein                   Entschuldigt
+                           (LFZ)
+
+
+   KE                      Krankengeldende (nach 78            Nach Tagen             --           --           Ja, Monatsfrist        Entschuldigt
+                           Wochen)
+
+
+   KF                      Krank am Feiertag                   Nein                   X            --           Nein                   Keine
+
+
+
+
+
+
+Dokument 9222265                                                                                                                               Seite 2 von 6
+
+=== PDF-SEITE 3 ===
+   Ausfallschlüssel                                           Festbezugskürz         Anspr.       Anw.         Unterbrechungs        Fehlzeit
+                                                              ung                    Lohnz.       Std.         tatbestand            unbezahlt
+
+
+   KG                      Krank am Feiertag in Höhe          Nach Stunden           --           --           Nein                  Entschuldigt
+                           Kug (SV durch AG)
+
+
+   KK                      Krank vor Saison-Kug               Nach Stunden           --           --           Ja, nach AZK          Entschuldigt
+                                                                                                               Entnahme
+
+
+   KO                      Krankheit ohne                     Nach Tagen             --           --           Ja, Monatsfrist       Entschuldigt
+                           Kranken(tage)geldanspruch
+
+
+   KP                      Kurzzeitige Pﬂege (bis 10          Nach Tagen             --           --           Ja, unbez. Urlaub     Entschuldigt
+                           Tage)
+
+
+   KS                      Krankengeld bei                    Nach Stunden           --           --           Nein                  Entschuldigt
+   (erfassbar bis          witterungsbed. Ausf.
+   einschließlich          (Gerüstbau-Stunden)
+
+   03/2021)
+
+
+   KT                      Krankengeld bei                    Nach Stunden           --           --           Ja                    Entschuldigt
+   (erfassbar bis          witterungsbed. Ausf.
+   einschließlich          (Gerüstbau-Tage)
+
+   03/2021)
+
+
+   KU                      Kurzarbeit (Kug)                   Nach Stunden           --           --           Nein                  Entschuldigt
+
+
+   KV                      Krank während                      Nach Stunden           --           --           Nein                  Entschuldigt
+                           Überbrückungsgeld bei
+   (erfassbar bis          witterungsbed. Ausfall
+   einschließlich          (Gerüstbau)
+   03/2021)
+
+
+   KW                      Krank nach                         Nach Stunden           --           --           Nein                  Entschuldigt
+                           witterungsbedingtem
+                           Ausfall
+
+
+   LA                      Lohnausgleich                      Nein                   X            --           Nein                  Keine
+
+
+   ME                      Mehrarbeit                         Nein                   --           X            Nein                  Keine
+
+
+   MH                      Kinderkrankengeld bei              Nach Stunden           --           --           Nein                  Entschuldigt
+                           Mitaufnahme ins
+                           Krankenhaus (einzelne
+                           Stunden)
+
+
+   MK                      Krankengeld bei                    Nach Tagen             --           --           Ja                    Entschuldigt
+                           Mitaufnahme ins
+                           Krankenhaus
+
+
+   ML                      Mutterschutzlohn/Beschäfti         Nein                   X            --           Nein                  Keine
+                           gungsverbot
+
+
+   MS                      Mutterschutzfrist                  Nach Tagen             --           --           Ja                    Entschuldigt
+
+
+
+Dokument 9222265                                                                                                                              Seite 3 von 6
+
+=== PDF-SEITE 4 ===
+   Ausfallschlüssel                                            Festbezugskürz         Anspr.       Anw.         Unterbrechungs         Fehlzeit
+                                                               ung                    Lohnz.       Std.         tatbestand             unbezahlt
+
+
+   MT                      Kinderkrankengeld bei               Nach Tagen             --           --           Ja                     Entschuldigt
+                           Mitaufnahme ins
+                           Krankenhaus (volle Tage)
+
+
+   OS                      Krankengeld bei                     Nach Tagen             --           --           Ja                     Entschuldigt
+                           Organ-/Blut-/Gewebespend
+                           e ohne EEL
+
+
+   PB                      Vollständige Freistellung für       Nach Tagen             --           --           Ja, sofort.Abm.        Entschuldigt
+                           die Betreuung/Begleitung
+                           Pﬂegebedürftiger
+
+
+   PE                      Pﬂege krankes Kind mit              Nein                   X            --           Nein                   Entschuldigt
+                           Entgeltfortzahlung
+
+
+   PK                      Pﬂege krankes Kind mit              Nach Tagen             --           --           Ja                     Entschuldigt
+                           Kranken(tage)geld
+
+
+   PO                      Pﬂege krankes Kind ohne             Nach Tagen             --           --           Ja, Monatsfrist        Entschuldigt
+                           Kranken(tage)geld
+
+
+   PS                      Pﬂegestunden krankes Kind           Nach Stunden           --           --           Nein                   Entschuldigt
+                           unbez. (k. vollen Tage)
+
+
+   PU                      Pﬂegeunterstützungsgeld             Nach Tagen             --           --           Ja                     Entschuldigt
+
+
+   PZ                      Pﬂegezeit                           Nach Tagen             --           --           Nein                   Entschuldigt
+
+
+   QA                      Quarantäne mit                      Nach Tagen             --           --           Ja, 6 Wochenfrist      Entschuldigt
+                           Entschädigungszahlung
+
+
+   QB                      Beaufsichtigung Kind                Nach Stunden                                     Nein                   Entschuldigt
+                           (Stunden) wegen
+                           Schulschließung (§56. Abs.
+                           1a IfSG)
+
+
+   QC                      Freiwillige Einstellung der         Nach Tagen                                       Ja, unbez. Url.        Entschuldigt
+                           beruﬂichen Tätigkeit
+                           (unbezahlte Freistellung)
+
+
+   QD                      Freiwillige Einstellung der         Nein                   X                         Nein                   Entschuldigt
+                           beruﬂichen Tätigkeit
+                           (bezahlte Freistellung)
+
+
+   QF                      Freiwillige Quarantäne              Nein                   X             --          Nein                   Keine
+                           (bezahlte Freistellung)
+
+
+   QG                      Freiwillige Quarantäne              Nein                   X             --          Nein                   Keine
+                           Ausfallstunden (bezahlte
+                           Freistellung)
+
+
+
+
+
+
+Dokument 9222265                                                                                                                                Seite 4 von 6
+
+=== PDF-SEITE 5 ===
+   Ausfallschlüssel                                            Festbezugskürz        Anspr.       Anw.         Unterbrechungs         Fehlzeit
+                                                               ung                   Lohnz.       Std.         tatbestand             unbezahlt
+
+
+   QK                      Beaufsichtigung Kind                Nach Tagen                                      Ja,                    Entschuldigt
+                           wegen Schulschließung (§                                                            Kinderbetreuun
+                           56. Abs. 1a IfSG)                                                                   g
+
+
+   QN                      Freiwillige Quarantäne              Nach Stunden                        --          Ja, unbez. Urlaub      Entschuldigt
+                           Ausfallstunden (unbezahlte
+                           Freistellung)
+
+
+   QO                      Angeordnete Quarantäne              Nein                  X             --          Nein                   Keine
+                           (bezahlte Freistellung)
+
+
+   QS                      Quarantäne Ausfallstunden           Nach Stunden          --           --           Nein                   Entschuldigt
+                           mit Entschädigungszahlung
+
+
+   QT                      beruﬂiches Tätigkeitsverbot         Nach Tagen                                      Ja, 6 Wochenfrist      Entschuldigt
+                           mit Entschädigungszahlung
+
+
+   QU                      Freiwillige Quarantäne              Nach Tagen            --           --           Ja, unbez. Urlaub      Entschuldigt
+                           (unbezahlte Freistellung)
+
+
+   RA                      Rechtmäßiger Streik (Tage)          Nach Tagen            --           --           Ja, Arbeitskampf       Entschuldigt
+
+
+   RH                      Reha/Kur mit                        Nein                  X            --           Nein                   Keine
+                           Entgeltfortzahlung
+
+
+   SO                      Sonstige Stunden/Zulagen            Nein                  --           --           Nein                   Keine
+
+
+   ST                      Sozialstunden                       Nein                  X            --           Nein                   Keine
+
+
+   SU                      Sonderurlaub                        Nein                  X            --           Nein                   Keine
+
+
+   SZ                      Studienzeit (dualer                 Nein                  X            --           Nein                   Keine
+                           Studiengang)
+
+
+   U                       Urlaub                              Nein                  X            --           Nein                   Keine
+
+
+   U6                      Krank Betriebsunfall (ohne          Nach Tagen            --           --           Ja                     Entschuldigt
+                           LFZ)
+
+
+   UA                      Unrechtm. Arbeitskampf              Nach Tagen            --           --           Ja, unbez. Urlaub      Unentschuldigt
+
+
+   UB                      Unwiderruﬂiche bezahlte             Nein                  X            --           Nein                   Keine
+                           Freistellung
+
+
+   UE                      Übergangsgeld                       Nach Tagen            --           --           Ja                     Entschuldigt
+
+
+   UF                      Unwiderruﬂiche unbezahlte           Nach Tagen            --           --           Ja, sofort.Abm.        Entschuldigt
+                           Freistellung
+
+
+
+
+
+
+Dokument 9222265                                                                                                                              Seite 5 von 6
+
+=== PDF-SEITE 6 ===
+   Ausfallschlüssel                                             Festbezugskürz         Anspr.       Anw.         Unterbrechungs          Fehlzeit
+                                                                ung                    Lohnz.       Std.         tatbestand              unbezahlt
+
+
+   UU                       Unbezahlter Urlaub                  Nach Tagen             --           --           Ja, unbez. Urlaub       Entschuldigt
+                                                                                                                 *)
+
+
+   VG                       Versorgungsgeld                     Nach Tagen             --           --           Ja                      Entschuldigt
+
+
+   VK                       Krankengeld/Krankheit vor           Nach Stunden           --           --           Ja                      Entschuldigt
+                            Kug (Tage)
+
+
+   VL                       Verletztengeld                      Nach Tagen             --           --           Ja                      Entschuldigt
+
+
+   VS                       Krankstunden vor Kug                Nach Stunden           --           --           Nein                    Entschuldigt
+
+
+   W1                       Witt.bed. Ausfall unter 1           Nach Stunden           --           --           Nein                    Entschuldigt
+                            Std./Tag
+
+
+   WA                       Winterausfall                       Nach Stunden           --           --           Nein                    Entschuldigt
+
+
+   WD                       Witterungsbedingter                 Nach Stunden           --           --           Nein                    Entschuldigt
+                            Ausfall Dachdecker
+
+
+   WE                       Wehrübung/                          Nach Tagen             --           --           Ja                      Entschuldigt
+                            Dienstverpﬂichtung
+
+
+   WK                       Krankheit während Kug               Nach Stunden           --           --           Nein                    Entschuldigt
+
+
+   ZD                       Zivil- bzw.                         Nach Tagen             --           --           Ja                      Entschuldigt
+                            Bundesfreiwilligendienst
+
+
+
+ *) Tage der Arbeitsunfähigkeit, die dem Entstehen des Krankengeldanspruchs nach § 46 S. 1 Nr. 2 SGB V vorausgehen (sog.
+ Wartetage) sind als SV-Tage zu werten. Für diese Tage ist eine unbezahlte Fehlzeit (z. B. FU) im Kalender zu erfassen.
+ Grundlage: Besprechungsergebnis der Spitzenverbände der Sozialversicherungsträger vom 13./14.10.2009 unter TOP 9.
+
+ **) Bei der Erfassung des Lohnausgleichs wird von der tariﬂichen Arbeitszeit von 7,8 Stunden ausgegangen. Wenn der Mitarbeiter in
+ Teilzeit arbeitet, geben Sie in der Spalte      Std.   die verkürzte Arbeitszeit ein.
+
+
+
+                                                                                                                                    Copyright © DATEV eG
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Dokument 9222265                                                                                                                                  Seite 6 von 6

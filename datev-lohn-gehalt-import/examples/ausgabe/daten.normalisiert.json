@@ -1,0 +1,42 @@
+{
+  "beraternummer": "413885",
+  "schema_version": "1.0",
+  "mandantennummer": "10000",
+  "abrechnungsmonat": "2026-09",
+  "personalnummer_typ": "datev",
+  "korrekturmodus": "original",
+  "zuordnungsnachweis": "Synthetisches Formatbeispiel; keine Zuordnung zu einem echten Mandanten.",
+  "datensaetze": [
+    {
+      "personalnummer": "00001",
+      "kalendertag": "",
+      "ausfallschluessel": "",
+      "lohnart": "2000",
+      "stunden": "",
+      "tage": "",
+      "wert": "2500.00",
+      "faktor": "",
+      "lohnveraenderung": "",
+      "kostenstelle": "",
+      "kostentraeger": "",
+      "bemerkung": "Mustervergütung",
+      "werteinheit": "betrag",
+      "quelle": "Synthetisches Beispiel: Monatswert"
+    },
+    {
+      "personalnummer": "00002",
+      "kalendertag": "14",
+      "ausfallschluessel": "U",
+      "lohnart": "",
+      "stunden": "4.00",
+      "tage": "0.50",
+      "wert": "",
+      "faktor": "",
+      "lohnveraenderung": "",
+      "kostenstelle": "",
+      "kostentraeger": "",
+      "bemerkung": "",
+      "quelle": "Synthetisches Beispiel: halber Urlaubstag"
+    }
+  ]
+}

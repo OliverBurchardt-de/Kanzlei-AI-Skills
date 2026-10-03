@@ -1,0 +1,1722 @@
+{
+  "dokument": "9222265_Tabelle der Ausfallschlüssel.pdf",
+  "dokumentstand": "2025-12-30",
+  "pdf_seiten": 6,
+  "quelle_sha256": "d9c40e6ec0ad376e240de04824ec606cccab17fadf6bd7be184db88b8df11025",
+  "anzahl": 90,
+  "eintraege": [
+    {
+      "code": "1",
+      "bezeichnung": "Zeitlohn",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "1",
+        "Zeitlohn",
+        "Nein",
+        "X",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "2",
+      "bezeichnung": "Zeitlohn 2",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "2",
+        "Zeitlohn 2",
+        "Nein",
+        "X",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "3",
+      "bezeichnung": "Zeitlohn 3",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "3",
+        "Zeitlohn 3",
+        "Nein",
+        "X",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "4",
+      "bezeichnung": "Zeitlohn 4",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "4",
+        "Zeitlohn 4",
+        "Nein",
+        "X",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "5",
+      "bezeichnung": "Zeitlohn 5",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "5",
+        "Zeitlohn 5",
+        "Nein",
+        "X",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "AA",
+      "bezeichnung": "Arbeitszeitkonto Aufbau",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "AA",
+        "Arbeitszeitkonto Aufbau",
+        "Nein",
+        "--",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "AE",
+      "bezeichnung": "Arbeitszeitkonto Entnahme",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "AE",
+        "Arbeitszeitkonto Entnahme",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "AF",
+      "bezeichnung": "Arbeitsfrei ohne\nLohnanspruch",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "AF",
+        "Arbeitsfrei ohne\nLohnanspruch",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "AM",
+      "bezeichnung": "Ausbildung zum Meister",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "AM",
+        "Ausbildung zum Meister",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "AS",
+      "bezeichnung": "Aussperrung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, Arbeitskampf",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "AS",
+        "Aussperrung",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, Arbeitskampf",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "BR",
+      "bezeichnung": "Betriebsratstätigkeit",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "BR",
+        "Betriebsratstätigkeit",
+        "Nein",
+        "X",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "EK",
+      "bezeichnung": "Krank bei Eintritt ohne\nLohnfortzahlung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "EK",
+        "Krank bei Eintritt ohne\nLohnfortzahlung",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "EO",
+      "bezeichnung": "Entgeltfortzahlung wegen\nOrgan-/Gewebespende",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "EO",
+        "Entgeltfortzahlung wegen\nOrgan-/Gewebespende",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "ER",
+      "bezeichnung": "Einstellung Krankengeld\nwegen voller\nErwerbsminderungsrente",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, Monatsfrist",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 1,
+      "originalzellen": [
+        "ER",
+        "Einstellung Krankengeld\nwegen voller\nErwerbsminderungsrente",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, Monatsfrist",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "ES",
+      "bezeichnung": "Entgelt in Höhe Kug (SV\ndurch AN und AG)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "ES",
+        "Entgelt in Höhe Kug (SV\ndurch AN und AG)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "EÜ",
+      "bezeichnung": "Eignungsübung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "EÜ",
+        "Eignungsübung",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "EZ",
+      "bezeichnung": "Elternzeit",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "EZ",
+        "Elternzeit",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "F",
+      "bezeichnung": "Feiertag",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "F",
+        "Feiertag",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "FE",
+      "bezeichnung": "Fehlt entschuldigt (bezahlt)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "FE",
+        "Fehlt entschuldigt (bezahlt)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "FK",
+      "bezeichnung": "Feiertag im Kug-Zeitraum\n(SV durch AG)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "FK",
+        "Feiertag im Kug-Zeitraum\n(SV durch AG)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "FN",
+      "bezeichnung": "Fehlstunden\nunbez./unentsch. (k. vollen\nTage)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Unentschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "FN",
+        "Fehlstunden\nunbez./unentsch. (k. vollen\nTage)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Unentschuldigt"
+      ]
+    },
+    {
+      "code": "FR",
+      "bezeichnung": "Freistellung im Rahmen\nsonst. flexibler AZ-\nRegelungen",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja,\nDreimonatsfrist",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "FR",
+        "Freistellung im Rahmen\nsonst. flexibler AZ-\nRegelungen",
+        "Nein",
+        "X",
+        "--",
+        "Ja,\nDreimonatsfrist",
+        "Keine"
+      ]
+    },
+    {
+      "code": "FS",
+      "bezeichnung": "Fehlstunden unbezahlt\n(keine vollen Tage)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "FS",
+        "Fehlstunden unbezahlt\n(keine vollen Tage)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "FU",
+      "bezeichnung": "Fehltag unentschuldigt",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub\n*)",
+      "fehlzeit_unbezahlt": "Unentschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "FU",
+        "Fehltag unentschuldigt",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub\n*)",
+        "Unentschuldigt"
+      ]
+    },
+    {
+      "code": "GR",
+      "bezeichnung": "Grund- oder freiwilliger\nWehrdienst",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "GR",
+        "Grund- oder freiwilliger\nWehrdienst",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "K",
+      "bezeichnung": "Krankheit\n(Lohnfortzahlung)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "K",
+        "Krankheit\n(Lohnfortzahlung)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "K6",
+      "bezeichnung": "Krankheit mit\nKranken(tage)geldanspruch",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "K6",
+        "Krankheit mit\nKranken(tage)geldanspruch",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KA",
+      "bezeichnung": "Ende Bezug\nKrankengeld/Beginn Bezug\nArbeitslosengeld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, sofort.Abm.",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "KA",
+        "Ende Bezug\nKrankengeld/Beginn Bezug\nArbeitslosengeld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, sofort.Abm.",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KB",
+      "bezeichnung": "Krankheit Betriebsunfall\n(LFZ)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "KB",
+        "Krankheit Betriebsunfall\n(LFZ)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KE",
+      "bezeichnung": "Krankengeldende (nach 78\nWochen)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, Monatsfrist",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "KE",
+        "Krankengeldende (nach 78\nWochen)",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, Monatsfrist",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KF",
+      "bezeichnung": "Krank am Feiertag",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 2,
+      "originalzellen": [
+        "KF",
+        "Krank am Feiertag",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "KG",
+      "bezeichnung": "Krank am Feiertag in Höhe\nKug (SV durch AG)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KG",
+        "Krank am Feiertag in Höhe\nKug (SV durch AG)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KK",
+      "bezeichnung": "Krank vor Saison-Kug",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, nach AZK\nEntnahme",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KK",
+        "Krank vor Saison-Kug",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Ja, nach AZK\nEntnahme",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KO",
+      "bezeichnung": "Krankheit ohne\nKranken(tage)geldanspruch",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, Monatsfrist",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KO",
+        "Krankheit ohne\nKranken(tage)geldanspruch",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, Monatsfrist",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KP",
+      "bezeichnung": "Kurzzeitige Pflege (bis 10\nTage)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KP",
+        "Kurzzeitige Pflege (bis 10\nTage)",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KS",
+      "bezeichnung": "Krankengeld bei\nwitterungsbed. Ausf.\n(Gerüstbau-Stunden)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "erfassbar_bis": "2021-03",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KS\n(erfassbar bis\neinschließlich\n03/2021)",
+        "Krankengeld bei\nwitterungsbed. Ausf.\n(Gerüstbau-Stunden)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KT",
+      "bezeichnung": "Krankengeld bei\nwitterungsbed. Ausf.\n(Gerüstbau-Tage)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "erfassbar_bis": "2021-03",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KT\n(erfassbar bis\neinschließlich\n03/2021)",
+        "Krankengeld bei\nwitterungsbed. Ausf.\n(Gerüstbau-Tage)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KU",
+      "bezeichnung": "Kurzarbeit (Kug)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KU",
+        "Kurzarbeit (Kug)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KV",
+      "bezeichnung": "Krank während\nÜberbrückungsgeld bei\nwitterungsbed. Ausfall\n(Gerüstbau)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "erfassbar_bis": "2021-03",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KV\n(erfassbar bis\neinschließlich\n03/2021)",
+        "Krank während\nÜberbrückungsgeld bei\nwitterungsbed. Ausfall\n(Gerüstbau)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "KW",
+      "bezeichnung": "Krank nach\nwitterungsbedingtem\nAusfall",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "KW",
+        "Krank nach\nwitterungsbedingtem\nAusfall",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "LA",
+      "bezeichnung": "Lohnausgleich",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "LA",
+        "Lohnausgleich",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "ME",
+      "bezeichnung": "Mehrarbeit",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "X",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "ME",
+        "Mehrarbeit",
+        "Nein",
+        "--",
+        "X",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "MH",
+      "bezeichnung": "Kinderkrankengeld bei\nMitaufnahme ins\nKrankenhaus (einzelne\nStunden)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "MH",
+        "Kinderkrankengeld bei\nMitaufnahme ins\nKrankenhaus (einzelne\nStunden)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "MK",
+      "bezeichnung": "Krankengeld bei\nMitaufnahme ins\nKrankenhaus",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "MK",
+        "Krankengeld bei\nMitaufnahme ins\nKrankenhaus",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "ML",
+      "bezeichnung": "Mutterschutzlohn/Beschäfti\ngungsverbot",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "ML",
+        "Mutterschutzlohn/Beschäfti\ngungsverbot",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "MS",
+      "bezeichnung": "Mutterschutzfrist",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 3,
+      "originalzellen": [
+        "MS",
+        "Mutterschutzfrist",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "MT",
+      "bezeichnung": "Kinderkrankengeld bei\nMitaufnahme ins\nKrankenhaus (volle Tage)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "MT",
+        "Kinderkrankengeld bei\nMitaufnahme ins\nKrankenhaus (volle Tage)",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "OS",
+      "bezeichnung": "Krankengeld bei\nOrgan-/Blut-/Gewebespend\ne ohne EEL",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "OS",
+        "Krankengeld bei\nOrgan-/Blut-/Gewebespend\ne ohne EEL",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PB",
+      "bezeichnung": "Vollständige Freistellung für\ndie Betreuung/Begleitung\nPflegebedürftiger",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, sofort.Abm.",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PB",
+        "Vollständige Freistellung für\ndie Betreuung/Begleitung\nPflegebedürftiger",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, sofort.Abm.",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PE",
+      "bezeichnung": "Pflege krankes Kind mit\nEntgeltfortzahlung",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PE",
+        "Pflege krankes Kind mit\nEntgeltfortzahlung",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PK",
+      "bezeichnung": "Pflege krankes Kind mit\nKranken(tage)geld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PK",
+        "Pflege krankes Kind mit\nKranken(tage)geld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PO",
+      "bezeichnung": "Pflege krankes Kind ohne\nKranken(tage)geld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, Monatsfrist",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PO",
+        "Pflege krankes Kind ohne\nKranken(tage)geld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, Monatsfrist",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PS",
+      "bezeichnung": "Pflegestunden krankes Kind\nunbez. (k. vollen Tage)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PS",
+        "Pflegestunden krankes Kind\nunbez. (k. vollen Tage)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PU",
+      "bezeichnung": "Pflegeunterstützungsgeld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PU",
+        "Pflegeunterstützungsgeld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "PZ",
+      "bezeichnung": "Pflegezeit",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "PZ",
+        "Pflegezeit",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QA",
+      "bezeichnung": "Quarantäne mit\nEntschädigungszahlung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, 6 Wochenfrist",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "QA",
+        "Quarantäne mit\nEntschädigungszahlung",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, 6 Wochenfrist",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QB",
+      "bezeichnung": "Beaufsichtigung Kind\n(Stunden) wegen\nSchulschließung (§56. Abs.\n1a IfSG)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "",
+      "anwesenheitsstunden": "",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "QB",
+        "Beaufsichtigung Kind\n(Stunden) wegen\nSchulschließung (§56. Abs.\n1a IfSG)",
+        "Nach Stunden",
+        "",
+        "",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QC",
+      "bezeichnung": "Freiwillige Einstellung der\nberuflichen Tätigkeit\n(unbezahlte Freistellung)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "",
+      "anwesenheitsstunden": "",
+      "unterbrechungstatbestand": "Ja, unbez. Url.",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "QC",
+        "Freiwillige Einstellung der\nberuflichen Tätigkeit\n(unbezahlte Freistellung)",
+        "Nach Tagen",
+        "",
+        "",
+        "Ja, unbez. Url.",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QD",
+      "bezeichnung": "Freiwillige Einstellung der\nberuflichen Tätigkeit\n(bezahlte Freistellung)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "QD",
+        "Freiwillige Einstellung der\nberuflichen Tätigkeit\n(bezahlte Freistellung)",
+        "Nein",
+        "X",
+        "",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QF",
+      "bezeichnung": "Freiwillige Quarantäne\n(bezahlte Freistellung)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "QF",
+        "Freiwillige Quarantäne\n(bezahlte Freistellung)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "QG",
+      "bezeichnung": "Freiwillige Quarantäne\nAusfallstunden (bezahlte\nFreistellung)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 4,
+      "originalzellen": [
+        "QG",
+        "Freiwillige Quarantäne\nAusfallstunden (bezahlte\nFreistellung)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "QK",
+      "bezeichnung": "Beaufsichtigung Kind\nwegen Schulschließung (§\n56. Abs. 1a IfSG)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "",
+      "anwesenheitsstunden": "",
+      "unterbrechungstatbestand": "Ja,\nKinderbetreuun\ng",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "QK",
+        "Beaufsichtigung Kind\nwegen Schulschließung (§\n56. Abs. 1a IfSG)",
+        "Nach Tagen",
+        "",
+        "",
+        "Ja,\nKinderbetreuun\ng",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QN",
+      "bezeichnung": "Freiwillige Quarantäne\nAusfallstunden (unbezahlte\nFreistellung)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "QN",
+        "Freiwillige Quarantäne\nAusfallstunden (unbezahlte\nFreistellung)",
+        "Nach Stunden",
+        "",
+        "--",
+        "Ja, unbez. Urlaub",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QO",
+      "bezeichnung": "Angeordnete Quarantäne\n(bezahlte Freistellung)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "QO",
+        "Angeordnete Quarantäne\n(bezahlte Freistellung)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "QS",
+      "bezeichnung": "Quarantäne Ausfallstunden\nmit Entschädigungszahlung",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "QS",
+        "Quarantäne Ausfallstunden\nmit Entschädigungszahlung",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QT",
+      "bezeichnung": "berufliches Tätigkeitsverbot\nmit Entschädigungszahlung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "",
+      "anwesenheitsstunden": "",
+      "unterbrechungstatbestand": "Ja, 6 Wochenfrist",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "QT",
+        "berufliches Tätigkeitsverbot\nmit Entschädigungszahlung",
+        "Nach Tagen",
+        "",
+        "",
+        "Ja, 6 Wochenfrist",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "QU",
+      "bezeichnung": "Freiwillige Quarantäne\n(unbezahlte Freistellung)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "QU",
+        "Freiwillige Quarantäne\n(unbezahlte Freistellung)",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "RA",
+      "bezeichnung": "Rechtmäßiger Streik (Tage)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, Arbeitskampf",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "RA",
+        "Rechtmäßiger Streik (Tage)",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, Arbeitskampf",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "RH",
+      "bezeichnung": "Reha/Kur mit\nEntgeltfortzahlung",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "RH",
+        "Reha/Kur mit\nEntgeltfortzahlung",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "SO",
+      "bezeichnung": "Sonstige Stunden/Zulagen",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "SO",
+        "Sonstige Stunden/Zulagen",
+        "Nein",
+        "--",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "ST",
+      "bezeichnung": "Sozialstunden",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "ST",
+        "Sozialstunden",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "SU",
+      "bezeichnung": "Sonderurlaub",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "SU",
+        "Sonderurlaub",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "SZ",
+      "bezeichnung": "Studienzeit (dualer\nStudiengang)",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "SZ",
+        "Studienzeit (dualer\nStudiengang)",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "U",
+      "bezeichnung": "Urlaub",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "U",
+        "Urlaub",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "U6",
+      "bezeichnung": "Krank Betriebsunfall (ohne\nLFZ)",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "U6",
+        "Krank Betriebsunfall (ohne\nLFZ)",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "UA",
+      "bezeichnung": "Unrechtm. Arbeitskampf",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub",
+      "fehlzeit_unbezahlt": "Unentschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "UA",
+        "Unrechtm. Arbeitskampf",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub",
+        "Unentschuldigt"
+      ]
+    },
+    {
+      "code": "UB",
+      "bezeichnung": "Unwiderrufliche bezahlte\nFreistellung",
+      "festbezugskuerzung": "Nein",
+      "anspruch_lohnzahlung": "X",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Keine",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "UB",
+        "Unwiderrufliche bezahlte\nFreistellung",
+        "Nein",
+        "X",
+        "--",
+        "Nein",
+        "Keine"
+      ]
+    },
+    {
+      "code": "UE",
+      "bezeichnung": "Übergangsgeld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "UE",
+        "Übergangsgeld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "UF",
+      "bezeichnung": "Unwiderrufliche unbezahlte\nFreistellung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, sofort.Abm.",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 5,
+      "originalzellen": [
+        "UF",
+        "Unwiderrufliche unbezahlte\nFreistellung",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, sofort.Abm.",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "UU",
+      "bezeichnung": "Unbezahlter Urlaub",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja, unbez. Urlaub\n*)",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "UU",
+        "Unbezahlter Urlaub",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja, unbez. Urlaub\n*)",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "VG",
+      "bezeichnung": "Versorgungsgeld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "VG",
+        "Versorgungsgeld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "VK",
+      "bezeichnung": "Krankengeld/Krankheit vor\nKug (Tage)",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "VK",
+        "Krankengeld/Krankheit vor\nKug (Tage)",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "VL",
+      "bezeichnung": "Verletztengeld",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "VL",
+        "Verletztengeld",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "VS",
+      "bezeichnung": "Krankstunden vor Kug",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "VS",
+        "Krankstunden vor Kug",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "W1",
+      "bezeichnung": "Witt.bed. Ausfall unter 1\nStd./Tag",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "W1",
+        "Witt.bed. Ausfall unter 1\nStd./Tag",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "WA",
+      "bezeichnung": "Winterausfall",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "WA",
+        "Winterausfall",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "WD",
+      "bezeichnung": "Witterungsbedingter\nAusfall Dachdecker",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "WD",
+        "Witterungsbedingter\nAusfall Dachdecker",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "WE",
+      "bezeichnung": "Wehrübung/\nDienstverpflichtung",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "WE",
+        "Wehrübung/\nDienstverpflichtung",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "WK",
+      "bezeichnung": "Krankheit während Kug",
+      "festbezugskuerzung": "Nach Stunden",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Nein",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "WK",
+        "Krankheit während Kug",
+        "Nach Stunden",
+        "--",
+        "--",
+        "Nein",
+        "Entschuldigt"
+      ]
+    },
+    {
+      "code": "ZD",
+      "bezeichnung": "Zivil- bzw.\nBundesfreiwilligendienst",
+      "festbezugskuerzung": "Nach Tagen",
+      "anspruch_lohnzahlung": "--",
+      "anwesenheitsstunden": "--",
+      "unterbrechungstatbestand": "Ja",
+      "fehlzeit_unbezahlt": "Entschuldigt",
+      "pdf_seite": 6,
+      "originalzellen": [
+        "ZD",
+        "Zivil- bzw.\nBundesfreiwilligendienst",
+        "Nach Tagen",
+        "--",
+        "--",
+        "Ja",
+        "Entschuldigt"
+      ]
+    }
+  ]
+}

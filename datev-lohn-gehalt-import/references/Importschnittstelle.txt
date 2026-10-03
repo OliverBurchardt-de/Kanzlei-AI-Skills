@@ -1,0 +1,1298 @@
+=== PDF-SEITE 1 ===
+Lohn und Gehalt
+
+
+                       Zeitwirtschaftsschnittstelle
+                                       für das Programm
+                                      „Lohn und Gehalt“
+
+
+
+
+
+
+
+
+
+
+
+Inhalt:
+
+1            Allgemeine Informationen Lohn und Gehalt classic / comfort ............................... 2
+2            Bewegungsdatenvarianten in Lohn und Gehalt .................................................... 3
+2.1         Monatserfassung ................................................................................................. 3
+2.2         Kalendererfassung................................................................................................ 5
+2.2.1      Hauptmerkmal Ausfallschlüssel ............................................................................ 6
+2.2.2      Eingaberegeln für die Kalendererfassung ............................................................. 7
+3            Grundsätzliche Anforderung an die Zeitwirtschaftsschnittstelle ............................ 12
+4            Technische Realisierung ....................................................................................... 13
+4.1         Beschreibung Header ........................................................................................... 14
+4.1.1      Besonderheit betriebliche Personalnummer ......................................................... 14
+4.2         Beschreibung Datensatz ....................................................................................... 15
+4.3         Schnittstellenaufbau fachlich ................................................................................ 16
+5            Anhang ................................................................................................................ 20
+5.1         Aufstellung der Ausfallschlüssel und der Lohnarten .............................................. 20
+5.2         Muster INI- und Datendatei ................................................................................. 20
+5.2.1      INI-Datei .............................................................................................................. 20
+5.2.2      Musterdaten ........................................................................................................ 22
+
+
+
+Stand 13.07.2022
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                                                     Seite 1 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 2 ===
+Lohn und Gehalt
+
+
+
+
+          1  Allgemeine Informationen Lohn und Gehalt classic / comfort
+
+Mit Lohn und Gehalt classic / comfort können Sie eine vollständige Im-Haus-Verarbeitung
+der Lohn- und Gehaltsabrechnung inkl. Baulohn abwickeln. Bei allen
+Lohnabrechnungsschritten von der Datenerfassung und -prüfung, über die Lohnabrechnung
+und Erstellung von Auswertungen, bis hin zur Erstellung von Meldungen und
+Bescheinigungen unterstützt Sie Lohn und Gehalt classic / comfort beim optimalen
+Arbeitsprozess. Zusätzlich stehen Ihnen vordefinierte, praxisorientierte Standardlohnarten zur
+Verfügung. Dieses Lohnartenkonzept lässt sich auch durch individuelle Lohnarten ergänzen.
+
+Mit Lohn und Gehalt comfort ist zusätzlich die Erstellung von Statistiken und Berichten
+möglich. Darüber hinaus ist in beiden Paketen das elektronische Lohnlexikon als
+Nachschlagewerk enthalten. Mittels einer durchgängigen Bearbeitung, komfortabler
+Korrekturmöglichkeit, Verfügbarkeit der Stamm- und Abrechnungsdaten vor Ort und
+ständiger Auskunftsbereitschaft gegenüber Arbeitnehmern und Institutionen wird ein
+erheblicher Rationalisierungseffekt erreicht.
+
+Das DATEV-Rechenzentrum fungiert im Verbund mit dem PC-Programm Lohn und Gehalt als
+"Datendrehscheibe" zur Übermittlung von Daten. In erster Linie werden somit Meldungen an
+Institutionen wie Krankenkassen und Finanzämter sicher und termingerecht erstattet. Dies
+umfasst neben der Lohnsteuer-Anmeldung und Lohnsteuerbescheinigung u. a. auch
+Beitragsnachweise, Meldungen zur DEÜV und Unfallversicherung, AAG, EEL und
+Sofortmeldung. Desweiteren können Rückmeldungen von den Institutionen in Ihr
+Lohnprogramm eingespielt werden. Dies sind u. a. die Steuerdaten der Arbeitnehmer, die
+Stammdaten zur Unfallversicherung oder Rückmeldungen von den Krankenkassen.
+
+Zusätzlich können Sie weitere Dienstleistungen des DATEV-Rechenzentrums optional nutzen.
+Darin enthalten ist die Erstbestückung von Daten aus dem Programm LODAS, die
+Datensicherung, die Archivierung oder den Druck von Auswertungen.
+
+Die Zeitwirtschaftsschnittstelle in Lohn und Gehalt ermöglicht Ihnen die Übernahme von
+Bewegungsdaten aus Zeitwirtschaftssystemen für die Kalender- und Monatserfassung. In
+Excel vorerfasste Daten können z. B: im ASCII-Format über die Schnittstelle importiert
+werden.
+Zudem ist die Ausgabe der wichtigsten Stam- und Abrechnungsdaten im ASCII-Format
+möglich. Diese Daten können in Tabellenkalkulationsprogramme oder Datenbanken (z. B.
+Excel oder Access) übergeben und dort aufbereitet werden. So können Sie individuelle
+statistische Auswertungen erstellen.
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 2 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 3 ===
+Lohn und Gehalt
+
+
+
+
+          2  Bewegungsdatenvarianten in Lohn und Gehalt
+
+Für die Bewegungsdaten stehen Ihnen folgende Erfassungsvarianten zur Verfügung:
+   -     Stapelerfassung Monat oder Kalender: Bewegungsdaten aller Mitarbeiter in einer
+    Maske erfassen
+   -     Monatserfassung: Monatsbezogene Daten erfassen
+   -     Kalendererfassung: Tagesbezogene Daten erfassen
+
+
+2.1  Monatserfassung
+
+Die Bewegungsdaten des Mitarbeiters erfassen Sie in Lohn und Gehalt beim Mitarbeiter unter
+Bewegungsdaten | Monatserfassung:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Die Monatserfassung besitzt das Feld Wert, in dem je nach Lohnart folgende Werte
+eingegeben werden können:
+·    Jährliche Beträge
+·    Monatliche Beträge
+·    Stunden
+·    Tage
+·    Kilometer
+
+Für einen Teil der Lohnarten können abweichende Faktoren und prozentuale
+Lohnveränderungen eingetragen werden. Diese abweichenden Werte werden in den
+Stammdaten hinterlegten Werten vorgezogen. Informationen für Statistiken (Stundenstatistik
+über Lohnart) werden eingeschränkt unterstützt.
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 3 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 4 ===
+Lohn und Gehalt
+
+
+
+
+Eine mitarbeiterübergreifende Erfassung der Bewegungsdaten ist in der Stapelerfassung auf
+Mandantenebene unter Bewegungsdaten | Stapelerfassung Monat oder Stapelerfassung
+Kalender möglich. Ausfallzeiten, wie Krankheit, Kurzarbeit werden im Kalender erfasst. Eine
+Erfassung über die Monatserfassung ist nicht möglich.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 4 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 5 ===
+Lohn und Gehalt
+
+
+
+
+2.2  Kalendererfassung
+
+Innerhalb der Kalendererfassung können Stunden und Tage kalendertagsbezogen eingege-
+ben werden. Das Feld Tage (Standardwert 1,00) lässt die Eingabe von Teilen eines Tags zu.
+Bei Urlaub sind neben ganzen Tagen nur halbe Tage erlaubt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Die Eingabe von Ausfallzeiten in der Kalendererfassung führt zur:
+·    Kürzung von Festbezügen (nach Stunden oder Tagen gemäß hinterlegter
+    Umrechnungsformel).
+·    Berechnung der SV-Tage und der „Anzahl U“ für die Lohnsteuerbescheinigung1.
+·    Berechnung von Kurzarbeitergeld.
+·    Erstellung erforderlicher Meldungen u. a. für folgende Meldeverfahren: DEÜV2- (an SV-
+    Träger und Unfallversicherung), AAG, EEL.
+
+
+
+1 Eine Anzahl U ist auf der Lohnsteuerbescheinigung ausgegeben, wenn eine Arbeitsunterbrechung
+von mehr als fünf zusammenhängenden Arbeitstagen ohne Weiterzahlung von Arbeitsentgelt vorliegt.
+2 Datenerfassungs- und Übermittlungsverordnung
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 5 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 6 ===
+Lohn und Gehalt
+
+
+
+
+Für statistische Zwecke können Stunden und Tage auch ohne Lohnart eingegeben werden
+(z. B. Anwesendheitsstunden bei Gehaltsempfängern). Die Kalendererfassung bietet gegen-
+über der Monatserfassung eine weitergehende Verwaltung von statistischen Informationen.
+
+
+2.2.1        Hauptmerkmal Ausfallschlüssel
+
+Das Hauptmerkmal innerhalb der Kalendererfassung ist der Ausfallschlüssel. Eine Aufstellung
+der Ausfallschlüssel ist im Anhang beigelegt.
+
+Der Ausfallschlüssel enthält folgende Bestandteile:
+
+
+2.2.1.1     Kürzel
+
+Der Ausfallschlüssel wird innerhalb der Erfassung über ein maximal 2-stelliges Kürzel an-
+gesprochen. Die Kürzel werden von DATEV vergeben. Eine individuelle Anpassung ist nicht
+möglich. Das Kürzel ist maßgeblich für die Erstellung von Statistiken.
+
+
+2.2.1.2     Unterbrechungskennzeichen
+
+Anhand des Unterbrechungskennzeichens werden Zeiträume in der Kalendererfassung er-
+kannt, die zur Ermittlung der SV-Tage und auch für die Meldungen an die SV-Träger (u.a.
+DEÜV-Meldungen) maßgeblich sind. Bei Überschreitung einer gesetzlichen Frist, z. B. voller
+Kalendermonat, wird eine entsprechende Meldung aufbereitet.
+
+Die einzelnen Inhalte des Unterbrechungskennzeichens lauten:
+
+Element                                   Funktion
+nein                                      Für Arbeitstage. Zusätzliche Erfassung von Stunden und
+                                          Tage möglich.
+ja                                        Für Nicht-Arbeitstage. Außer dem Kürzel des
+ja, Arbeitskampf                          Ausfallschlüssels und dem Monatstag darf kein weiteres
+ja, unbezahlter Urlaub                    Feld der Kalendererfassung gefüllt sein.
+ja, Monatsfrist
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 6 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 7 ===
+Lohn und Gehalt
+
+
+
+
+2.2.1.3     Kürzungskennzeichen
+
+Das Kürzungskennzeichen kennzeichnet Zeiträume, in denen Festbezüge gekürzt werden. Die
+Kürzung ist nach Stunden oder nach Tagen möglich. Die insgesamt ausgefallenen Stunden
+und Tage fließen in eine vom Anwender auswählbare Formel für Teilmonatsberechnungen
+ein.
+
+
+2.2.1.4     Kennzeichen Anwesenheitszeit
+
+Das Kennzeichen Anwesenheitszeit legt fest, ob die mit dem Ausfallschlüssel erfassten
+Stunden als Anwesenheitszeit berücksichtigt werden. Die Anwesenheitsstunden werden
+gleichzeitig als geleistete Stunden herangezogen. Die Stunden werden für die Aufstellung für
+die Berufsgenossenschaft und für die Berechnung von Sonntags-, Feiertags- und
+Nachtzuschläge verwendet.
+
+Für Gehalts- und Festlohnempfänger, für die im Regelfall keine Stundenlohnarten erfasst
+werden, sollten immer Anwesenheitsstunden erfasst werden.
+
+
+2.2.1.5    Kennzeichen Lohnzahlung
+
+Mit diesem Kennzeichen werden zu bezahlende Zeiten für Teilmonatsberechnungen nach der
+Bezugsmethode ermittelt. Bezugsmethode bedeutet, dass das Teilmonatsentgelt nicht nach
+Ausfallzeiten gekürzt, sondern nach den zu bezahlenden Zeiten ermittelt wird.
+
+Beispiele hierfür sind die Formeln:
+·    Betrag = Betrag * zu bezahlende Arbeitstage / Soll-Arbeitstage
+·    Betrag = Betrag * zu bezahlende Stunden / Soll-Arbeitsstunden
+
+Im Gegensatz hierzu eine Formel nach der Abzugsmethode:
+·    Betrag = (Betrag – (Betrag/Sollarbeitsstunden * Fehlstunden))
+
+
+2.2.2        Eingaberegeln für die Kalendererfassung
+
+Die Eingaberegeln für die Kalendererfassung richten sich nach dem erfassten Ausfallschlüssel.
+Die Ausfallschlüssel lassen sich in 3 Hauptgruppen unterscheiden.
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 7 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 8 ===
+Lohn und Gehalt
+
+
+
+
+2.2.2.1     Ausfallschlüssel mit Unterbrechungstatbestand
+
+Ausfallschlüssel mit Unterbrechungskennzeichen ungleich „nein“ werden an allen Kalender-
+tagen (auch Wochenenden) erfasst. An Nicht-Arbeitstagen sind außer dem Kürzel des Ausfall-
+schlüssels und dem Monatstag keine weiteren Feldeingaben erlaubt. An Arbeitstagen sollten
+zusätzlich das Feld Stundenanzahl mit den Soll-Arbeitsstunden und das Feld Tagesanzahl mit
+dem Wert 1,00 bestückt werden.
+
+Außer der Erfassung mit Unterbrechungstatbestand sind für den Kalendertag keine weiteren
+Eingaben erlaubt. Ausfallschlüssel mit Unterbrechungstatbestand sind u. a.:
+·    Elternzeit
+·    Fehltag unentschuldigt
+·    Zivil- oder Bundesfreiwilligendienst
+·    Krankheit über 6 Wochen mit Krankengeldanspruch
+·    Krankheit über 6 Wochen ohne Krankengeldanspruch
+·    Mutterschutzfrist
+·    Unrechtmäßiger Arbeitskampf
+·    Rechtmäßiger Streik
+·    Übergangsgeld
+·    Pflegeunterstützungsgeld
+·    Unbezahlter Urlaub
+·    Versorgungsgeld
+·    Verletztengeld
+·    Wehrübung/Dienstverpflichtung
+
+
+2.2.2.2     Ausfallschlüssel mit Stundenkürzung
+
+Bei einem Ausfallschlüssel mit Festbezugskürzung „nach Stunden“ dürfen nur die Felder
+„Kalendertag“, „Kürzel Ausfallschlüssel“ und „Stundenanzahl“ gefüllt sein. Beispiele hierfür
+sind:
+·    Feiertag im Kug-Zeitraum
+·    Fehlstunden unbezahlt (keine vollen Tage)
+·    Kurzarbeit (Kug)
+·    Krankengeld/Krankheit vor Kug (Tage)
+·    Krankstunden vor Kug
+·    Krankheit während Kug
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 8 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 9 ===
+Lohn und Gehalt
+
+
+
+
+Diese Ausfallschlüssel können an einem Kalendertag mit einem Ausfallschlüssel ohne Un-
+terbrechungstatbestand (siehe 2.2.2.3) kombiniert werden.
+
+
+2.2.2.3     Ausfallschlüssel ohne Unterbrechungstatbestand (Zeiterfassung)
+
+
+2.2.2.3.1  Zeiterfassungen ohne Entgeltfortzahlung im Krankheitsfall
+
+
+Eine Zeiterfassung wird im Regelfall nur an Arbeitstagen eingegeben. Pro Tag können
+mehrere Zeiten erfasst werden. Die Felder innerhalb einer Zeile können je nach gewünschtem
+Ziel unterschiedlich kombiniert werden. Zeiterfassungen sind mit folgenden Ausfallschlüssen
+möglich:
+
+·    Zeitlohn
+·    Betriebsratstätigkeit
+·    Feiertag (Erfassung nur an Feiertagen erlaubt)
+·    Fehlt entschuldigt (bezahlt)
+·    Mehrarbeit
+·    Sonstige Stunden/Zulagen
+·    Sozialstunden
+·    Urlaub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                                Seite 9 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 10 ===
+Lohn und Gehalt
+
+
+
+
+Beispiel möglicher Feldkombinationen anhand einer Urlaubserfassung
+
+ASF        LA               Std.      Tage       Ergebnis
+U          leer             3,50      0,50       ·   Der genommene Urlaub erhöht sich um einen
+                                                     halben Tag, der Resturlaub wird neu berechnet.
+                                                 ·    Urlaubstage/-stunden werden auf
+                                                     Brutto/Netto-Formular und Lohnkonto ausge-
+                                                     geben.
+U          Stunden-         3,50      0,50       ·   Der genommene Urlaub erhöht sich um einen
+           lohnart                                   halben Tag, der Resturlaub wird neu berechnet.
+                                                 ·    Urlaubstage/-stunden werden auf
+                                                     Brutto/Netto-Formular und Lohnkonto ausge-
+                                                     geben.
+                                                 ·    Der Urlaub wird mit einer Stundenlohnart
+                                                     bezahlt -> 3,50 Stunden * Stundenfaktor für
+                                                     Urlaub.
+U          Tageslohnart     3,50      0,50       ·   Der genommene Urlaub erhöht sich um einen
+                                                     halben Tag, der Resturlaub wird neu berechnet.
+                                                 ·    Urlaubstage/-stunden werden auf
+                                                     Brutto/Netto-Formular und Lohnkonto ausge-
+                                                     geben.
+                                                 ·    Der Urlaub wird mit einer Tageslohnart bezahlt
+                                                     -> 0,50 Tage * Tagesfaktor für Urlaub.
+
+Der Urlaub kann mit jeder anderen Erfassung an diesem Tag kombiniert werden. Die
+Tagessumme darf den Wert 1,00 und die Stundensumme den Wert 24,00 nicht überschreiten.
+Wenn eine Lohnart eingegeben wurde, können ein abweichender Faktor und eine
+abweichende Lohnveränderung eingegeben werden. Die Werte werden vorrangig vor den
+Werten aus den Stammdaten oder dem Durchschnitt herangezogen.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 10 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 11 ===
+Lohn und Gehalt
+
+
+
+
+2.2.2.3.2  Zeiterfassungen mit Entgeltfortzahlung im Krankheitsfall
+
+Bei einer Entgeltfortzahlung im Krankheitsfall erhalten Betriebe mit bis zu 30 Mitarbeitern die
+Kosten für die Entgeltfortzahlung nach dem Aufwendungsausgleichsgesetz (AAG) von den
+Krankenkassen erstattet. Auf dem Erstattungsantrag an die Krankenkassen müssen der
+Beginn und das Ende der Krankheit gemäß Arbeitsunfähigkeitsbescheinigung angegeben
+werden. Lohn und Gehalt benötigt deshalb für entgeltfortzahlungspflichtige Krankheitszeiten
+durchgehende Erfassungen für jeden Kalendertag im Krankheitszeitraum.
+
+Folgende Ausfallschlüssel können Sie für entgeltfortzahlungspflichtige Krankheitszeiten
+verwenden:
+
+-    Krankheit (Lohnfortzahlung)
+-    Krankheit Betriebsunfall (LFZ)
+-    Krank am Feiertag
+-    Reha/Kur mit Entgeltfortzahlung
+
+Bei der Erstellung der Kalenderbuchungen müssen folgende Fälle unterschieden werden:
+
+    1.   Mitarbeiter ist einen kompletten Arbeitstag krank:
+         Die Erfassung muss in jedem Fall eine Stundenanzahl und die Tagesanzahl 1,00
+         enthalten.
+
+    2.   Krankheit hat während eines Arbeitstags begonnen, z. B. Betriebsunfall:
+         Die Zeile muss eine Stundenanzahl erhalten. Die Tagesanzahl muss mit einem Wert
+         kleiner 1,00 oder leer bestückt sein.
+
+    3.   Krankheit dauert über einen arbeitsfreien Tag, z. B. Wochenende, an:
+         Für den arbeitsfreien Kalendertag ist ausschließlich der Ausfallschlüssel für den
+         Mitarbeiter zu erfassen. Die Stundenanzahl und die Tagesanzahl müssen leer bleiben.
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 11 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 12 ===
+Lohn und Gehalt
+
+
+
+
+          3  Grundsätzliche Anforderung an die Zeitwirtschaftsschnittstelle
+
+Aus einem Zeitwirtschaftssystem sollen Daten in die Monats- und/oder die Kalendererfas-
+sung des Programms „Lohn und Gehalt“ importiert werden können.
+
+Grundsätzlich stellt die Kalendererfassung die flexibelste Form für die Übernahme von Zeit-
+wirtschaftsdaten dar, da alle Arten von Zeitinformationen – insbesondere Fehlzeiten - erfasst
+und verarbeitet werden können. Entgeltfortzahlungspflichtige Krankheitszeiten müssen
+immer für die Kalendererfassung aufbereitet werden. Lohn und Gehalt benötigt die genauen
+Krankheitszeiträume für gesetzlich vorgeschriebene Erstattungsanträge an die
+Krankenkassen. Unterbrechungszeiten (z. B. Krankheit über 6 Wochen) und Kurzarbeit können
+ausschließlich über die Kalendererfassung bestückt werden. Für weitergehende statistische
+Informationen, wie z. B. Berechnung von genommenem Urlaub, ist ebenfalls die Bestückung
+der Kalendererfassung erforderlich. Da die Daten tagesbezogen erfasst werden, ist aber mit
+einer größeren Anzahl von Datensätzen zu rechnen. Dadurch können beim Einlesevorgang
+längere Programmlaufzeiten entstehen.
+
+Bei der Bestückung der Monatserfassung werden die Daten in Form von Monatssummen
+importiert. Die Monatserfassung bietet sich für die Bestückung der monatlich geleisteten
+Arbeits-, Über- und Zuschlagsstunden als Summe an.
+
+Besonderheiten bei Korrektur zurückliegender Monate
+
+Werden Daten aus zurückliegenden Monaten korrigiert, die bereits mit Lohn und Gehalt
+abgerechnet wurden, können die Daten nicht mehr wie im Originalmonat eingespielt werden.
+Daten für die Monatserfassung müssen als Differenz zu den im Originalmonat übergebenen
+Werten geliefert werden. Bei Bestückung der Kalendererfassung müssen für die betroffenen
+Mitarbeiter die Buchungen für alle Kalendertage des Korrekturmonats neu übergeben
+werden.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 12 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 13 ===
+Lohn und Gehalt
+
+
+
+
+            4  Technische Realisierung
+
+Das Programm Lohn und Gehalt bietet eine Funktion zum Import von Zeitwirtschaftsdaten im
+ASCII-Format an. In einem Datensatz können Daten für die Monats- oder die Kalendererfas-
+sung enthalten sein. In einer Datei sind Datensätze für beide Bewegungsdatenvarianten er-
+laubt.
+
+Der Datensatz der ASCII-Datei kann variabel aufgebaut sein. Unterstützt werden feste
+Datensatzlängen und variable Datensatzlängen mit beliebigen Trennzeichen. Das
+Satzendekennzeichen kann ebenfalls beliebig vergeben werden. Die Hersteller von
+Zeitwirtschaftssystemen sind in der Spaltenreihenfolge frei.
+
+Die Datensatzbeschreibung kann innerhalb von Lohn und Gehalt mittels eines Assistenten
+festgelegt und unter einer Bezeichnung (Zeitwirtschaftshersteller) gespeichert werden. Zu-
+sätzlich besteht die Möglichkeit, die Formatbeschreibung aus einer INI-Datei zu importieren.
+
+Die Datei mit den Zeitwirtschaftsdaten kann unter der Dateiendung *.txt in ein beliebiges
+Verzeichnis gestellt werden. Der Dateiname kann frei vergeben werden. Zur besseren Un-
+terscheidung sollte aus dem Dateinamen hervorgehen, um welchen Abrechnungsmonat und
+um welche Mandantennummer es sich handelt.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 13 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 14 ===
+Lohn und Gehalt
+
+
+
+
+4.1  Beschreibung Header
+
+Damit in einer Steuerberatungskanzlei die Zeitwirtschaftsdaten mehrerer Mandanten und
+verschiedener Abrechnungsmonate erkannt werden können, müssen Headerinformationen
+zur Verfügung stehen. Diese Informationen werden in der 1. Zeile der ASCII-Datei
+eingetragen.
+
+Feldname                           Beschreibung
+Beraternummer                      Eindeutiges Kennzeichen für einen Steuerberater, 7-stellig nu-
+                                   merisch, Wertebereich von 1000 bis 9999999.
+Mandantennummer                    Eindeutiges Kennzeichen eines Mandanten innerhalb einer
+                                   Steuerberatungskanzlei, 5-stellig numerisch, Wertebereich von
+                                   1 bis 99999.
+Abrechnungsdatum                   Monat und Jahr, für das Bewegungsdaten zur Verfügung ge-
+                                   stellt werden (Format: „MM/JJJJ“).
+Kennzeichen PersNr. als            Kennzeichen, ob die Spalte Personalnummer als „normale“
+betriebl. PersNr. Importieren      Personalnummer oder als betriebliche Personalnummer
+                                   importiert wird. Bei Zweiterem kann ein „x“ gesetzt werden
+
+
+4.1.1        Besonderheit betriebliche Personalnummer
+
+In der Datei kann angegeben werden, ob die Spalte Personalnummer als „normale“
+Personalnummer oder betriebliche Personalnummer importiert wird.
+
+Wenn das Kennzeichen im Header nicht gesetzt ist, hat der Anwender in Lohn und Gehalt
+zusätzlich die Möglichkeit, vor dem Import auf der Maske das Kontrollkästchen
+„Personalnummer als betriebliche Personalnummer importieren“ zu setzen. In dem Fall wird
+die Spalte Personalnummer beim Einspielen der Daten ebenfalls als betriebliche
+Personalnummer importiert.
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 14 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 15 ===
+Lohn und Gehalt
+
+
+
+
+4.2  Beschreibung Datensatz
+
+Feldname                            Beschreibung
+Personalnummer                      Eindeutiges Kennzeichen für einen Mitarbeiter eines Mandan-
+                                    ten, 5-stellig numerisch, Wertebereich von 1 bis 99999.
+Kalendertag                         Nummer des Kalendertags innerhalb eines Monats, 2-stellig,
+                                    Wertebereich von 1 bis 31 in Abhängigkeit vom A brechnungs-
+                                    datum.
+Ausfallschlüssel                    Kürzel für einen Ausfallschlüssel, 2-stellig alphanumerisch, er-
+                                    laubt sind nur die im Anhang aufgeführten Ausfallschlüssel.
+                                    Der Ausfallschlüssel dient auch der Unterscheidung zwischen
+                                    einer Erfassung für die Monats- und Kalendererfassung.
+Lohnart                             Nummer einer Lohnart, 4-stellig numerisch, Wertebereich 1 bis
+                                    5999 und 8000 bis 9999.
+Stundenanzahl                       Anzahl der Stunden einer Kalenderbuchung, numerisch, Wer-
+                                    tebereich von 0,01 bis 24,00.
+Tagesanzahl                         Anzahl der Tage einer Kalenderbuchung, numerisch, Wertebe-
+                                    reich 0,01 bis 1,00. Bei Urlaub sind nur die Werte 0,50 und 1,00
+                                    zulässig.
+Wert                                Wertefeld für die Monatserfassung, zur Eingabe von Beträgen,
+                                    Stunden, Tagen und Kilometern. Numerisch, Wertebereich von
+                                    – 9.999.999,99 bis 9.999.999,99. Je nach verwendeter Lohnart ist
+                                    der Wertebereich eingeschränkt (z. B. Stundenlohnart -744,00
+                                    bis 744,00).
+Abweichender Faktor                 Abweichender Stunden- oder Tagesbetrag, der vorrangig vor
+                                    Stammdatenwerten gilt. Numerisch, Wertebereich –999,99 bis
+                                    999,99.
+Abweichende Lohnver-                Abweichende prozentuale Lohnveränderung, die vorrangig vor
+änderung                            Stammdatenwerten gilt. Numerisch, Wertebereich 0,01 bis
+                                    999,99.
+Kostenstellennummer                 Zuordnung einer Erfassung zu einer Kostenstelle, 8-stellig, al-
+                                    phanumerisch. Die Kostenstelle muss in Lohn und Gehalt an-
+                                    gelegt sein.
+Kostenträger                        Zuordnung einer Erfassung zu einem Kostenträger, 8-stellig,
+                                    alphanumerisch
+Bemerkung                           Text, 30-stellig alphanumerisch
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 15 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 16 ===
+Lohn und Gehalt
+
+
+
+
+4.3  Schnittstellenaufbau fachlich
+
+Bei jedem Datensatz muss die Personalnummer oder betriebliche Personalnummer gefüllt
+sein.
+
+Eine Erfassung für Kalender- oder Monatserfassung wird am Feld „Ausfallschlüssel“ erkannt.
+Wenn das Feld „Ausfallschlüssel“ gefüllt ist, handelt es sich um eine Kalendererfassung,
+andernfalls um Bewegungsdaten für die Monatserfassung. Neben dem Feld „Ausfallschlüssel“
+ist das Feld „Kalendertag“ ein Muss-Feld für die Kalendererfassung.
+
+Die Felder „Kalendertag“, „Stundenanzahl“ und „Tagesanzahl“ sind rein für die
+Kalendererfassung bestimmt.
+
+Bei Daten für die Monatserfassung muss das Feld „Wert“ gefüllt und das Feld „Kalendertag“
+leer sein.
+
+Ob Zeiten aus der Importdatei als Industrie- oder Echtminuten importiert werden, kann in der
+Formatbeschreibung (beim Mandanten im Menü Extras | ASCII-Import Assistent) anhand
+des Feldes Trennzeichen für Zeitangaben in Echtminunten festgelegt werden. Wenn hier
+kein Trennzeichen eingegeben ist, werden Zeiten als Industrieminuten interpretiert.
+
+Weitere fachliche Anforderungen sind der Beschreibung der Bewegungsdatenvarianten zu
+entnehmen.
+
+Bei Überschreitung der maximalen Feldlängen oder fehlerhafter Bestückung von Muss-
+Feldern werden die einzelnen fehlerhaften Datensätze nicht importiert. In einem Logbuch
+wird die jeweilige Dateistelle in Form der Zeilen- und ggf. Spaltennummer ausgegeben.
+
+Datensätze, die das richtige Format besitzen, aber fachlich falsch sind, werden importiert und
+können unter Datenübernahme | Bewegungsdaten importieren angesehen und korrigiert
+werden. Dort kann die Anzeige der Stunden über die Schaltknöpfe Industrieminuten /
+Echtminuten geändert werden. Diese Einstellung ist unabhängig vom Format der
+Importdatei und der Einstellung auf Mandantenebene.
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 16 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 17 ===
+Lohn und Gehalt
+
+
+
+
+INI-Datei
+
+Die Formatschreibung der Zeitwirtschaftsdaten kann in einer INI-Datei mitgeliefert werden.
+Diese Formatschreibung kann innerhalb des ASCII-Import-Assistenten von Lohn und Gehalt
+importiert werden. Die INI-Datei ist wie folgt aufgebaut:
+
+[Allgemein]
+Feldanzahl =                     (Wert erforderlich, es ist die Anzahl der Felder anzugeben, die im
+                                übernehmenden Datensatz enthalten sind. Die Anzahl kann kleiner
+                                sein als die maximal von Lohn und Gehalt im Datensatz definierte
+                                Feldanzahl.)
+Feldtrennzeichen =           (Wert ist nicht erforderlich, wenn Trennung mittels fester Feldlän-
+                                gen erfolgt.)
+Satztrennzeichen =           (Wert ist nicht erforderlich, wenn Trennung mittels fester Feldlän-
+                                gen erfolgt.)
+Anderes Trennzeichen =   (Wert nur erforderlich, wenn in der Variable Feldtrennzeichen der
+                                Wert „Anderes Trennzeichen“ eingetragen ist.)
+Zahlenkomma =               (Optional, der Wert und auch die Variable kann weggelassen
+                                werden)
+Datumstrennzeichen =     (Optional, der Wert und auch die Variable kann weggelassen
+                                werden)
+
+[Feldinhalt]                     (Werte sind nicht erforderlich, wenn Felder übergangen, also nicht
+                                verarbeitet werden sollen.
+                                Section und die Variablen (Feld1,...., Feldn) müssen aber vorhanden
+                                sein. Die Anzahl der Variablen muss mit der unter [Allgemein]
+                                angegebenen Feldanzahl übereinstimmen.)
+Feld1 =
+Feld2 =
+Feld3 =
+Feld4 =
+:
+Feldn =
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 17 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 18 ===
+Lohn und Gehalt
+
+
+
+
+
+[Feldlaenge]                     (Werte sind erforderlich, wenn kein Feldtrennzeichen angegeben
+                                ist. Section und Variablen (Feld1,...., Feldn) müssen in diesem Fall
+                                vorhanden sein.)
+Feld1 =
+Feld2 =
+Feld3 =
+Feld4 =
+:
+Feldn =
+
+[Konvertierungsregel]             (Section und Variablen mit Werten sind optional, d. h.
+                                       können weggelassen werden.      => wird im Moment nicht
+                                       unterstützt)
+Feld1 =
+Feld2 =
+Feld3 =
+Feld4 =
+:
+Feldn =
+
+[Hochkommata entfernen]     (Section und Variablen mit Werten sind optional, d. h.
+                                             können weggelassen werden.)
+Feld1 =
+Feld2 =
+Feld3 =
+Feld4 =
+:
+Feldn =
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 18 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 19 ===
+Lohn und Gehalt
+
+
+
+
+Mögliche Werte für die Section:
+
+[Allgemein]                          - Feldanzahl:                        positive ganze Zahl
+                                             - Feldtrennzeichen:
+                                                                                        - Tabulator
+                                                                                        - Leerzeichen
+                                                                                        - Komma
+                                                                                        - Strichpunkt
+                                                                                        - Anderes Trennzeichen
+                                            - Satztrennzeichen:
+                                                                                        - Tabulator
+                                                                                        - Enter/Return
+                                                                                        - Leerzeichen
+                                                                                        - Komma
+                                                                                        - Strichpunkt
+                                            - Anderes Trennzeichen:     irgendein einstelliges Zeichen
+                                             - Zahlenkomma:                 irgendein einstelliges Zeichen
+                                             - Datumstrennzeichen:        irgendein einstelliges Zeichen
+
+[Feldinhalt]                          Feld1 –Feldn:                       - Personalnummer
+                                                                                    - Kalendertag
+                                                                                    - Ausfallschlüssel
+                                                                                          - Lohnartennummer
+                                                                                    - Stundenanzahl
+                                                                                        - Wert
+                                                                                        - Tagesanzahl
+                                                                                        - abweichender Faktor
+                                                                                        - abweichende Lohnveränderung
+                                                                                        - Kostenstellennummer
+                                                                                        - Kostenträger
+                                                                                        - Bemerkung
+
+[Feldlaenge]                        Feld1-Feldn:                        ganze Zahlen von -1...n
+
+[Konvertierungsregel]         im Moment nicht nötig
+
+[Hochkommata entfernen]  - Wert "X", wenn Hochkommata entfernt werden soll.
+                                             - Keinen Wert, wenn Hochkommata nicht entfernt werden soll.
+                                              => Variable kann dann auch ganz weggelassen werden.
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 19 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 20 ===
+Lohn und Gehalt
+
+
+
+
+          5  Anhang
+
+
+5.1  Aufstellung der Ausfallschlüssel und der Lohnarten
+Die aktuellen Tabellen finden Sie im DATEV-Hilfecenter:
+
+    ·    Tabelle der Ausfallschlüssel - DATEV Hilfe-Center:
+        https://apps.datev.de/help-center/documents/9222265 (Dok-Nr. 9222265)
+    ·    Tabelle der DATEV-Standardlohnarten - DATEV Hilfe-Center:
+        https://apps.datev.de/help-center/documents/9226266 (Dok-Nr. 9226266)
+    ·    Tabelle der DATEV-Standardlohnarten für Baulohn - DATEV Hilfe-Center:
+        https://apps.datev.de/help-center/documents/9225689 (Dok-Nr. 9225689)
+
+
+5.2  Muster INI- und Datendatei
+
+
+5.2.1       INI-Datei
+
+; INI-Datei (Beispiel) mit Formatbeschreibungen zum Einlesen von
+; Zeitwirtschaftsdaten
+[Allgemein]
+
+Feldanzahl = 11
+Feldtrennzeichen = Strichpunkt
+Satztrennzeichen = Enter/Return
+Anderes Trennzeichen =
+Zahlenkomma = ,
+Datumstrennzeichen = /
+
+
+
+[Feldinhalt]
+
+Feld1 = Personalnummer
+Feld2 = Kalendertag
+Feld3 = Ausfallschlüssel
+Feld4 = Lohnartennummer
+Feld5 = Stundenanzahl
+Feld6 = Tagesanzahl
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 20 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 21 ===
+Lohn und Gehalt
+
+
+
+
+Feld7 = Wert
+Feld8 = Abweichender Faktor
+Feld9 = Abweichende Lohnveränderung
+Feld10 = Kostenstellennummer
+Feld11 = Kostenträger
+Feld12 = Bemerkung
+
+[Konvertierungsregel]  ; wird zurzeit nicht unterstützt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 21 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 22 ===
+Lohn und Gehalt
+
+
+
+
+5.2.2        Musterdaten
+
+Im ersten Beispiel wird die Personalnummer als „normale“, 5-stellige Personalnummer
+importiert:
+
+128588;53700;05/2020
+47511;3;1;1000;6,20;0,80;;;;Prod4567;BXK3494;
+47511;3;BR;1052;1,30;0,20;;;;BR1000;;
+47511;4;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511;5;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511;6;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511;7;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511;10;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511;11;1;1000;7,50;1,00;;;;Prod4567;BXK3494;
+47511;11;ME;1200;2,00;;;25,60;27,50;Prod4567;BXK3494;
+47511;12;1;1000;7,50;1,00;;;;Prod4567;BXK3494;
+47511;13;F;1013;7,50;1,00;;;;;;
+47511;14;K;1650;7,50;1,00;;;;;;
+47511;17;K;1650;7,50;1,00;;;;;;
+47511;18;1;1000;7,50;1,00;;;;Prod18;AMS10;
+47511;19;1;1000;7,50;1,00;;;;Prod18;AMS10;
+47511;20;1;1000;7,50;1,00;;;;Prod18;AMS10;
+47511;21;1;1000;7,50;1,00;;;;;;
+47511;24;F;1013;7,50;1,00;;;;;;
+47511;25;GR;;;;;;;;;
+47511;26;GR;;;;;;;;;
+47511;27;GR;;;;;;;;;
+47511;28;GR;;;;;;;;;
+47511;29;GR;;;;;;;;;
+47511;30;GR;;;;;;;;;
+47511;31;GR;;;;;;;;;
+2005;3;1;;7,50;1,00;;;;;;
+2005;4;1;;7,50;1,00;;;;;;
+2005;5;1;;7,50;1,00;;;;;;
+2005;6;1;;7,50;1,00;;;;;;
+2005;7;1;;7,50;1,00;;;;;;
+2005;10;1;;7,50;1,00;;;;;;
+2005;11;1;;7,50;1,00;;;;;;
+2005;12;1;;7,50;1,00;;;;;;
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 22 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 23 ===
+Lohn und Gehalt
+
+
+
+
+2005;13;F;;7,50;1,00;;;;;;
+2005;14;1;;7,50;1,00;;;;;;
+2005;17;1;;7,50;1,00;;;;;;
+2005;18;1;;7,50;1,00;;;;;;
+2005;19;1;;7,50;1,00;;;;;;
+2005;20;1;;7,50;1,00;;;;;;
+2005;21;1;;7,50;1,00;;;;;;
+2005;24;F;;7,50;1,00;;;;;;
+2005;25;1;;7,50;1,00;;;;;;
+2005;26;1;;7,50;1,00;;;;;;
+2005;27;1;;7,50;1,00;;;;;;
+2005;28;1;;7,50;1,00;;;;;;
+2005;31;1;;7,50;1,00;;;;;;
+1510;;;1000;;;120,00;;;23445;66666;
+1510;;;1100;;;12,00;;;23445;66666;
+1510;;;1200;;;12,00;;;23445;66666;
+1;;;2000;;;5.650,00;;;5678;7777;
+1;;;2030;;;1200,00;;;5678;7777;
+25;;;1000;;;12,75;;;a123;xyz;
+25;;;1000;;;12,35;;;b123;xyz;
+25;;;1000;;;25,60;;;c123;xyz;
+25;;;1000;;;18,26;;;d123;xyz;
+25;;;1000;;;16,50;;;c123;Kostentr;
+25;;;1000;;;2,37;;;e123;xyz;
+25;;;1000;;;56,30;;;f123;test;
+
+
+
+Im zweiten Beispiel wird die Personalnummer als betriebliche Personalnummer importiert
+(erkennbar an dem rot markierten zusätzlichen Feld im Header):
+
+128588;53700;05/2020;x
+47511AB;3;1;1000;6,20;0,80;;;;Prod4567;BXK3494;
+47511AB;3;BR;1052;1,30;0,20;;;;BR1000;;
+47511AB;4;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511AB;5;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511AB;6;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511AB;7;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511AB;10;U;1600;7,50;1,00;;;;Prod17;Url1;
+47511AB;11;1;1000;7,50;1,00;;;;Prod4567;BXK3494;
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 23 von 24
+
+© DATEV eG; alle Rechte vorbehalten
+
+=== PDF-SEITE 24 ===
+Lohn und Gehalt
+
+
+
+
+47511AB;11;ME;1200;2,00;;;25,60;27,50;Prod4567;BXK3494;
+47511AB;12;1;1000;7,50;1,00;;;;Prod4567;BXK3494;
+47511AB;13;F;1013;7,50;1,00;;;;;;
+47511AB;14;K;1650;7,50;1,00;;;;;;
+47511AB;17;K;1650;7,50;1,00;;;;;;
+47511AB;18;1;1000;7,50;1,00;;;;Prod18;AMS10;
+47511AB;19;1;1000;7,50;1,00;;;;Prod18;AMS10;
+47511AB;20;1;1000;7,50;1,00;;;;Prod18;AMS10;
+1510DE;;;1000;;;120,00;;;23445;66666;
+1510DE;;;1100;;;12,00;;;23445;66666;
+1510DE;;;1200;;;12,00;;;23445;66666;
+RFG12558;;;2000;;;5.650,00;;;5678;7777;
+RFG12558;;;2030;;;1200,00;;;5678;7777;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+_________________________________________________________________________________
+Lohn und Gehalt                                                                               Seite 24 von 24
+
+© DATEV eG; alle Rechte vorbehalten
