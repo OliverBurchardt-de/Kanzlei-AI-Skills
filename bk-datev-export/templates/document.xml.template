@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<archive xmlns="http://xml.datev.de/bedi/tps/document/v04.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="4.0"
+         xsi:schemaLocation="http://xml.datev.de/bedi/tps/document/v04.0 document_v040.xsd">
+  <header>
+    <date>{{YYYY-MM-DDTHH:MM:SS}}</date>
+    <description>{{PAKETBESCHREIBUNG}}</description>
+  </header>
+  <content>
+    <document processID="1" guid="{{GUID}}" type="{{1_ODER_2}}">
+      <extension xsi:type="File" name="{{DATEINAME.pdf}}"/>
+    </document>
+  </content>
+</archive>

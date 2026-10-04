@@ -16,17 +16,30 @@ Erzeuge keinen Fachaufsatz und keinen Werbetext. Kompetenz entsteht durch eine g
 **Immer lesen:**
 
 1. `references/ARTIKELTYPEN.md` für die Wahl einer passenden Dramaturgie.
-2. `references/STILPROFIL.md` für Stimme und verständliche Fachsprache.
-3. `references/EVIDENZ.md` für Recherche und Quellenprotokoll.
-4. `references/HUMANIZER-DE.md` für die Redaktions- und Serienprüfung.
+2. `references/EVIDENZ.md` für Recherche und Quellenprotokoll.
+3. `references/stimme/STIMME-FACHTEXT.md` für Stimme und verständliche
+   Fachsprache.
+4. `references/stimme/SLOP-KATALOG.md` für die Redaktionsprüfung.
+
+> **Die beiden Dateien unter `references/stimme/` sind erzeugte Kopien.** Die
+> Quelle liegt im Skill `bk-humanizer` und wird dort gepflegt, weil derselbe
+> Stoff auch für Mandantenschreiben und für die Buchprojekte gilt. Hier wird
+> nichts davon bearbeitet — eine Änderung ginge beim nächsten Abgleich
+> verloren. Der Ablauf dafür steht in `bk-humanizer/references/PFLEGE.md`.
+>
+> Dieser Skill behält, was nur Blogartikel betrifft: Artikeltypen, Evidenz,
+> Aufbau, Schaubilder, Rechner, CMS-Handoff, Veröffentlichungssperren.
 
 **Nach Bedarf:**
 
 - `references/AUFBAU.md` bei längeren oder mehrteiligen Artikeln, bei Rechenbeispielen und bei Unsicherheit über die Struktur.
 - `references/GEO.md` beim Erstellen des CMS-Handoffs sowie bei Fragen zu Meta-Daten und strukturierten Daten.
 - `references/SCHAUBILDER.md` ausschließlich dann, wenn tatsächlich ein Schaubild erzeugt wird.
+- `references/RECHNER.md`, wenn ein interaktiver Rechner zum Artikel gehört.
 - `references/REFERENZARTIKEL.md` zur Stimmkalibrierung, wenn der Ton unsicher ist.
   Der dort benannte Maßstab ist `references/examples/artikel-4-restnutzungsdauer/artikel.md`.
+  Derselbe Text liegt als Stimmprobe in `bk-humanizer/korpus/fachtext/`, dort
+  neben zwei weiteren.
   Er ist überwiegend Originaltext und definiert das sprachliche Niveau. Seine
   Schärfe gegenüber Marktteilnehmern setzt allerdings eine eigene Faktenbasis
   voraus und wird ohne diese nicht nachgeahmt.
@@ -77,7 +90,7 @@ Lege die Gliederung vor und warte auf Freigabe, wenn der Nutzer dies verlangt od
 
 ### 5. Entwurf schreiben
 
-Schreibe nach `references/STILPROFIL.md` und `references/AUFBAU.md`.
+Schreibe nach `references/AUFBAU.md` und `references/stimme/STIMME-FACHTEXT.md`.
 
 Verbindliche Sprachregel:
 
@@ -91,22 +104,42 @@ Gleiche jede Tatsachen- und Rechtsaussage mit dem Evidenzprotokoll ab. Rechne Be
 
 ### 7. Redaktionsprüfung
 
-Führe die Schleife aus `references/HUMANIZER-DE.md` durch:
+Arbeite `references/stimme/SLOP-KATALOG.md` durch und setze danach die Züge
+aus `references/stimme/STIMME-FACHTEXT.md` ein. Die Reihenfolge ist wichtig:
+erst entfernen, dann ersetzen. **Streichen allein erzeugt keinen Ton** — jede
+gestrichene Stelle bekommt einen Zug aus dem Repertoire oder verschwindet
+ganz.
 
-1. Legalese, Floskeln, unnötige Wiederholungen und Absolutheiten markieren.
-2. Betroffene Passagen inhaltlich neu schreiben.
-3. Den Text auf hörbare Telefon-Sprache prüfen.
-4. Den Entwurf mit den letzten verfügbaren Artikeln auf wiederkehrende Schablonen vergleichen.
-5. FAQ, Listen, Beispiele und Quellen streichen, wenn sie nur wiederholen.
-6. Kein Modul einfügen, nur weil eine Quote es nahelegt.
+Ist der Skill `bk-humanizer` verfügbar, nimm stattdessen dessen vollständigen
+Ablauf, Register **Fachtext**, ab Durchgang 2; die Durchgänge 1 und 6 dieses
+Skills haben Material und Evidenz schon geklärt. Dort liegt auch das
+Messskript:
+
+```bash
+python3 ../bk-humanizer/scripts/slop_scan.py ENTWURF.md --profil fachtext
+```
+
+Drei Punkte sind blogspezifisch und kommen zur Prüfung dort hinzu:
+
+1. FAQ, Listen, Beispiele und Quellen streichen, wenn sie nur wiederholen.
+2. Kein Modul einfügen, nur weil eine Quote es nahelegt.
+3. Den Entwurf mit den letzten veröffentlichten Artikeln vergleichen. Das
+   Verfahren steht in `bk-humanizer/references/KORPUS.md`, Abschnitt
+   *Serienprüfung*; die Beiträge selbst stehen im CMS.
 
 ## Authentizitätsregeln
 
-- Erfinde keine eigenen Fälle, Einsprüche, Verfahren, Beobachtungen oder Praxiszahlen.
-- Verwende Tatsachen in Ich-Form nur, wenn sie aus dem Briefing oder einem freigegebenen menschlichen Referenzartikel stammen.
-- Eine persönliche Meinung darf in Ich-Form stehen, wenn sie als Bewertung erkennbar und fachlich begründet ist.
-- Fehlt gewünschte Praxiserfahrung, setze `[OLIVER-INPUT: konkrete Beobachtung oder Fall ergänzen]` oder formuliere neutral.
-- Simuliere keine Menschlichkeit durch erzwungenen Humor, absichtliche Fehler oder erfundene Unsicherheit.
+Maßgeblich ist der Abschnitt **Echtheit** in `bk-humanizer/SKILL.md`. Er gilt
+hier unverändert und wird nicht ergänzt oder gelockert. Steht er nicht zur
+Verfügung, gilt die Kurzfassung, und sie ist nicht verhandelbar.
+
+Kurz: keine erfundenen Fälle, Verfahren, Beobachtungen oder Praxiszahlen, auch
+nicht als Platzhalter. Tatsachen in Ich-Form nur aus dem Briefing oder einem
+freigegebenen Eigentext. Meinung und Prognose in Ich-Form sind zulässig, wenn
+sie begründet und als solche erkennbar sind. Fehlt Material, steht
+`[OLIVER-INPUT: …]`.
+
+Die Veröffentlichungssperre unten knüpft an diese Regel an.
 
 ## Ausgabe
 
@@ -192,12 +225,14 @@ Diese Punkte sind objektiv prüfbar. Solange einer offen ist, lautet der Status
 Diese Punkte werden gemeldet, blockieren aber nicht. Sie erfordern eine
 redaktionelle Entscheidung, keine automatische Korrektur:
 
-- auffällig viele gleich gebaute Sätze in einem Abschnitt;
-- gleiche H2-Formeln, gleicher Einstieg oder gleicher Schluss wie in den letzten Artikeln;
 - FAQ-Antworten, die den Haupttext wiederholen;
 - mehr als ein Link auf dasselbe Ziel;
-- sehr viele Listen oder auffällige Dreierketten;
-- ungewöhnlich lange Absätze oder Sätze.
+- ein Modul, das nur eingefügt wurde, weil eine Quote es nahelegt.
+
+Die sprachlichen Warnungen — gleichförmiger Satzrhythmus, gleiche H2-Formeln,
+wiederkehrender Einstieg oder Schluss, Listenflucht, Dreierketten, auffällige
+Absatzlängen — kommen aus `bk-humanizer`. Die messbaren davon meldet
+`slop_scan.py`, die übrigen die Serienprüfung. Auch dort blockieren sie nicht.
 
 ## Statusangabe
 

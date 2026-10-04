@@ -1,0 +1,27 @@
+{
+  "positive": [
+    "31 Felder im EXTF-Kopfsatz",
+    "Beraternummer Feld 11, Mandant Feld 12",
+    "Datum von <= Datum bis",
+    "Beleglink BEDI \"<GUID>\"",
+    "Root archive, Namespace v04.0",
+    "vollständiger Zeitstempel",
+    "PDF im ZIP vorhanden",
+    "Mandant und Wirtschaftsjahr über Klardaten aufgelöst",
+    "Kontenplan und EB-Saldo über DATEV geprüft",
+    "Differenzbuchung aus Sollbestand minus DATEV-Endbestand"
+  ],
+  "negative": [
+    "Root documentPackage",
+    "Kopfsatz mit 30 Feldern",
+    "Beraternummer Feld 10",
+    "Datum von 20251231 und Datum bis 20250101",
+    "Beleglink nur PDF-Dateiname",
+    "reines Datum im XML",
+    "GUID in CSV fehlt im XML",
+    "PDF-Dateiname weicht in Groß-/Kleinschreibung ab",
+    "clientId oder fiscalYearId frei erfunden",
+    "fehlenden Monatswert als EB-Saldo 0 interpretiert",
+    "Produktivstapel trotz fehlender Pflichtdaten erzeugt"
+  ]
+}
