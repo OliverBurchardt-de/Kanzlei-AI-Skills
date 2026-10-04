@@ -21,8 +21,8 @@ Deshalb liegen in `korpus/` fünf Texte und nicht 55.
 | Datei | Quelle | Stufe |
 |---|---|---|
 | `2026-05-13-restnutzungsdauer.md` | Blog 2910, zugleich Referenzartikel in `bk-blogartikel` | A |
-| `2026-08-25-familienheim.md` | Blog 3194 | A (unbestätigt) |
-| `2026-08-28-praxis-im-eigenen-haus.md` | Blog 3222 | A (unbestätigt) |
+| `2026-08-25-familienheim.md` | Blog 3194 | A |
+| `2026-08-28-praxis-im-eigenen-haus.md` | Blog 3222 | A |
 
 ### `korpus/fiktion/` — englische Belletristik
 
@@ -44,7 +44,7 @@ direkten Sprache aus `STIMME-FIKTION.md`, Zug 7.
   entstanden. Zeigt Aufbau und Fachtiefe, nicht die Stimme.
 - **Stufe C — ausdrücklich kein Maßstab.** Siehe unten.
 
-## Wie die Auswahl zustande kam, und was daran offen ist
+## Wie die Auswahl zustande kam
 
 Am 26.09.2026 wurden alle 55 veröffentlichten Blogbeiträge maschinell
 ausgewertet: Satzrhythmus, Anteil der Ich-Form, Dichte der Füllformeln.
@@ -56,18 +56,20 @@ Am anderen Ende standen Beiträge mit bis zu 10 Floskeltreffern je 1000
 Wörter, gleichförmigem Satzrhythmus und ohne jede Ich-Form. Einer davon
 ist in `MESSWERTE.md` als Gegenprobe dokumentiert.
 
-**Hier ist eine Annahme im Spiel, und sie ist nicht bestätigt.** Aus
-Messwerten folgt, dass ein Text *nicht* wie eine Schablone gebaut ist. Es
-folgt daraus **nicht**, dass Oliver Burchardt ihn selbst geschrieben hat.
-Für `2026-05-13-restnutzungsdauer.md` ist die Herkunft über
-`bk-blogartikel/references/REFERENZARTIKEL.md` belegt; für die beiden
-anderen beruht die Einstufung allein auf der Messung.
+**Die Messung allein hätte das nicht entschieden.** Aus Messwerten folgt,
+dass ein Text *nicht* wie eine Schablone gebaut ist. Es folgt daraus
+**nicht**, wer ihn geschrieben hat. Die Messung hat die Kandidaten
+gefunden; die Herkunft hat ein Mensch bestätigt:
 
-**Was zu tun ist:** Die Einstufung der beiden unbestätigten Texte gehört
-von Oliver bestätigt oder korrigiert. Bis dahin steht sie im Kopf der
-jeweiligen Datei als `herkunft: unbestaetigt`. Fällt einer der beiden
-weg, verliert der Fachtext-Maßstab ein Drittel seiner Grundlage, und die
-Referenzwerte in `slop_scan.py` sind neu zu erheben.
+- `2026-05-13-restnutzungsdauer.md` — belegt über
+  `Blogartikel/references/REFERENZARTIKEL.md`.
+- `2026-08-25-familienheim.md` und `2026-08-28-praxis-im-eigenen-haus.md`
+  — am 04.10.2026 von Oliver Burchardt als Eigentext bestätigt.
+
+Alle drei Fachtexte im Kanon sind damit menschlich bestätigt. **So gehört
+jede weitere Aufnahme behandelt:** Die Messung schlägt vor, der Autor
+entscheidet. Ohne Bestätigung bleibt ein Text draußen oder trägt im
+Dateikopf einen Vorbehalt.
 
 ## Was nicht in den Kanon gehört
 

@@ -1,3 +1,15 @@
+---
+quelle: burchardt-kollegen.de, Beitrag 2910; zugleich Referenzartikel in bk-blogartikel
+veroeffentlicht: 2026-05-13
+sprache: de
+gattung: Fachbeitrag Blog
+stufe: A
+herkunft: ueberwiegend Eigentext, belegt ueber Blogartikel/references/REFERENZARTIKEL.md
+hinweis: Fuehrt zwei eigene Artikel aus 2025 und 2026 zusammen; Einleitung,
+  Systematik und FAQ sind ergaenzt. Meta-Zeilen gehoeren zum CMS-Handoff und
+  nicht zum Artikeltext.
+---
+
 # Restnutzungsdauer 2026: Warum die Aufhebung des BMF-Schreibens kein Sieg war
 
 **Meta-Title:** Restnutzungsdauer 2026: Was jetzt wirklich gilt

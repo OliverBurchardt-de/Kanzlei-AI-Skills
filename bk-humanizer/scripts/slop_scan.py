@@ -42,13 +42,15 @@ from pathlib import Path
 
 REFERENZ = {
     # Fachtext deutsch: gemessen an den drei Beitraegen in korpus/fachtext/
-    # (Ø 14.5–19.0 Woerter, Streuung 9.0–9.4, 15–27 % kurze Saetze,
-    #  0.8–3.0 Gedankenstriche je 1000 Woerter, keine Fuellformeln).
+    # (Ø 14.5–19.1 Woerter, Streuung 8.9–9.2, 14–27 % kurze Saetze,
+    #  0–2.7 Gedankenstriche je 1000 Woerter, keine Fuellformeln).
+    # Die Schwellen liegen knapp unter dem schwaechsten Kanonwert, damit
+    # ein echter Text nicht beim ersten Ausreisser anschlaegt.
     "fachtext": {
         "sprache": "de",
         "satz_mittel": (13.0, 22.0),
-        "satz_streuung_min": 8.0,       # Standardabweichung der Satzlaengen
-        "anteil_kurz_min": 0.13,        # Saetze <= 8 Woerter
+        "satz_streuung_min": 7.5,       # Standardabweichung der Satzlaengen
+        "anteil_kurz_min": 0.12,        # Saetze <= 8 Woerter
         "fueller_pro_1k_max": 1.0,
         "gedankenstrich_pro_1k_max": 5.0,
     },
@@ -272,6 +274,9 @@ def woerter_zaehlen(s: str) -> int:
 def text_saeubern(roh: str) -> tuple[str, list[str]]:
     """Markdown-Geruest entfernen. Gibt Fliesstext und Absaetze zurueck."""
     t = roh
+    # YAML-Kopf zuerst, sonst zaehlen quelle/stufe/herkunft als Fliesstext mit
+    # und verschieben Satzlaenge und Absatzrhythmus.
+    t = re.sub(r"\A---[ \t]*\r?\n.*?\r?\n---[ \t]*(?:\r?\n|\Z)", "", t, flags=re.S)
     t = re.sub(r"```.*?```", " ", t, flags=re.S)          # Codebloecke
     t = re.sub(r"^\s*(\||[-*+]\s|\d+\.\s|>).*$", "", t, flags=re.M)  # Tabellen, Listen, Zitate
     t = re.sub(r"^#{1,6}\s.*$", "", t, flags=re.M)        # Ueberschriften

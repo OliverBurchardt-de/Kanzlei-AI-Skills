@@ -3,7 +3,11 @@
 Die Zahlen hinter `slop_scan.py`: woher sie stammen, wie sie zu lesen sind
 und was sie nachweislich nicht erkennen.
 
-Erhoben am 26.09.2026 über die Texte in `korpus/`.
+Erhoben am 26.09.2026 über die Texte in `korpus/`, am 04.10.2026 korrigiert:
+Der YAML-Kopf der Korpusdateien wurde bis dahin als Fließtext mitgezählt und
+hat Satzlänge, Streuung und Gedankenstrichdichte leicht verschoben. Das
+Skript entfernt ihn jetzt vor der Messung; die Tabellen unten zeigen die
+bereinigten Werte.
 
 ## Die Referenzwerte
 
@@ -12,11 +16,15 @@ Erhoben am 26.09.2026 über die Texte in `korpus/`.
 | Datei | Wörter | Ø Satz | Streuung | ≤8 W | ≥30 W | Striche/1k | Füller/1k |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | Restnutzungsdauer | 3279 | 14,8 | 9,2 | 27 % | 6 % | 2,74 | 0 |
-| Familienheim | 1346 | 19,0 | 9,4 | 15 % | 13 % | 2,97 | 0 |
-| Praxis im eigenen Haus | 1302 | 14,5 | 9,0 | 24 % | 4 % | 0,77 | 0 |
+| Familienheim | 1321 | 19,1 | 9,0 | 14 % | 12 % | 2,27 | 0 |
+| Praxis im eigenen Haus | 1277 | 14,5 | 8,9 | 24 % | 4 % | 0 | 0 |
 
-Daraus die Spannen: Satzlänge 13–22, Streuung ab 8,0, kurze Sätze ab
-13 %, Gedankenstriche bis 5,0, Füllformeln bis 1,0.
+Daraus die Spannen: Satzlänge 13–22, Streuung ab 7,5, kurze Sätze ab
+12 %, Gedankenstriche bis 5,0, Füllformeln bis 1,0.
+
+Die Schwellen liegen bewusst knapp **unter** dem schwächsten Kanonwert und
+nicht auf ihm. Ein echter Text soll nicht beim ersten Ausreißer anschlagen;
+der Abstand zu den Gegenproben ist mit 8,9 gegen 4,3 immer noch groß.
 
 ### Profile `fiktion-knapp` und `fiktion-kaskade`
 

@@ -4,7 +4,7 @@ veroeffentlicht: 2026-08-28
 sprache: de
 gattung: Fachbeitrag Blog
 stufe: A
-herkunft: unbestaetigt — Messwerte sprechen fuer Eigentext, Freigabe durch Oliver Burchardt steht aus
+herkunft: Eigentext, bestaetigt durch Oliver Burchardt am 04.10.2026
 ---
 
 # Praxis im eigenen Haus: Warum der Verkauf später richtig teuer wird

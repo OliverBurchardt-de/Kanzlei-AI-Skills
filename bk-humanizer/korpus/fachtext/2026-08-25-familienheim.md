@@ -4,7 +4,7 @@ veroeffentlicht: 2026-08-25
 sprache: de
 gattung: Fachbeitrag Blog
 stufe: A
-herkunft: unbestaetigt — Messwerte sprechen fuer Eigentext, Freigabe durch Oliver Burchardt steht aus
+herkunft: Eigentext, bestaetigt durch Oliver Burchardt am 04.10.2026
 ---
 
 # Familienheim: Der geplante Einzug rettet die Steuerbefreiung nicht
