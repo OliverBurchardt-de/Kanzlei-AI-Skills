@@ -1,0 +1,88 @@
+{
+  "profile_name": "structured-test-profile",
+  "bank_name": "Automated test bank - not a production profile",
+  "source_variant": "synthetic-structured-v1",
+  "charset": "Windows-1252",
+  "line_endings": "CRLF",
+  "allowed_underfields": [
+    "20",
+    "32"
+  ],
+  "test_fixture_only": true,
+  "examples": [
+    {
+      "source_transaction": {
+        "value_date": "2026-07-01",
+        "booking_date": "2026-07-01",
+        "amount": "-1000.00",
+        "code": "NDDT",
+        "customer_reference": "SA01A000000095207172",
+        "description": "Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versicherung ME-LS 2028, Referenz SA01A000000095207172",
+        "source_fields": {
+          "counterparty": "Empfänger 1"
+        }
+      },
+      "mt940": [
+        ":61:2607010701D1000,00NDDTSA01A00000009520//000000001",
+        ":86:?20Allianz Versicherungs-AG Vertrag AS-6170637093, Kfz-Versic",
+        "herung ME-LS 2028, Referenz SA01A000000095207172?32Empfänger 1"
+      ],
+      "expected_datev_display": "Synthetic fixture only, not a real DATEV test"
+    }
+  ],
+  "probe_import": {
+    "date": "2026-07-02",
+    "result": "successful",
+    "checks": {
+      "opening_balance_correct": true,
+      "test_closing_balance_correct": true,
+      "transaction_count_and_signs_correct": true,
+      "description_complete": true,
+      "no_visible_control_characters": true,
+      "all_source_fields_correct": true
+    },
+    "test_transactions_deleted": true,
+    "note": "Synthetic unit-test fixture; it is not evidence of a real DATEV import."
+  },
+  "bank_id": "synthetic-other-bank",
+  "profile_version": 1,
+  "source_types": [
+    "pdf",
+    "image",
+    "structured_list",
+    "manual"
+  ],
+  "status": "verified",
+  "statement_reference_rule": "deterministic_mt",
+  "reference_rules": {
+    "customer_reference": "upper_alnum_16",
+    "bank_reference": "source_or_sequence_9"
+  },
+  "missing_customer_reference": "NONREF",
+  "adapter": "synthetic-bank-structured.py",
+  "reference_basis": {
+    "kind": "native_bank_file",
+    "reference": "Synthetic fixture, never a real bank reference",
+    "verified_against_reference": true
+  },
+  "field_mappings": {
+    "statement_reference": "Synthetic fixture explicit mapping: statement_reference",
+    "iban": "Synthetic fixture explicit mapping: iban",
+    "statement_number": "Synthetic fixture explicit mapping: statement_number",
+    "sequence_number": "Synthetic fixture explicit mapping: sequence_number",
+    "opening_balance_date": "Synthetic fixture explicit mapping: opening_balance_date",
+    "opening_balance": "Synthetic fixture explicit mapping: opening_balance",
+    "closing_balance_date": "Synthetic fixture explicit mapping: closing_balance_date",
+    "closing_balance": "Synthetic fixture explicit mapping: closing_balance",
+    "currency": "Synthetic fixture explicit mapping: currency",
+    "value_date": "Synthetic fixture explicit mapping: value_date",
+    "booking_date": "Synthetic fixture explicit mapping: booking_date",
+    "amount": "Synthetic fixture explicit mapping: amount",
+    "code": "Synthetic fixture explicit mapping: code",
+    "customer_reference": "Synthetic fixture explicit mapping: customer_reference",
+    "bank_reference": "Synthetic fixture explicit mapping: bank_reference",
+    "description": "Synthetic fixture explicit mapping: description",
+    "counterparty": "Synthetic counterparty -> ?32"
+  },
+  "adapter_sha256": "c2c8255c365c21d71c5176be5cf9213bc9f9e7cafa109644a7913ade98b87ad9"
+}

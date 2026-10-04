@@ -1,0 +1,138 @@
+{
+  "zip": "C:\\Users\\OBurchardt\\Downloads\\bk-monatsbuchhaltung.zip",
+  "zip_sha256": "06AE48101D93F0F3964F852179B20B4FB62497B9BB1F581D6C651EC5115A3431",
+  "stage": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-monatsbuchhaltung-install-20261004-963e9b20\\bk-monatsbuchhaltung",
+  "destination": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-monatsbuchhaltung",
+  "backup": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-monatsbuchhaltung-install-20261004-963e9b20\\previous-installation-v0.3.8",
+  "file_count": 32,
+  "files": [
+    {
+      "path": "SKILL.md",
+      "sha256": "C16F3DEFE2E639CDDA6B002EA349C3F727C52C2B9A901B943C9AA30F4FB6EE0E"
+    },
+    {
+      "path": "agents\\openai.yaml",
+      "sha256": "77F6D476BECFA293D5AC7E0CF9F5D34EBAEA99F319C9FD123326F6D744070B1B"
+    },
+    {
+      "path": "assets\\abgrenzungsregister_vorlage.md",
+      "sha256": "099ECDFE1E2539115489305BBE898DBC7A9D03E8013CBBDD0812B942D75F79D9"
+    },
+    {
+      "path": "assets\\mandantenprofil_vorlage.md",
+      "sha256": "919676C6B7556B9DE27339277A16104949C37867E4602A59D3A18725EEF38604"
+    },
+    {
+      "path": "assets\\xsd\\Document_types_v060.xsd",
+      "sha256": "78EE3CB0F05AA93652347CD5693184B16AB52985B83E1270234448DB68327022"
+    },
+    {
+      "path": "assets\\xsd\\Document_v060.xsd",
+      "sha256": "11759FBA36A156719E7CC3C1E19708AA0EA885E9093B6BDBB6A495C40BFF362A"
+    },
+    {
+      "path": "references\\DATEV_FORMAT.md",
+      "sha256": "AFCE4CD1F43B07AE2A186A84368B174468867A74BD9706285C1F9A5CEEF1F597"
+    },
+    {
+      "path": "references\\EINGABESCHEMA.md",
+      "sha256": "2989A10F52AA4C89D66C464558C6412CE7EF61114018C3EE882420CFF9979612"
+    },
+    {
+      "path": "references\\FACHLICHE_ENTSCHEIDUNGEN.md",
+      "sha256": "AB9CB8399C65CC9C866556E5798480BE5C9BD47EA16A7FD15ABC4621D6607029"
+    },
+    {
+      "path": "references\\PARALLELVERARBEITUNG.md",
+      "sha256": "3DF3B3E159DCB0DC34E1BB9087CF40E5592389ED75275736AD258C815545ED77"
+    },
+    {
+      "path": "references\\PRUEFPROTOKOLL_RUECKLAUF.md",
+      "sha256": "C0A2D4CABE5A49A578E1EF39EE3873C48191A905BE45C1F423BC5274F33932DC"
+    },
+    {
+      "path": "references\\SHAREPOINT_UND_ABGRENZUNGEN.md",
+      "sha256": "15720C01B51FDE5C510DEBA34B7C6A37207C0DE5881D42449D47133AE456D2DE"
+    },
+    {
+      "path": "references\\UMSATZSTEUER_UND_BEWIRTUNG.md",
+      "sha256": "5ED767C9A0111D22A5F82F5D4EF123CA2CB8A1B0B64C78F2A6625CAF05D18F00"
+    },
+    {
+      "path": "references\\VALIDIERUNG.md",
+      "sha256": "A2642BBD8FF08AFC62F8E8E8084EC7C4C07E92CC410229FC7909967F6E60FE02"
+    },
+    {
+      "path": "scripts\\build_package.py",
+      "sha256": "C2247CE4B26C25043ACB8852D10C91D19813AB5934C5A69E9489A3A709FEBD53"
+    },
+    {
+      "path": "scripts\\build_review_workbook.py",
+      "sha256": "1D2F27746A21A69AE6BF6B1C3655B1BC30F0D518B8D48A9E21968BB4CBEDCFC9"
+    },
+    {
+      "path": "scripts\\datev_io.py",
+      "sha256": "738225D25014F7027BC19F5E524E74D53E9BD8AD2A28B41AADE7087F38EA8B54"
+    },
+    {
+      "path": "scripts\\evaluate_review_return.py",
+      "sha256": "948F81A876EA368A39464A223E95FA8A7BF78D124454F44CAF499CA6E7F84F84"
+    },
+    {
+      "path": "scripts\\merge_parallel_results.py",
+      "sha256": "D5E635477D2ED3D6A7DD74ABC372CEEC50636F0D156B9D1DDE9611A78142BA06"
+    },
+    {
+      "path": "scripts\\prepare_parallel_batches.py",
+      "sha256": "D8B2302023F1394B8713A294607A06F2C88C29C0D13DF2E476146A92F248B7F5"
+    },
+    {
+      "path": "scripts\\sharepoint_target.py",
+      "sha256": "EA0CE349B6AED5066124E9344E91CD7459A3B4AAAFC5C8825D419A2FF81B0598"
+    },
+    {
+      "path": "scripts\\test_accrual_register_first_run.py",
+      "sha256": "D9C83C15D70DF6AF3C06CF8446907D19FA3CA478783417B3F2231A10127EA710"
+    },
+    {
+      "path": "scripts\\test_accrual_register_manifest.py",
+      "sha256": "C2C6ED2839DC46745AA9F781AA47478D65F268C6AD989D4B635C8C524349A195"
+    },
+    {
+      "path": "scripts\\test_datev_contract.py",
+      "sha256": "BC2A27EF4282C0CBB6ADBCCC9A47A5735836D9569AD550618E3721847FB5E5D5"
+    },
+    {
+      "path": "scripts\\test_document_xml_contract.py",
+      "sha256": "75467A20F0ABA23BD2A7E084195D23113CE1E1A15BB79014FC4CBDFCFBD7C3F4"
+    },
+    {
+      "path": "scripts\\test_parallel_processing.py",
+      "sha256": "7A8068F05BF8A0D3B1FCC167D5CDE97F5D71FF5C43DED528512EAFD6A4EC71BF"
+    },
+    {
+      "path": "scripts\\test_review_return.py",
+      "sha256": "7E9102DBC1091C19F11DB83CDCB5101E45C49E7CF6AC11334335B15A8AB02A28"
+    },
+    {
+      "path": "scripts\\test_review_workbook.py",
+      "sha256": "3BE7CC126DA83D15EC6C21F48BEB550FD957E54A913AD9698289545CD71F2074"
+    },
+    {
+      "path": "scripts\\test_sharepoint_target.py",
+      "sha256": "11E2CB5EC83D635F5CF2F46B2717230FC9D2CEB849EF1A7E048FE8D7EB84B985"
+    },
+    {
+      "path": "scripts\\test_start_contract.py",
+      "sha256": "1D8903093F876B627CC5EB2C84B2CF489323B4B6E423EC48B34025982F700082"
+    },
+    {
+      "path": "scripts\\test_v110_contract.py",
+      "sha256": "343820BDF8E0D7E79DACD62F18FFBB77EDE5A59AEA6FFCF60384454CCB60EE32"
+    },
+    {
+      "path": "scripts\\validate_package.py",
+      "sha256": "14F612FC47E9B2643EA6B3DA5A61A6554E807A9265BD2A44D25A85F30CE89E11"
+    }
+  ]
+}

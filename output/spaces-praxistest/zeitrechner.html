@@ -1,0 +1,115 @@
+<div id="spaces-kanzlei-zeitrechner">
+  <h3>Zeitaufwand vergleichen</h3>
+  <div class="viz-controls">
+    <label class="form-label" for="spaces-count">Vorgänge pro Monat
+      <input class="form-control" id="spaces-count" type="number" min="0" step="1" value="20" inputmode="numeric">
+    </label>
+    <label class="form-label" for="spaces-before">Bisherige Minuten pro Vorgang
+      <input class="form-control" id="spaces-before" type="number" min="0" step="any" value="15" inputmode="decimal">
+    </label>
+    <label class="form-label" for="spaces-after">Neue Minuten einschließlich Kontrolle
+      <input class="form-control" id="spaces-after" type="number" min="0" step="any" value="10" inputmode="decimal">
+    </label>
+    <label class="form-label" for="spaces-setup">Einrichtung in Stunden
+      <input class="form-control" id="spaces-setup" type="number" min="0" step="any" value="2" inputmode="decimal">
+    </label>
+  </div>
+  <p id="spaces-error" class="text-destructive" role="alert" hidden></p>
+  <div id="spaces-results" aria-live="polite" aria-atomic="true">
+    <div class="viz-grid">
+      <div class="card viz-stat">
+        <div>Bisher je Monat</div>
+        <div class="viz-stat-value tabular-nums" id="spaces-old-total">5 Std.</div>
+      </div>
+      <div class="card viz-stat">
+        <div>Neu je Monat</div>
+        <div class="viz-stat-value tabular-nums" id="spaces-new-total">3,33 Std.</div>
+      </div>
+      <div class="card viz-stat">
+        <div id="spaces-saving-label">Ersparnis je Monat</div>
+        <div class="viz-stat-value tabular-nums" id="spaces-saving">1,67 Std.</div>
+        <div class="tabular-nums" id="spaces-minutes">100 Min.</div>
+      </div>
+    </div>
+    <p class="tabular-nums" id="spaces-payback">Rechnerischer Ausgleich nach 1,2 Monaten.</p>
+  </div>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('spaces-kanzlei-zeitrechner');
+  const keys = ['count', 'before', 'after', 'setup'];
+  const fields = Object.fromEntries(keys.map(key => [key, root.querySelector('#spaces-' + key)]));
+  const number = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
+  const oneDecimal = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
+  const element = name => root.querySelector('#spaces-' + name);
+
+  function calculate(values) {
+    const oldMinutes = values.count * values.before;
+    const newMinutes = values.count * values.after;
+    const savedMinutes = oldMinutes - newMinutes;
+    const savedHours = savedMinutes / 60;
+    return { oldMinutes, newMinutes, savedMinutes, savedHours,
+      payback: savedHours > 0 ? values.setup / savedHours : null };
+  }
+
+  function render() {
+    const values = Object.fromEntries(keys.map(key => [key, fields[key].valueAsNumber]));
+    let invalid = false;
+    for (const key of keys) {
+      const bad = !Number.isFinite(values[key]) || values[key] < 0 || (key === 'count' && !Number.isInteger(values[key]));
+      fields[key].setAttribute('aria-invalid', String(bad));
+      invalid = invalid || bad;
+    }
+    let totals = null;
+    if (!invalid) {
+      totals = calculate(values);
+      invalid = ![totals.oldMinutes, totals.newMinutes, totals.savedMinutes, totals.savedHours].every(Number.isFinite)
+        || (totals.payback !== null && !Number.isFinite(totals.payback));
+    }
+    element('error').hidden = !invalid;
+    element('results').hidden = invalid;
+    if (invalid) {
+      element('error').textContent = 'Bitte fülle alle Felder mit gültigen Zahlen ab null aus. Die Vorgänge müssen eine ganze Zahl sein; die Werte müssen berechenbar bleiben.';
+      return null;
+    }
+    element('old-total').textContent = number.format(totals.oldMinutes / 60) + ' Std.';
+    element('new-total').textContent = number.format(totals.newMinutes / 60) + ' Std.';
+    element('saving-label').textContent = totals.savedMinutes < 0 ? 'Mehrbedarf je Monat' : 'Ersparnis je Monat';
+    element('saving').textContent = number.format(Math.abs(totals.savedHours)) + ' Std.';
+    element('minutes').textContent = number.format(Math.abs(totals.savedMinutes)) + ' Min.';
+    element('payback').textContent = totals.savedHours <= 0
+      ? 'Kein rechnerischer Ausgleich bei null oder negativem Zeitnutzen.'
+      : values.setup === 0
+        ? 'Kein Einrichtungsaufwand angesetzt.'
+        : 'Rechnerischer Ausgleich nach ' + oneDecimal.format(totals.payback) + ' Monaten.';
+    return values;
+  }
+
+  function applyState(state) {
+    const content = state && state.modelContent;
+    if (!content || content.version !== 1 || !content.inputs) return;
+    const values = content.inputs;
+    if (!keys.every(key => typeof values[key] === 'number' && Number.isFinite(values[key]) && values[key] >= 0)
+      || !Number.isInteger(values.count)) return;
+    const totals = calculate(values);
+    if (![totals.oldMinutes, totals.newMinutes, totals.savedMinutes, totals.savedHours].every(Number.isFinite)
+      || (totals.payback !== null && !Number.isFinite(totals.payback))) return;
+    keys.forEach(key => { fields[key].value = String(values[key]); });
+    render();
+  }
+
+  keys.forEach(key => fields[key].addEventListener('input', () => {
+    const values = render();
+    if (!values || !window.openai || typeof window.openai.setWidgetState !== 'function') return;
+    try {
+      Promise.resolve(window.openai.setWidgetState({ modelContent: { version: 1, inputs: values }, privateContent: null })).catch(() => {});
+    } catch (_) {}
+  }));
+  window.addEventListener('openai:set_globals', event => {
+    const globals = event.detail && event.detail.globals;
+    if (globals && Object.prototype.hasOwnProperty.call(globals, 'widgetState')) applyState(globals.widgetState);
+  });
+  applyState(window.openai && window.openai.widgetState);
+  render();
+})();
+</script>

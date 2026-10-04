@@ -1,0 +1,4003 @@
+{
+  "status": "source_fields_technically_and_arithmetically_valid",
+  "delivery_approved": true,
+  "reconstructed_export": true,
+  "bank_native_format_reproduced": false,
+  "datev_import_verified": false,
+  "mt940_sha256": "87fac7a1b7296ff8eb5b88dc0f45cf4cea117c64f0be4379ed163897d525e1a7",
+  "bank_model": {
+    "bank_id": "dortmunder-volksbank-genodem1dor",
+    "source_variant": "onlinebanking-business-pdf-umsatzliste-2026",
+    "bank_profile": "dortmunder-volksbank-onlinebanking-business-pdf-2026",
+    "profile_version": 1
+  },
+  "bank_model_sha256": "6887321a56489b4f93bdf5cdecde62a0395a870a4edcf291f65b445499c0025a",
+  "source_check": {
+    "source_to_mt940_match": true,
+    "checked_transaction_count": 32,
+    "source_files": [
+      {
+        "id": "auszug",
+        "path": "original/Dokument_2026_10_03_09_59.pdf",
+        "sha256": "8314904a7b219ff949ed5fa28f2bde58b1eb8119cf23244971e47b7775bca6a7"
+      }
+    ],
+    "review_method": "visual_original",
+    "field_comparisons": [
+      {
+        "field": "iban",
+        "source_locator": "statement",
+        "source_value": "DE35441600146708656600",
+        "manifest_value": "DE35441600146708656600",
+        "mt940_value": "DE35441600146708656600",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "statement_number",
+        "source_locator": "statement",
+        "source_value": null,
+        "manifest_value": 1,
+        "mt940_value": 1,
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "technical_statement_one",
+          "value": 1,
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "sequence_number",
+        "source_locator": "statement",
+        "source_value": null,
+        "manifest_value": 1,
+        "mt940_value": 1,
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "technical_sequence_one",
+          "value": 1,
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "currency",
+        "source_locator": "statement",
+        "source_value": "EUR",
+        "manifest_value": "EUR",
+        "mt940_value": "EUR",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "opening_balance_date",
+        "source_locator": "statement",
+        "source_value": null,
+        "manifest_value": "2025-12-31",
+        "mt940_value": "251231",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "period_start_previous_day",
+          "value": "2025-12-31",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "opening_balance",
+        "source_locator": "statement",
+        "source_value": "3552.86",
+        "manifest_value": "3552.86",
+        "mt940_value": "3552.86",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "closing_balance_date",
+        "source_locator": "statement",
+        "source_value": null,
+        "manifest_value": "2026-10-03",
+        "mt940_value": "261003",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "period_end",
+          "value": "2026-10-03",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "closing_balance",
+        "source_locator": "statement",
+        "source_value": "82757.24",
+        "manifest_value": "82757.24",
+        "mt940_value": "82757.24",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-30",
+        "mt940_value": "260930",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-30",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-30",
+        "manifest_value": "2026-09-30",
+        "mt940_value": "0930",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "-15.75",
+        "manifest_value": "-15.75",
+        "mt940_value": "-15.75",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000001",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 30.09.2026",
+        "manifest_value": "Abschluss Abschluss per 30.09.2026",
+        "mt940_value": "Abschluss Abschluss per 30.09.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 1: auszug / Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-17",
+        "mt940_value": "260917",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-17",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-17",
+        "manifest_value": "2026-09-17",
+        "mt940_value": "0917",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "-162.30",
+        "manifest_value": "-162.30",
+        "mt940_value": "-162.30",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000002",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "Stadtwerke Schwerte DE45440501990841000277 KD-Nummer: 199003118 / RG-Nummer: VR1000764626 Strom, Gas 2025 SecureGo plus IBAN: DE45440501990841000277 BIC: DORTDE33XXX",
+        "manifest_value": "Stadtwerke Schwerte DE45440501990841000277 KD-Nummer: 199003118 / RG-Nummer: VR1000764626 Strom, Gas 2025 SecureGo plus IBAN: DE45440501990841000277 BIC: DORTDE33XXX",
+        "mt940_value": "Stadtwerke Schwerte DE45440501990841000277 KD-Nummer: 199003118 / RG-Nummer: VR1000764626 Strom, Gas 2025 SecureGo plus IBAN: DE45440501990841000277 BIC: DORTDE33XXX",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 2: auszug / Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Stadtwerke Schwerte",
+          "counterparty_iban": "DE45440501990841000277",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Stadtwerke Schwerte",
+          "counterparty_iban": "DE45440501990841000277",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Stadtwerke Schwerte",
+          "counterparty_iban": "DE45440501990841000277",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-16",
+        "mt940_value": "260916",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-16",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-16",
+        "manifest_value": "2026-09-16",
+        "mt940_value": "0916",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "-132.35",
+        "manifest_value": "-132.35",
+        "mt940_value": "-132.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000003",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "Adyen N.V. DE29300600100005021573 The ASH Dortmund a98dcc5a-b684-459b-afb1-abc/Europapla15.09.2026 um 21:01:54 Uhr 51745200/000249/CICC/FPIN 44160014/6708656600/0/1228 REF 543612/260047",
+        "manifest_value": "Adyen N.V. DE29300600100005021573 The ASH Dortmund a98dcc5a-b684-459b-afb1-abc/Europapla15.09.2026 um 21:01:54 Uhr 51745200/000249/CICC/FPIN 44160014/6708656600/0/1228 REF 543612/260047",
+        "mt940_value": "Adyen N.V. DE29300600100005021573 The ASH Dortmund a98dcc5a-b684-459b-afb1-abc/Europapla15.09.2026 um 21:01:54 Uhr 51745200/000249/CICC/FPIN 44160014/6708656600/0/1228 REF 543612/260047",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 3: auszug / Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Adyen N.V.",
+          "counterparty_iban": "DE29300600100005021573",
+          "reference_in_description": "543612/260047"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Adyen N.V.",
+          "counterparty_iban": "DE29300600100005021573",
+          "reference_in_description": "543612/260047"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Adyen N.V.",
+          "counterparty_iban": "DE29300600100005021573",
+          "reference_in_description": "543612/260047"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-11",
+        "mt940_value": "260911",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-11",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-11",
+        "manifest_value": "2026-09-11",
+        "mt940_value": "0911",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "-373.35",
+        "manifest_value": "-373.35",
+        "mt940_value": "-373.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000004",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260040, MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+        "manifest_value": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260040, MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+        "mt940_value": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260040, MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 4: auszug / Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+          "counterparty_iban": "DE29466702040077128700",
+          "bic_in_description": "DEUTDEDWP03"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+          "counterparty_iban": "DE29466702040077128700",
+          "bic_in_description": "DEUTDEDWP03"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+          "counterparty_iban": "DE29466702040077128700",
+          "bic_in_description": "DEUTDEDWP03"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-08",
+        "mt940_value": "260908",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-08",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-08",
+        "manifest_value": "2026-09-08",
+        "mt940_value": "0908",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "-52.72",
+        "manifest_value": "-52.72",
+        "mt940_value": "-52.72",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000005",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "Stadt Schwerte DE20440501990841000145 Kassenzeichen 0100.183505.001, Grundsteuer B SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "manifest_value": "Stadt Schwerte DE20440501990841000145 Kassenzeichen 0100.183505.001, Grundsteuer B SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "mt940_value": "Stadt Schwerte DE20440501990841000145 Kassenzeichen 0100.183505.001, Grundsteuer B SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 5: auszug / Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-08",
+        "mt940_value": "260908",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-08",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-08",
+        "manifest_value": "2026-09-08",
+        "mt940_value": "0908",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "2000.00",
+        "manifest_value": "2000.00",
+        "mt940_value": "2000.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000006",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe DATUM 07.09.2026, 15.41 UHR",
+        "manifest_value": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe DATUM 07.09.2026, 15.41 UHR",
+        "mt940_value": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe DATUM 07.09.2026, 15.41 UHR",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 6: auszug / Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+          "counterparty_iban": "DE73440501990912213196"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+          "counterparty_iban": "DE73440501990912213196"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+          "counterparty_iban": "DE73440501990912213196"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-08",
+        "mt940_value": "260908",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-08",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-08",
+        "manifest_value": "2026-09-08",
+        "mt940_value": "0908",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "76000.00",
+        "manifest_value": "76000.00",
+        "mt940_value": "76000.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000007",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe",
+        "manifest_value": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe",
+        "mt940_value": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 7: auszug / Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+          "counterparty_iban": "DE73440501990912213196"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+          "counterparty_iban": "DE73440501990912213196"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+          "counterparty_iban": "DE73440501990912213196"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-09-04",
+        "mt940_value": "260904",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-09-04",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "2026-09-04",
+        "manifest_value": "2026-09-04",
+        "mt940_value": "0904",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "-591.01",
+        "manifest_value": "-591.01",
+        "mt940_value": "-591.01",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000008",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260037 Kunden Nr.: 10030 MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+        "manifest_value": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260037 Kunden Nr.: 10030 MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+        "mt940_value": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260037 Kunden Nr.: 10030 MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 8: auszug / Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+          "counterparty_iban": "DE29466702040077128700",
+          "bic_in_description": "DEUTDEDWP03"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+          "counterparty_iban": "DE29466702040077128700",
+          "bic_in_description": "DEUTDEDWP03"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+          "counterparty_iban": "DE29466702040077128700",
+          "bic_in_description": "DEUTDEDWP03"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-08-31",
+        "mt940_value": "260831",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-08-31",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "2026-08-31",
+        "manifest_value": "2026-08-31",
+        "mt940_value": "0831",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "-13.35",
+        "manifest_value": "-13.35",
+        "mt940_value": "-13.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000009",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 31.08.2026",
+        "manifest_value": "Abschluss Abschluss per 31.08.2026",
+        "mt940_value": "Abschluss Abschluss per 31.08.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 9: auszug / Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-08-21",
+        "mt940_value": "260821",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-08-21",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "2026-08-21",
+        "manifest_value": "2026-08-21",
+        "mt940_value": "0821",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "-1256.87",
+        "manifest_value": "-1256.87",
+        "mt940_value": "-1256.87",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000010",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "Silbersiepe Immobilien DE17450600090036142000 Jahresabrechnung Nebenkosten 2025 01.06.-31.12. Schwerte, Richardstr. 15 SecureGo plus IBAN: DE17450600090036142000 BIC: GENODEM1HGN",
+        "manifest_value": "Silbersiepe Immobilien DE17450600090036142000 Jahresabrechnung Nebenkosten 2025 01.06.-31.12. Schwerte, Richardstr. 15 SecureGo plus IBAN: DE17450600090036142000 BIC: GENODEM1HGN",
+        "mt940_value": "Silbersiepe Immobilien DE17450600090036142000 Jahresabrechnung Nebenkosten 2025 01.06.-31.12. Schwerte, Richardstr. 15 SecureGo plus IBAN: DE17450600090036142000 BIC: GENODEM1HGN",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 10: auszug / Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Silbersiepe Immobilien",
+          "counterparty_iban": "DE17450600090036142000",
+          "bic_in_description": "GENODEM1HGN"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Silbersiepe Immobilien",
+          "counterparty_iban": "DE17450600090036142000",
+          "bic_in_description": "GENODEM1HGN"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Silbersiepe Immobilien",
+          "counterparty_iban": "DE17450600090036142000",
+          "bic_in_description": "GENODEM1HGN"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-07-31",
+        "mt940_value": "260731",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-07-31",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "2026-07-31",
+        "manifest_value": "2026-07-31",
+        "mt940_value": "0731",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "-13.35",
+        "manifest_value": "-13.35",
+        "mt940_value": "-13.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000011",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 31.07.2026",
+        "manifest_value": "Abschluss Abschluss per 31.07.2026",
+        "mt940_value": "Abschluss Abschluss per 31.07.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 11: auszug / Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-07-22",
+        "mt940_value": "260722",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-07-22",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "2026-07-22",
+        "manifest_value": "2026-07-22",
+        "mt940_value": "0722",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "-53.67",
+        "manifest_value": "-53.67",
+        "mt940_value": "-53.67",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000012",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "Stadt Schwerte DE20440501990841000145 0100.183505.001-183505 / Grundsteuer / 2026/2248 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "manifest_value": "Stadt Schwerte DE20440501990841000145 0100.183505.001-183505 / Grundsteuer / 2026/2248 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "mt940_value": "Stadt Schwerte DE20440501990841000145 0100.183505.001-183505 / Grundsteuer / 2026/2248 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 12: auszug / Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-06-30",
+        "mt940_value": "260630",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-06-30",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": "2026-06-30",
+        "manifest_value": "2026-06-30",
+        "mt940_value": "0630",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": "-13.35",
+        "manifest_value": "-13.35",
+        "mt940_value": "-13.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000013",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 30.06.2026",
+        "manifest_value": "Abschluss Abschluss per 30.06.2026",
+        "mt940_value": "Abschluss Abschluss per 30.06.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 13: auszug / Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-06-17",
+        "mt940_value": "260617",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-06-17",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "2026-06-17",
+        "manifest_value": "2026-06-17",
+        "mt940_value": "0617",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "-270.00",
+        "manifest_value": "-270.00",
+        "mt940_value": "-270.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000014",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "Industrie- und Handelskammer zu Dortmund DE86440501990301001703 10001339369 / 41388600 / Beitrag 2026 SecureGo plus IBAN: DE86440501990301001703 BIC: DORTDE33XXX",
+        "manifest_value": "Industrie- und Handelskammer zu Dortmund DE86440501990301001703 10001339369 / 41388600 / Beitrag 2026 SecureGo plus IBAN: DE86440501990301001703 BIC: DORTDE33XXX",
+        "mt940_value": "Industrie- und Handelskammer zu Dortmund DE86440501990301001703 10001339369 / 41388600 / Beitrag 2026 SecureGo plus IBAN: DE86440501990301001703 BIC: DORTDE33XXX",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 14: auszug / Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Industrie- und Handelskammer zu Dortmund",
+          "counterparty_iban": "DE86440501990301001703",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Industrie- und Handelskammer zu Dortmund",
+          "counterparty_iban": "DE86440501990301001703",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Industrie- und Handelskammer zu Dortmund",
+          "counterparty_iban": "DE86440501990301001703",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "2026-05-31",
+        "manifest_value": "2026-05-31",
+        "mt940_value": "260531",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "2026-05-29",
+        "manifest_value": "2026-05-29",
+        "mt940_value": "0529",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "-13.35",
+        "manifest_value": "-13.35",
+        "mt940_value": "-13.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000015",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 31.05.2026",
+        "manifest_value": "Abschluss Abschluss per 31.05.2026",
+        "mt940_value": "Abschluss Abschluss per 31.05.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 15: auszug / Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-05-22",
+        "mt940_value": "260522",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-05-22",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": "2026-05-22",
+        "manifest_value": "2026-05-22",
+        "mt940_value": "0522",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": "-199.00",
+        "manifest_value": "-199.00",
+        "mt940_value": "-199.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000016",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": "OM PropTech GmbH DE32230527500000665045 Rg 1143668 / OM-428128 SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+        "manifest_value": "OM PropTech GmbH DE32230527500000665045 Rg 1143668 / OM-428128 SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+        "mt940_value": "OM PropTech GmbH DE32230527500000665045 Rg 1143668 / OM-428128 SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 16: auszug / Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "OM PropTech GmbH",
+          "counterparty_iban": "DE32230527500000665045",
+          "bic_in_description": "NOLADE21RZB"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "OM PropTech GmbH",
+          "counterparty_iban": "DE32230527500000665045",
+          "bic_in_description": "NOLADE21RZB"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "OM PropTech GmbH",
+          "counterparty_iban": "DE32230527500000665045",
+          "bic_in_description": "NOLADE21RZB"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-04-30",
+        "mt940_value": "260430",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-04-30",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": "2026-04-30",
+        "manifest_value": "2026-04-30",
+        "mt940_value": "0430",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": "-13.35",
+        "manifest_value": "-13.35",
+        "mt940_value": "-13.35",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000017",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 30.04.2026",
+        "manifest_value": "Abschluss Abschluss per 30.04.2026",
+        "mt940_value": "Abschluss Abschluss per 30.04.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 17: auszug / Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-04-07",
+        "mt940_value": "260407",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-04-07",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "2026-04-07",
+        "manifest_value": "2026-04-07",
+        "mt940_value": "0407",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "-70.34",
+        "manifest_value": "-70.34",
+        "mt940_value": "-70.34",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000018",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "Daniel Dissel DE98200411550350428900 Erstattung Auslage Materialien für Reparaturen am Objekt Schwerte, Richardstr. 15 / Einkauf bei Toom SecureGo plus IBAN: DE98200411550350428900 BIC: COBADEHD055",
+        "manifest_value": "Daniel Dissel DE98200411550350428900 Erstattung Auslage Materialien für Reparaturen am Objekt Schwerte, Richardstr. 15 / Einkauf bei Toom SecureGo plus IBAN: DE98200411550350428900 BIC: COBADEHD055",
+        "mt940_value": "Daniel Dissel DE98200411550350428900 Erstattung Auslage Materialien für Reparaturen am Objekt Schwerte, Richardstr. 15 / Einkauf bei Toom SecureGo plus IBAN: DE98200411550350428900 BIC: COBADEHD055",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 18: auszug / Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Daniel Dissel",
+          "counterparty_iban": "DE98200411550350428900",
+          "bic_in_description": "COBADEHD055"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Daniel Dissel",
+          "counterparty_iban": "DE98200411550350428900",
+          "bic_in_description": "COBADEHD055"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Daniel Dissel",
+          "counterparty_iban": "DE98200411550350428900",
+          "bic_in_description": "COBADEHD055"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-03-31",
+        "mt940_value": "260331",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-03-31",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "2026-03-31",
+        "manifest_value": "2026-03-31",
+        "mt940_value": "0331",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "-14.95",
+        "manifest_value": "-14.95",
+        "mt940_value": "-14.95",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000019",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 31.03.2026",
+        "manifest_value": "Abschluss Abschluss per 31.03.2026",
+        "mt940_value": "Abschluss Abschluss per 31.03.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 19: auszug / Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-03-20",
+        "mt940_value": "260320",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-03-20",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "2026-03-20",
+        "manifest_value": "2026-03-20",
+        "mt940_value": "0320",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "-299.00",
+        "manifest_value": "-299.00",
+        "mt940_value": "-299.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000020",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "OM PropTech GmbH DE32230527500000665045 Rechnung 1112701 Inserat SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+        "manifest_value": "OM PropTech GmbH DE32230527500000665045 Rechnung 1112701 Inserat SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+        "mt940_value": "OM PropTech GmbH DE32230527500000665045 Rechnung 1112701 Inserat SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 20: auszug / Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "OM PropTech GmbH",
+          "counterparty_iban": "DE32230527500000665045",
+          "bic_in_description": "NOLADE21RZB"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "OM PropTech GmbH",
+          "counterparty_iban": "DE32230527500000665045",
+          "bic_in_description": "NOLADE21RZB"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "OM PropTech GmbH",
+          "counterparty_iban": "DE32230527500000665045",
+          "bic_in_description": "NOLADE21RZB"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-03-16",
+        "mt940_value": "260316",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-03-16",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "2026-03-16",
+        "manifest_value": "2026-03-16",
+        "mt940_value": "0316",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "-46.72",
+        "manifest_value": "-46.72",
+        "mt940_value": "-46.72",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000021",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "Stadt Schwerte DE20440501990841000145 0100.183505.001 / Grundbesitzabgaben / Schwerte, Richardstr. 15 / Q1 2026 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "manifest_value": "Stadt Schwerte DE20440501990841000145 0100.183505.001 / Grundbesitzabgaben / Schwerte, Richardstr. 15 / Q1 2026 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "mt940_value": "Stadt Schwerte DE20440501990841000145 0100.183505.001 / Grundbesitzabgaben / Schwerte, Richardstr. 15 / Q1 2026 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 21: auszug / Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-03-12",
+        "mt940_value": "260312",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-03-12",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "2026-03-12",
+        "manifest_value": "2026-03-12",
+        "mt940_value": "0312",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "-9.87",
+        "manifest_value": "-9.87",
+        "mt940_value": "-9.87",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000022",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 100308100251349281200005670 ELV65264365 10.03 08.10 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 10030810025134928120000567065264365 MREF: 6526436581192603100810 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "manifest_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 100308100251349281200005670 ELV65264365 10.03 08.10 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 10030810025134928120000567065264365 MREF: 6526436581192603100810 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "mt940_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 100308100251349281200005670 ELV65264365 10.03 08.10 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 10030810025134928120000567065264365 MREF: 6526436581192603100810 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 22: auszug / Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "10030810025134928120000567065264365",
+          "mandate_reference": "6526436581192603100810",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "10030810025134928120000567065264365",
+          "mandate_reference": "6526436581192603100810",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "10030810025134928120000567065264365",
+          "mandate_reference": "6526436581192603100810",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-03-11",
+        "mt940_value": "260311",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-03-11",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "2026-03-11",
+        "manifest_value": "2026-03-11",
+        "mt940_value": "0311",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "-8.90",
+        "manifest_value": "-8.90",
+        "mt940_value": "-8.90",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000023",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 090307530146731281200005670 ELV65264370 09.03 07.53 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 09030753014673128120000567065264370 MREF: 6526437079422603090753 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "manifest_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 090307530146731281200005670 ELV65264370 09.03 07.53 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 09030753014673128120000567065264370 MREF: 6526437079422603090753 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "mt940_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 090307530146731281200005670 ELV65264370 09.03 07.53 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 09030753014673128120000567065264370 MREF: 6526437079422603090753 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 23: auszug / Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "09030753014673128120000567065264370",
+          "mandate_reference": "6526437079422603090753",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "09030753014673128120000567065264370",
+          "mandate_reference": "6526437079422603090753",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "09030753014673128120000567065264370",
+          "mandate_reference": "6526437079422603090753",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-03-03",
+        "mt940_value": "260303",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-03-03",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": "2026-03-03",
+        "manifest_value": "2026-03-03",
+        "mt940_value": "0303",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": "-38.82",
+        "manifest_value": "-38.82",
+        "mt940_value": "-38.82",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000024",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": "Stadt Schwerte DE20440501990841000145 0100.163732.001 Grundbesitzabgaben, Schwerte - Richardstraße 15, Fälligkeit 15.11.2015 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "manifest_value": "Stadt Schwerte DE20440501990841000145 0100.163732.001 Grundbesitzabgaben, Schwerte - Richardstraße 15, Fälligkeit 15.11.2015 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "mt940_value": "Stadt Schwerte DE20440501990841000145 0100.163732.001 Grundbesitzabgaben, Schwerte - Richardstraße 15, Fälligkeit 15.11.2015 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 24: auszug / Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Stadt Schwerte",
+          "counterparty_iban": "DE20440501990841000145",
+          "bic_in_description": "DORTDE33XXX"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "2026-02-28",
+        "manifest_value": "2026-02-28",
+        "mt940_value": "260228",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "2026-02-27",
+        "manifest_value": "2026-02-27",
+        "mt940_value": "0227",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "-12.95",
+        "manifest_value": "-12.95",
+        "mt940_value": "-12.95",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000025",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 28.02.2026",
+        "manifest_value": "Abschluss Abschluss per 28.02.2026",
+        "mt940_value": "Abschluss Abschluss per 28.02.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 25: auszug / Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-31",
+        "manifest_value": "2026-01-31",
+        "mt940_value": "260131",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-30",
+        "manifest_value": "2026-01-30",
+        "mt940_value": "0130",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "-14.15",
+        "manifest_value": "-14.15",
+        "mt940_value": "-14.15",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": "Abschluss Abschluss per 31.01.2026",
+        "manifest_value": "Abschluss Abschluss per 31.01.2026",
+        "mt940_value": "Abschluss Abschluss per 31.01.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 26: auszug / Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Abschluss"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-01-29",
+        "mt940_value": "260129",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-01-29",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-29",
+        "manifest_value": "2026-01-29",
+        "mt940_value": "0129",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "-31.90",
+        "manifest_value": "-31.90",
+        "mt940_value": "-31.90",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000027",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 270116140155862281200005670 ELV65264363 27.01 16.14 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 27011614015586228120000567065264363 MREF: 6526436376392601271614 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "manifest_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 270116140155862281200005670 ELV65264363 27.01 16.14 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 27011614015586228120000567065264363 MREF: 6526436376392601271614 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "mt940_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 270116140155862281200005670 ELV65264363 27.01 16.14 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 27011614015586228120000567065264363 MREF: 6526436376392601271614 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 27: auszug / Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "27011614015586228120000567065264363",
+          "mandate_reference": "6526436376392601271614",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "27011614015586228120000567065264363",
+          "mandate_reference": "6526436376392601271614",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "27011614015586228120000567065264363",
+          "mandate_reference": "6526436376392601271614",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-01-22",
+        "mt940_value": "260122",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-01-22",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-22",
+        "manifest_value": "2026-01-22",
+        "mt940_value": "0122",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "-12.00",
+        "manifest_value": "-12.00",
+        "mt940_value": "-12.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000028",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Felix Mechler IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 0 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "manifest_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Felix Mechler IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 0 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "mt940_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Felix Mechler IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 0 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 28: auszug / Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-01-22",
+        "mt940_value": "260122",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-01-22",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-22",
+        "manifest_value": "2026-01-22",
+        "mt940_value": "0122",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "-12.00",
+        "manifest_value": "-12.00",
+        "mt940_value": "-12.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000029",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Daniel Dissel IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 1 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "manifest_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Daniel Dissel IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 1 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "mt940_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Daniel Dissel IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 1 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 29: auszug / Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-01-22",
+        "mt940_value": "260122",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-01-22",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-22",
+        "manifest_value": "2026-01-22",
+        "mt940_value": "0122",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "-12.00",
+        "manifest_value": "-12.00",
+        "mt940_value": "-12.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000030",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Jakob Nowak IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 2 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "manifest_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Jakob Nowak IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 2 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "mt940_value": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Jakob Nowak IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 2 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 30: auszug / Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Jahrespreis girocard",
+          "counterparty_iban": "DE75441600149973080300"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-01-21",
+        "mt940_value": "260121",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-01-21",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-21",
+        "manifest_value": "2026-01-21",
+        "mt940_value": "0121",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "-38.25",
+        "manifest_value": "-38.25",
+        "mt940_value": "-38.25",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000031",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 190110280157280281200005670 ELV65149796 19.01 10.28 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 19011028015728028120000567065149796 MREF: G514979672842601191028 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "manifest_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 190110280157280281200005670 ELV65149796 19.01 10.28 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 19011028015728028120000567065149796 MREF: G514979672842601191028 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "mt940_value": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 190110280157280281200005670 ELV65149796 19.01 10.28 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 19011028015728028120000567065149796 MREF: G514979672842601191028 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 31: auszug / Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "19011028015728028120000567065149796",
+          "mandate_reference": "G514979672842601191028",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "19011028015728028120000567065149796",
+          "mandate_reference": "G514979672842601191028",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+          "counterparty_iban": "DE71500400000600247190",
+          "bic_in_description": "COBADEFF",
+          "end_to_end_reference": "19011028015728028120000567065149796",
+          "mandate_reference": "G514979672842601191028",
+          "creditor_identifier": "DE16E0100000020245"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "value_date",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "2026-01-08",
+        "mt940_value": "260108",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "booking_date_when_not_shown",
+          "value": "2026-01-08",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "booking_date",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "2026-01-08",
+        "manifest_value": "2026-01-08",
+        "mt940_value": "0108",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "amount",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "5000.00",
+        "manifest_value": "5000.00",
+        "mt940_value": "5000.00",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "code",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": "NMSC",
+        "mt940_value": "NMSC",
+        "source_to_manifest_match": false,
+        "source_to_effective_manifest_match": true,
+        "derivation": {
+          "source_value": null,
+          "rule": "nmsc_when_not_shown",
+          "value": "NMSC",
+          "reason": "Technical reconstruction convention; original value not shown in source"
+        },
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "customer_reference",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "NONREF",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "bank_reference",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": null,
+        "manifest_value": null,
+        "mt940_value": "000000032",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "description",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": "Jakob Paul Nowak, Saskia Nowak DE23200411110607531100 Gesellschafterdarlehen 003 von Nowak an MeDiNo - Auszahlung",
+        "manifest_value": "Jakob Paul Nowak, Saskia Nowak DE23200411110607531100 Gesellschafterdarlehen 003 von Nowak an MeDiNo - Auszahlung",
+        "mt940_value": "Jakob Paul Nowak, Saskia Nowak DE23200411110607531100 Gesellschafterdarlehen 003 von Nowak an MeDiNo - Auszahlung",
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      },
+      {
+        "field": "source_fields",
+        "source_locator": "transaction 32: auszug / Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+        "source_value": {
+          "counterparty_or_booking_label": "Jakob Paul Nowak, Saskia Nowak",
+          "counterparty_iban": "DE23200411110607531100"
+        },
+        "manifest_value": {
+          "counterparty_or_booking_label": "Jakob Paul Nowak, Saskia Nowak",
+          "counterparty_iban": "DE23200411110607531100"
+        },
+        "mt940_value": {
+          "counterparty_or_booking_label": "Jakob Paul Nowak, Saskia Nowak",
+          "counterparty_iban": "DE23200411110607531100"
+        },
+        "source_to_manifest_match": true,
+        "source_to_effective_manifest_match": true,
+        "derivation": null,
+        "source_to_mt940_match": true
+      }
+    ]
+  },
+  "exit_code": 0,
+  "iban": "DE35441600146708656600",
+  "statement_number": 1,
+  "sequence_number": 1,
+  "transactions": 32,
+  "opening": "3552.86",
+  "transaction_total": "79204.38",
+  "closing": "82757.24",
+  "currency": "EUR",
+  "fingerprint_sha256": "7d790990701d897e0e7946f74d71739afd7746063a3f2404d06c7eed8611ca9f",
+  "field86": [
+    {
+      "transaction_number": 1,
+      "source_description_length": 34,
+      "source_page": 1,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 30.09.2026",
+      "source_text_end": "Abschluss Abschluss per 30.09.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 2,
+      "source_description_length": 165,
+      "source_page": 1,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Stadtwerke Schwerte DE454405019908410002",
+      "source_text_end": " DE45440501990841000277 BIC: DORTDE33XXX",
+      "encoded_description_length": 165,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 3,
+      "source_description_length": 185,
+      "source_page": 1,
+      "source_line_count": 5,
+      "source_to_manifest_match": true,
+      "source_text_start": "Adyen N.V. DE29300600100005021573 The AS",
+      "source_text_end": "0014/6708656600/0/1228 REF 543612/260047",
+      "encoded_description_length": 185,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 4,
+      "source_description_length": 167,
+      "source_page": 1,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Martin Wieslaw Aleksandrowicz DE29466702",
+      "source_text_end": " DE29466702040077128700 BIC: DEUTDEDWP03",
+      "encoded_description_length": 167,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 5,
+      "source_description_length": 142,
+      "source_page": 1,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Stadt Schwerte DE20440501990841000145 Ka",
+      "source_text_end": " DE20440501990841000145 BIC: DORTDE33XXX",
+      "encoded_description_length": 142,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 6,
+      "source_description_length": 180,
+      "source_page": 1,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD",
+      "source_text_end": "der Ubergabe DATUM 07.09.2026, 15.41 UHR",
+      "encoded_description_length": 180,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 7,
+      "source_description_length": 152,
+      "source_page": 2,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD",
+      "source_text_end": "erte -Zahlung vorbehaltlich der Ubergabe",
+      "encoded_description_length": 152,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 8,
+      "source_description_length": 184,
+      "source_page": 2,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Martin Wieslaw Aleksandrowicz DE29466702",
+      "source_text_end": " DE29466702040077128700 BIC: DEUTDEDWP03",
+      "encoded_description_length": 184,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 9,
+      "source_description_length": 34,
+      "source_page": 2,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 31.08.2026",
+      "source_text_end": "Abschluss Abschluss per 31.08.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 10,
+      "source_description_length": 178,
+      "source_page": 2,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Silbersiepe Immobilien DE174506000900361",
+      "source_text_end": " DE17450600090036142000 BIC: GENODEM1HGN",
+      "encoded_description_length": 178,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 11,
+      "source_description_length": 34,
+      "source_page": 2,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 31.07.2026",
+      "source_text_end": "Abschluss Abschluss per 31.07.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 12,
+      "source_description_length": 146,
+      "source_page": 2,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Stadt Schwerte DE20440501990841000145 01",
+      "source_text_end": " DE20440501990841000145 BIC: DORTDE33XXX",
+      "encoded_description_length": 146,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 13,
+      "source_description_length": 34,
+      "source_page": 2,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 30.06.2026",
+      "source_text_end": "Abschluss Abschluss per 30.06.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 14,
+      "source_description_length": 161,
+      "source_page": 2,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Industrie- und Handelskammer zu Dortmund",
+      "source_text_end": " DE86440501990301001703 BIC: DORTDE33XXX",
+      "encoded_description_length": 161,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 15,
+      "source_description_length": 34,
+      "source_page": 2,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 31.05.2026",
+      "source_text_end": "Abschluss Abschluss per 31.05.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 16,
+      "source_description_length": 122,
+      "source_page": 2,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "OM PropTech GmbH DE32230527500000665045 ",
+      "source_text_end": " DE32230527500000665045 BIC: NOLADE21RZB",
+      "encoded_description_length": 122,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 17,
+      "source_description_length": 34,
+      "source_page": 2,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 30.04.2026",
+      "source_text_end": "Abschluss Abschluss per 30.04.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 18,
+      "source_description_length": 197,
+      "source_page": 3,
+      "source_line_count": 5,
+      "source_to_manifest_match": true,
+      "source_text_start": "Daniel Dissel DE98200411550350428900 Ers",
+      "source_text_end": " DE98200411550350428900 BIC: COBADEHD055",
+      "encoded_description_length": 197,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 19,
+      "source_description_length": 34,
+      "source_page": 3,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 31.03.2026",
+      "source_text_end": "Abschluss Abschluss per 31.03.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 20,
+      "source_description_length": 124,
+      "source_page": 3,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "OM PropTech GmbH DE32230527500000665045 ",
+      "source_text_end": " DE32230527500000665045 BIC: NOLADE21RZB",
+      "encoded_description_length": 124,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 21,
+      "source_description_length": 171,
+      "source_page": 3,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Stadt Schwerte DE20440501990841000145 01",
+      "source_text_end": " DE20440501990841000145 BIC: DORTDE33XXX",
+      "encoded_description_length": 171,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 22,
+      "source_description_length": 318,
+      "source_page": 3,
+      "source_line_count": 6,
+      "source_to_manifest_match": true,
+      "source_text_start": "HORNBACH 567 DORTMUND DE7150040000060024",
+      "source_text_end": "AN: DE71500400000600247190 BIC: COBADEFF",
+      "encoded_description_length": 318,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 23,
+      "source_description_length": 318,
+      "source_page": 3,
+      "source_line_count": 6,
+      "source_to_manifest_match": true,
+      "source_text_start": "HORNBACH 567 DORTMUND DE7150040000060024",
+      "source_text_end": "AN: DE71500400000600247190 BIC: COBADEFF",
+      "encoded_description_length": 318,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 24,
+      "source_description_length": 184,
+      "source_page": 3,
+      "source_line_count": 4,
+      "source_to_manifest_match": true,
+      "source_text_start": "Stadt Schwerte DE20440501990841000145 01",
+      "source_text_end": " DE20440501990841000145 BIC: DORTDE33XXX",
+      "encoded_description_length": 184,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 25,
+      "source_description_length": 34,
+      "source_page": 3,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 28.02.2026",
+      "source_text_end": "Abschluss Abschluss per 28.02.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 26,
+      "source_description_length": 34,
+      "source_page": 3,
+      "source_line_count": 2,
+      "source_to_manifest_match": true,
+      "source_text_start": "Abschluss Abschluss per 31.01.2026",
+      "source_text_end": "Abschluss Abschluss per 31.01.2026",
+      "encoded_description_length": 34,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 27,
+      "source_description_length": 318,
+      "source_page": 4,
+      "source_line_count": 6,
+      "source_to_manifest_match": true,
+      "source_text_start": "HORNBACH 567 DORTMUND DE7150040000060024",
+      "source_text_end": "AN: DE71500400000600247190 BIC: COBADEFF",
+      "encoded_description_length": 318,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 28,
+      "source_description_length": 195,
+      "source_page": 4,
+      "source_line_count": 5,
+      "source_to_manifest_match": true,
+      "source_text_start": "Jahrespreis girocard DE75441600149973080",
+      "source_text_end": "Jahrespreis girocard bezahlt bis 12.2026",
+      "encoded_description_length": 195,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 29,
+      "source_description_length": 195,
+      "source_page": 4,
+      "source_line_count": 5,
+      "source_to_manifest_match": true,
+      "source_text_start": "Jahrespreis girocard DE75441600149973080",
+      "source_text_end": "Jahrespreis girocard bezahlt bis 12.2026",
+      "encoded_description_length": 195,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 30,
+      "source_description_length": 193,
+      "source_page": 4,
+      "source_line_count": 5,
+      "source_to_manifest_match": true,
+      "source_text_start": "Jahrespreis girocard DE75441600149973080",
+      "source_text_end": "Jahrespreis girocard bezahlt bis 12.2026",
+      "encoded_description_length": 193,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 31,
+      "source_description_length": 318,
+      "source_page": 4,
+      "source_line_count": 6,
+      "source_to_manifest_match": true,
+      "source_text_start": "HORNBACH 567 DORTMUND DE7150040000060024",
+      "source_text_end": "AN: DE71500400000600247190 BIC: COBADEFF",
+      "encoded_description_length": 318,
+      "roundtrip_match": true,
+      "truncated": false
+    },
+    {
+      "transaction_number": 32,
+      "source_description_length": 113,
+      "source_page": 4,
+      "source_line_count": 3,
+      "source_to_manifest_match": true,
+      "source_text_start": "Jakob Paul Nowak, Saskia Nowak DE2320041",
+      "source_text_end": "hen 003 von Nowak an MeDiNo - Auszahlung",
+      "encoded_description_length": 113,
+      "roundtrip_match": true,
+      "truncated": false
+    }
+  ],
+  "datev_practical_test": "not confirmed by a probe import"
+}

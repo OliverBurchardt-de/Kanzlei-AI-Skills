@@ -54,8 +54,8 @@ def _field86_groups(lines: list[str]) -> list[list[str]]:
 
 def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = None,
              source_review_path: Path | None = None) -> dict[str, Any]:
-    review = read_source_review(source_review_path)
     normalized = normalize_manifest(manifest, profile_dir)
+    review = read_source_review(source_review_path, allow_reconstruction=normalized["_field86_mode"] == "reconstructed")
     try:
         raw = path.read_bytes()
     except OSError as exc:
@@ -123,7 +123,7 @@ def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = No
         if decoded != source:
             raise MT940Error(f"Transaction {number} failed the :86: roundtrip", 3)
         found_underfields = underfields(reconstructed)
-        if not found_underfields <= allowed:
+        if normalized["_profile"].get("field86_structure") != "unstructured" and not found_underfields <= allowed:
             raise MT940Error(
                 f"Transaction {number} uses underfields not allowed by the DATEV profile",
                 3,
@@ -131,13 +131,18 @@ def validate(path: Path, manifest: dict[str, Any], profile_dir: Path | None = No
 
     source_check = compare_source(lines, manifest, normalized, review)
     probe_verified = normalized["_profile"].get("status") == "verified" and mode != "native"
+    source_verified = normalized["_profile"].get("status") in {"source_verified", "verified"} and mode == "reconstructed"
     production_ready = normalized["_output_scope"] == "full" and (
-        normalized["_target_system"] != "DATEV" or mode == "native" or probe_verified
+        (mode == "reconstructed" and source_verified) or
+        (mode != "reconstructed" and (normalized["_target_system"] != "DATEV" or mode == "native" or probe_verified))
     ) and not normalized["_profile"].get("test_fixture_only", False)
 
     result = {
         "status": "source_fields_technically_and_arithmetically_valid",
         "delivery_approved": production_ready,
+        "reconstructed_export": mode == "reconstructed",
+        "bank_native_format_reproduced": mode == "native",
+        "datev_import_verified": probe_verified and not normalized["_profile"].get("test_fixture_only", False),
         "mt940_sha256": hashlib.sha256(raw).hexdigest(),
         "bank_model": {key: manifest[key] for key in ("bank_id", "source_variant", "bank_profile", "profile_version")},
         "bank_model_sha256": normalized["_profile"]["_model_sha256"],

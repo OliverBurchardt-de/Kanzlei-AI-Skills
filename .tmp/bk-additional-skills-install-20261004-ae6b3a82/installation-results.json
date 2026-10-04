@@ -1,0 +1,37 @@
+[
+  {
+    "skill": "bk-monatsbuchhaltung",
+    "installed": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-monatsbuchhaltung",
+    "files": 32,
+    "matches_zip": true,
+    "backup": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-monatsbuchhaltung-install-20261004-963e9b20\\previous-installation-bk-monatsbuchhaltung"
+  },
+  {
+    "skill": "bk-schaubilder",
+    "installed": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-schaubilder",
+    "files": 8,
+    "matches_zip": true,
+    "backup": null
+  },
+  {
+    "skill": "bk-monatsreview",
+    "installed": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-monatsreview",
+    "files": 24,
+    "matches_zip": true,
+    "backup": null
+  },
+  {
+    "skill": "bk-jahresabschluss-vorbereitung",
+    "installed": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-jahresabschluss-vorbereitung",
+    "files": 14,
+    "matches_zip": true,
+    "backup": null
+  },
+  {
+    "skill": "bk-gesellschafterbeschluss",
+    "installed": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-gesellschafterbeschluss",
+    "files": 7,
+    "matches_zip": true,
+    "backup": null
+  }
+]

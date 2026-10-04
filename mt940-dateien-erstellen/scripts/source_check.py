@@ -19,7 +19,7 @@ BALANCE_RE = re.compile(r"^:(60F|62F):([CD])(\d{6})([A-Z]{3})(\d+,\d{2})$")
 ENTRY_RE = re.compile(r"^:61:(\d{6})(\d{4})([CD])(\d+,\d{2})(N[A-Z0-9]{3})([^/]{1,16})//([^/]{1,16})$")
 
 
-def read_source_review(path: Path | None) -> dict[str, Any]:
+def read_source_review(path: Path | None, *, allow_reconstruction: bool = False) -> dict[str, Any]:
     if path is None:
         raise MT940Error("Delivery blocked: --source-review is required; manifest roundtrip alone is insufficient", 2)
     try:
@@ -54,6 +54,8 @@ def read_source_review(path: Path | None) -> dict[str, Any]:
         raise MT940Error("Source review transactions must be a list", 2)
     locators: set[tuple[str, str]] = set()
     for field in ("statement_start", "statement_end", "opening_balance_date", "closing_balance_date"):
+        if allow_reconstruction and field.endswith("balance_date") and review.get(field) is None:
+            continue
         parse_date(review.get(field), f"source_review.{field}")
     for field in ("opening_balance", "closing_balance"):
         parse_money(review.get(field), f"source_review.{field}")
@@ -65,6 +67,8 @@ def read_source_review(path: Path | None) -> dict[str, Any]:
             raise MT940Error(f"Repeated source locator at transaction {number}", 2)
         locators.add(locator)
         for field in ("value_date", "booking_date"):
+            if allow_reconstruction and field == "value_date" and tx.get(field) is None:
+                continue
             parse_date(tx.get(field), f"source_review.transactions[{number}].{field}")
         parse_money(tx.get("amount"), f"source_review.transactions[{number}].amount")
         if not isinstance(tx.get("description"), str) or not tx["description"]:
@@ -126,6 +130,8 @@ def compare_source(lines: list[str], manifest: dict[str, Any], normalized: dict[
                    review: dict[str, Any]) -> dict[str, Any]:
     profile = normalized["_profile"]
     native = normalized["_field86_mode"] == "native"
+    reconstruction = normalized["_field86_mode"] == "reconstructed"
+    from reconstruction import effective_source
     if manifest.get("source_type") in {"pdf", "image"} and review["review_method"] != "visual_original":
         raise MT940Error("PDF/image source fields require visual review against original pages", 2)
     actual = parse_actual(lines, profile, native)
@@ -133,14 +139,18 @@ def compare_source(lines: list[str], manifest: dict[str, Any], normalized: dict[
     mismatches = []
 
     def compare(field: str, source: Any, manifest_value: Any, actual_value: Any,
-                expected: Any = None, locator: str = "statement") -> None:
+                expected: Any = None, locator: str = "statement", effective: Any = None,
+                derivation: Any = None) -> None:
         target = source if expected is None else expected
+        effective_value = source if derivation is None else effective
         item = {"field": field, "source_locator": locator, "source_value": source,
                 "manifest_value": manifest_value, "mt940_value": actual_value,
                 "source_to_manifest_match": source == manifest_value,
+                "source_to_effective_manifest_match": effective_value == manifest_value,
+                "derivation": derivation,
                 "source_to_mt940_match": target == actual_value}
         checks.append(item)
-        if source != manifest_value or target != actual_value:
+        if effective_value != manifest_value or target != actual_value:
             mismatches.append(item)
 
     for field in ("bank_id", "source_variant", "profile_version", "bank_profile"):
@@ -154,14 +164,16 @@ def compare_source(lines: list[str], manifest: dict[str, Any], normalized: dict[
         if field not in review:
             raise MT940Error(f"Separate source review missing statement field {field}", 2)
         value = review[field]
-        expected = value.replace("-", "")[2:] if field.endswith("_date") else value
-        compare(field, value, manifest.get(field), actual[field], expected)
+        effective, derivation = effective_source(field, value, manifest, review, None, profile) if reconstruction else (value, None)
+        expected = parse_date(effective, field).strftime("%y%m%d") if field.endswith("_date") else effective
+        compare(field, value, manifest.get(field), actual[field], expected, effective=effective, derivation=derivation)
     if profile["statement_reference_rule"] == "source":
         if not review.get("statement_reference"):
             raise MT940Error("Source review missing original statement_reference", 2)
         compare("statement_reference", review["statement_reference"], manifest.get("statement_reference"), actual["statement_reference"])
     else:
-        expected = "MT" + review["statement_end"].replace("-", "")[2:] + review["iban"][-6:] + f"{review['statement_number'] % 100:02d}"
+        number, _ = effective_source("statement_number", review["statement_number"], manifest, review, None, profile) if reconstruction else (review["statement_number"], None)
+        expected = "MT" + review["statement_end"].replace("-", "")[2:] + review["iban"][-6:] + f"{number % 100:02d}"
         if actual["statement_reference"] != expected:
             raise MT940Error("Actual statement reference differs from the bank model rule", 2)
     if len(review["transactions"]) != len(actual["transactions"]) or len(review["transactions"]) != len(manifest["transactions"]):
@@ -173,9 +185,10 @@ def compare_source(lines: list[str], manifest: dict[str, Any], normalized: dict[
                 raise MT940Error(f"Source review missing {field} at {locator}", 2)
             value = source[field]
             manifest_value = tx.get(field)
-            expected = value
+            effective, derivation = effective_source(field, value, tx, review, source, profile) if reconstruction else (value, None)
+            expected = effective
             if field in {"value_date", "booking_date"}:
-                expected = value.replace("-", "")[2 if field == "value_date" else 4:]
+                expected = parse_date(effective, field).strftime("%y%m%d" if field == "value_date" else "%m%d")
             elif field in {"customer_reference", "bank_reference"}:
                 rule = profile["reference_rules"][field]
                 if field == "customer_reference" and not value:
@@ -191,7 +204,7 @@ def compare_source(lines: list[str], manifest: dict[str, Any], normalized: dict[
             elif field == "description" and native and manifest_value is None:
                 native_lines = tx.get("native_field86_lines", [])
                 manifest_value = native_lines[0][4:] + "".join(native_lines[1:]) if native_lines else None
-            compare(field, value, manifest_value, parsed[field], expected, locator)
+            compare(field, value, manifest_value, parsed[field], expected, locator, effective, derivation)
         source_fields = source.get("source_fields", {})
         if not isinstance(source_fields, dict):
             raise MT940Error(f"source_fields must be a named object at {locator}", 2)

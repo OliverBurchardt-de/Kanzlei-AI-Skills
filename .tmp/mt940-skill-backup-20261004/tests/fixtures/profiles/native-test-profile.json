@@ -1,0 +1,84 @@
+{
+  "profile_name": "native-test-profile",
+  "bank_name": "Automated test bank - not a production profile",
+  "source_variant": "synthetic-native-v1",
+  "charset": "Windows-1252",
+  "line_endings": "CRLF",
+  "allowed_underfields": [
+    "00",
+    "20"
+  ],
+  "test_fixture_only": true,
+  "examples": [
+    {
+      "source_transaction": {
+        "value_date": "2025-01-02",
+        "booking_date": "2025-01-02",
+        "amount": "-25.00",
+        "code": "NMSC",
+        "customer_reference": "ORIGINALREF",
+        "bank_reference": "BANKREF1",
+        "native_field86_lines": [
+          ":86:?00ORIGINAL?20Unverändert",
+          "Fortsetzung aus der Bankdatei"
+        ],
+        "description": "?00ORIGINAL?20UnverändertFortsetzung aus der Bankdatei"
+      },
+      "mt940": [
+        ":61:2501020102D25,00NMSCORIGINALREF//BANKREF1",
+        ":86:?00ORIGINAL?20Unverändert",
+        "Fortsetzung aus der Bankdatei"
+      ],
+      "expected_datev_display": "Synthetic fixture only, not a real DATEV test"
+    }
+  ],
+  "probe_import": {
+    "date": "2026-07-02",
+    "result": "successful",
+    "checks": {
+      "opening_balance_correct": true,
+      "test_closing_balance_correct": true,
+      "transaction_count_and_signs_correct": true,
+      "description_complete": true,
+      "no_visible_control_characters": true,
+      "all_source_fields_correct": true
+    },
+    "test_transactions_deleted": true,
+    "note": "Synthetic unit-test fixture; it is not evidence of a real DATEV import."
+  },
+  "bank_id": "synthetic-bank",
+  "profile_version": 1,
+  "source_types": [
+    "native_mt940"
+  ],
+  "status": "verified",
+  "statement_reference_rule": "source",
+  "reference_rules": {
+    "customer_reference": "exact",
+    "bank_reference": "exact"
+  },
+  "missing_customer_reference": "NONREF",
+  "reference_basis": {
+    "kind": "native_bank_file",
+    "reference": "Synthetic fixture, never a real bank reference",
+    "verified_against_reference": true
+  },
+  "field_mappings": {
+    "statement_reference": "Synthetic fixture explicit mapping: statement_reference",
+    "iban": "Synthetic fixture explicit mapping: iban",
+    "statement_number": "Synthetic fixture explicit mapping: statement_number",
+    "sequence_number": "Synthetic fixture explicit mapping: sequence_number",
+    "opening_balance_date": "Synthetic fixture explicit mapping: opening_balance_date",
+    "opening_balance": "Synthetic fixture explicit mapping: opening_balance",
+    "closing_balance_date": "Synthetic fixture explicit mapping: closing_balance_date",
+    "closing_balance": "Synthetic fixture explicit mapping: closing_balance",
+    "currency": "Synthetic fixture explicit mapping: currency",
+    "value_date": "Synthetic fixture explicit mapping: value_date",
+    "booking_date": "Synthetic fixture explicit mapping: booking_date",
+    "amount": "Synthetic fixture explicit mapping: amount",
+    "code": "Synthetic fixture explicit mapping: code",
+    "customer_reference": "Synthetic fixture explicit mapping: customer_reference",
+    "bank_reference": "Synthetic fixture explicit mapping: bank_reference",
+    "description": "Synthetic fixture explicit mapping: description"
+  }
+}

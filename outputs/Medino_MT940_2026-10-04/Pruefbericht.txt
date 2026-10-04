@@ -1,0 +1,24 @@
+Medino – MT940-Rekonstruktion, erstellt und vollständig geprüft am 04.10.2026
+
+Bankmodell: dortmunder-volksbank-onlinebanking-business-pdf-2026, Version 1, Status source_verified
+Konto: DE35441600146708656600, EUR
+Zeitraum: 01.01.2026 bis 03.10.2026; Quellreihenfolge absteigend erhalten
+Umsätze: 32; Umsatzsumme: +79.204,38 EUR
+Startsaldo: +3.552,86 EUR; Endsaldo: +82.757,24 EUR; Differenz: 0,00 EUR
+
+Alle 32 vollständigen Buchungstexte und sämtliche benannten Zusatzfelder sind gegen die unabhängig visuell geprüfte Originalquelle abgeglichen. Die tatsächlich geschriebenen MT940-Bytes wurden zurückgelesen. Alle Vergleiche bestanden; kein Text gekürzt oder umgestellt. Die drei expliziten Valutaabweichungen bleiben erhalten.
+
+Nicht angezeigte technische Angaben sind ausdrücklich abgeleitet:
+- Auszugsnummer 1 / Sequenz 1 sind technische Nummern.
+- Saldendaten 31.12.2025 und 03.10.2026 folgen der dokumentierten Periodenkonvention; nicht separat in der PDF ausgewiesen.
+- Bei 29 Umsätzen ohne separate Valutaanzeige wird der Buchungstag als technische Ersatzvaluta verwendet.
+- Nicht angezeigte Bankcodes werden technisch als NMSC behandelt.
+- Nicht angezeigte Kundenreferenz: NONREF; fehlende Bankreferenz: technische Quellsequenz.
+Der unabhängige Quellprüfnachweis erhält für fehlende Originalwerte null. Originalwert und Ableitung stehen getrennt in jedem Feldvergleich.
+
+Gegen die Quelle sowie technisch und rechnerisch geprüft. Die konkrete Verarbeitung und Anzeige in DATEV ist noch nicht durch einen Probeimport bestätigt. Technische Ersatzwerte sind im Prüfbericht gekennzeichnet. Der Status source_verified bestätigt die Rekonstruktion und behauptet keine Nachbildung des nativen Bankexports.
+
+Quell-SHA256: 8314904a7b219ff949ed5fa28f2bde58b1eb8119cf23244971e47b7775bca6a7
+MT940-SHA256: 87fac7a1b7296ff8eb5b88dc0f45cf4cea117c64f0be4379ed163897d525e1a7
+
+Enthalten: STA-Datei, vollständiger Prüfbericht, Manifest, unabhängiger Quellprüfnachweis, Original-PDF, CSV-Arbeitsliste, gelerntes Modell, Textadapter und Referenzprüfbeleg.

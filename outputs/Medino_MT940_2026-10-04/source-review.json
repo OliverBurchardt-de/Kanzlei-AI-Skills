@@ -1,0 +1,888 @@
+{
+  "bank_id": "dortmunder-volksbank-genodem1dor",
+  "bank_profile": "dortmunder-volksbank-onlinebanking-business-pdf-2026",
+  "profile_version": 1,
+  "source_variant": "onlinebanking-business-pdf-umsatzliste-2026",
+  "reviewed_against_original": true,
+  "review_method": "visual_original",
+  "review_date": "2026-10-03",
+  "review_note": "Unabhängige Abschrift aus den gerenderten vier Originalseiten; nicht aus Manifest oder MT940. Physische Zeilenwechsel und mehrfach sichtbare Gegenkonten bleiben erhalten. Horizontale Abstände werden auf einzelne Leerzeichen normalisiert. Fehlende Quellwerte bleiben null.",
+  "iban": "DE35441600146708656600",
+  "bic": "GENODEM1DOR",
+  "bank_name": "Dortmunder Volksbank",
+  "account_holder": "MeDiNo Immobilien UG",
+  "account_label": "Business",
+  "currency": "EUR",
+  "statement_start": "2026-01-01",
+  "statement_end": "2026-10-03",
+  "period_basis": "Filterparameter auf Seite 1; kein nummerierter Kontoauszug",
+  "statement_number": null,
+  "sequence_number": null,
+  "statement_reference": null,
+  "opening_balance_date": null,
+  "opening_balance": "3552.86",
+  "opening_balance_locator": "Seite 4, Startsaldo unter dem letzten Umsatz",
+  "closing_balance_date": null,
+  "closing_balance": "82757.24",
+  "closing_balance_locator": "Seite 1, Endsaldo rechts neben Business",
+  "source_order": "booking_date_descending",
+  "transactions": [
+    {
+      "source_page": 1,
+      "source_block": 1,
+      "booking_date": "2026-09-30",
+      "value_date": null,
+      "amount": "-15.75",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 30.09.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 1, Buchungsblock 1 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 1,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Abschluss Abschluss per 30.09.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 1,
+      "source_block": 2,
+      "booking_date": "2026-09-17",
+      "value_date": null,
+      "amount": "-162.30",
+      "source_description_lines": [
+        "Stadtwerke Schwerte",
+        "DE45440501990841000277",
+        "KD-Nummer: 199003118 / RG-Nummer: VR1000764626 Strom, Gas 2025 SecureGo",
+        "plus IBAN: DE45440501990841000277 BIC: DORTDE33XXX"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 1, Buchungsblock 2 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 2,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Stadtwerke Schwerte DE45440501990841000277 KD-Nummer: 199003118 / RG-Nummer: VR1000764626 Strom, Gas 2025 SecureGo plus IBAN: DE45440501990841000277 BIC: DORTDE33XXX",
+      "source_fields": {
+        "counterparty_or_booking_label": "Stadtwerke Schwerte",
+        "counterparty_iban": "DE45440501990841000277",
+        "bic_in_description": "DORTDE33XXX"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 1,
+      "source_block": 3,
+      "booking_date": "2026-09-16",
+      "value_date": null,
+      "amount": "-132.35",
+      "source_description_lines": [
+        "Adyen N.V.",
+        "DE29300600100005021573",
+        "The ASH Dortmund a98dcc5a-b684-459b-afb1-abc/Europapla15.09.2026 um",
+        "21:01:54 Uhr 51745200/000249/CICC/FPIN 44160014/6708656600/0/1228 REF",
+        "543612/260047"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 1, Buchungsblock 3 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 3,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Adyen N.V. DE29300600100005021573 The ASH Dortmund a98dcc5a-b684-459b-afb1-abc/Europapla15.09.2026 um 21:01:54 Uhr 51745200/000249/CICC/FPIN 44160014/6708656600/0/1228 REF 543612/260047",
+      "source_fields": {
+        "counterparty_or_booking_label": "Adyen N.V.",
+        "counterparty_iban": "DE29300600100005021573",
+        "reference_in_description": "543612/260047"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 1,
+      "source_block": 4,
+      "booking_date": "2026-09-11",
+      "value_date": null,
+      "amount": "-373.35",
+      "source_description_lines": [
+        "Martin Wieslaw Aleksandrowicz",
+        "DE29466702040077128700",
+        "RG-20260040, MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN:",
+        "DE29466702040077128700 BIC: DEUTDEDWP03"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 1, Buchungsblock 4 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 4,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260040, MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+      "source_fields": {
+        "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+        "counterparty_iban": "DE29466702040077128700",
+        "bic_in_description": "DEUTDEDWP03"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 1,
+      "source_block": 5,
+      "booking_date": "2026-09-08",
+      "value_date": null,
+      "amount": "-52.72",
+      "source_description_lines": [
+        "Stadt Schwerte",
+        "DE20440501990841000145",
+        "Kassenzeichen 0100.183505.001, Grundsteuer B SecureGo plus IBAN:",
+        "DE20440501990841000145 BIC: DORTDE33XXX"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 1, Buchungsblock 5 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 5,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Stadt Schwerte DE20440501990841000145 Kassenzeichen 0100.183505.001, Grundsteuer B SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+      "source_fields": {
+        "counterparty_or_booking_label": "Stadt Schwerte",
+        "counterparty_iban": "DE20440501990841000145",
+        "bic_in_description": "DORTDE33XXX"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 1,
+      "source_block": 6,
+      "booking_date": "2026-09-08",
+      "value_date": null,
+      "amount": "2000.00",
+      "source_description_lines": [
+        "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+        "DE73440501990912213196",
+        "Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der",
+        "Ubergabe DATUM 07.09.2026, 15.41 UHR"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 1, Buchungsblock 6 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 6,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe DATUM 07.09.2026, 15.41 UHR",
+      "source_fields": {
+        "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+        "counterparty_iban": "DE73440501990912213196"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 1,
+      "booking_date": "2026-09-08",
+      "value_date": null,
+      "amount": "76000.00",
+      "source_description_lines": [
+        "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+        "DE73440501990912213196",
+        "Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der",
+        "Ubergabe"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 1 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 7,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE DE73440501990912213196 Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der Ubergabe",
+      "source_fields": {
+        "counterparty_or_booking_label": "RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE",
+        "counterparty_iban": "DE73440501990912213196"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 2,
+      "booking_date": "2026-09-04",
+      "value_date": null,
+      "amount": "-591.01",
+      "source_description_lines": [
+        "Martin Wieslaw Aleksandrowicz",
+        "DE29466702040077128700",
+        "RG-20260037 Kunden Nr.: 10030 MeDiNo Immobilien UG (haftungsbeschränkt)",
+        "SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 2 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 8,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Martin Wieslaw Aleksandrowicz DE29466702040077128700 RG-20260037 Kunden Nr.: 10030 MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03",
+      "source_fields": {
+        "counterparty_or_booking_label": "Martin Wieslaw Aleksandrowicz",
+        "counterparty_iban": "DE29466702040077128700",
+        "bic_in_description": "DEUTDEDWP03"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 3,
+      "booking_date": "2026-08-31",
+      "value_date": null,
+      "amount": "-13.35",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 31.08.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 3 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 9,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Abschluss Abschluss per 31.08.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 4,
+      "booking_date": "2026-08-21",
+      "value_date": null,
+      "amount": "-1256.87",
+      "source_description_lines": [
+        "Silbersiepe Immobilien",
+        "DE17450600090036142000",
+        "Jahresabrechnung Nebenkosten 2025 01.06.-31.12. Schwerte, Richardstr. 15",
+        "SecureGo plus IBAN: DE17450600090036142000 BIC: GENODEM1HGN"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 4 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 10,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Silbersiepe Immobilien DE17450600090036142000 Jahresabrechnung Nebenkosten 2025 01.06.-31.12. Schwerte, Richardstr. 15 SecureGo plus IBAN: DE17450600090036142000 BIC: GENODEM1HGN",
+      "source_fields": {
+        "counterparty_or_booking_label": "Silbersiepe Immobilien",
+        "counterparty_iban": "DE17450600090036142000",
+        "bic_in_description": "GENODEM1HGN"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 5,
+      "booking_date": "2026-07-31",
+      "value_date": null,
+      "amount": "-13.35",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 31.07.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 5 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 11,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Abschluss Abschluss per 31.07.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 6,
+      "booking_date": "2026-07-22",
+      "value_date": null,
+      "amount": "-53.67",
+      "source_description_lines": [
+        "Stadt Schwerte",
+        "DE20440501990841000145",
+        "0100.183505.001-183505 / Grundsteuer / 2026/2248 SecureGo plus IBAN:",
+        "DE20440501990841000145 BIC: DORTDE33XXX"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 6 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 12,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Stadt Schwerte DE20440501990841000145 0100.183505.001-183505 / Grundsteuer / 2026/2248 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+      "source_fields": {
+        "counterparty_or_booking_label": "Stadt Schwerte",
+        "counterparty_iban": "DE20440501990841000145",
+        "bic_in_description": "DORTDE33XXX"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 7,
+      "booking_date": "2026-06-30",
+      "value_date": null,
+      "amount": "-13.35",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 30.06.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 7 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 13,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Abschluss Abschluss per 30.06.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 8,
+      "booking_date": "2026-06-17",
+      "value_date": null,
+      "amount": "-270.00",
+      "source_description_lines": [
+        "Industrie- und Handelskammer zu Dortmund",
+        "DE86440501990301001703",
+        "10001339369 / 41388600 / Beitrag 2026 SecureGo plus IBAN:",
+        "DE86440501990301001703 BIC: DORTDE33XXX"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 8 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 14,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Industrie- und Handelskammer zu Dortmund DE86440501990301001703 10001339369 / 41388600 / Beitrag 2026 SecureGo plus IBAN: DE86440501990301001703 BIC: DORTDE33XXX",
+      "source_fields": {
+        "counterparty_or_booking_label": "Industrie- und Handelskammer zu Dortmund",
+        "counterparty_iban": "DE86440501990301001703",
+        "bic_in_description": "DORTDE33XXX"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 9,
+      "booking_date": "2026-05-29",
+      "value_date": "2026-05-31",
+      "amount": "-13.35",
+      "source_date_display": "Valuta 31.05.2026 - 29.05.2026",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 31.05.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 9 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 15,
+      "source_text_verified": true,
+      "value_date_source_confirmed": true,
+      "description": "Abschluss Abschluss per 31.05.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 10,
+      "booking_date": "2026-05-22",
+      "value_date": null,
+      "amount": "-199.00",
+      "source_description_lines": [
+        "OM PropTech GmbH",
+        "DE32230527500000665045",
+        "Rg 1143668 / OM-428128 SecureGo plus IBAN: DE32230527500000665045 BIC:",
+        "NOLADE21RZB"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 10 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 16,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "OM PropTech GmbH DE32230527500000665045 Rg 1143668 / OM-428128 SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+      "source_fields": {
+        "counterparty_or_booking_label": "OM PropTech GmbH",
+        "counterparty_iban": "DE32230527500000665045",
+        "bic_in_description": "NOLADE21RZB"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 2,
+      "source_block": 11,
+      "booking_date": "2026-04-30",
+      "value_date": null,
+      "amount": "-13.35",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 30.04.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 2, Buchungsblock 11 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 17,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Abschluss Abschluss per 30.04.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 1,
+      "booking_date": "2026-04-07",
+      "value_date": null,
+      "amount": "-70.34",
+      "source_description_lines": [
+        "Daniel Dissel",
+        "DE98200411550350428900",
+        "Erstattung Auslage Materialien für Reparaturen am Objekt Schwerte, Richardstr. 15 /",
+        "Einkauf bei Toom SecureGo plus IBAN: DE98200411550350428900 BIC:",
+        "COBADEHD055"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 1 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 18,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Daniel Dissel DE98200411550350428900 Erstattung Auslage Materialien für Reparaturen am Objekt Schwerte, Richardstr. 15 / Einkauf bei Toom SecureGo plus IBAN: DE98200411550350428900 BIC: COBADEHD055",
+      "source_fields": {
+        "counterparty_or_booking_label": "Daniel Dissel",
+        "counterparty_iban": "DE98200411550350428900",
+        "bic_in_description": "COBADEHD055"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 2,
+      "booking_date": "2026-03-31",
+      "value_date": null,
+      "amount": "-14.95",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 31.03.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 2 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 19,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Abschluss Abschluss per 31.03.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 3,
+      "booking_date": "2026-03-20",
+      "value_date": null,
+      "amount": "-299.00",
+      "source_description_lines": [
+        "OM PropTech GmbH",
+        "DE32230527500000665045",
+        "Rechnung 1112701 Inserat SecureGo plus IBAN: DE32230527500000665045 BIC:",
+        "NOLADE21RZB"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 3 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 20,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "OM PropTech GmbH DE32230527500000665045 Rechnung 1112701 Inserat SecureGo plus IBAN: DE32230527500000665045 BIC: NOLADE21RZB",
+      "source_fields": {
+        "counterparty_or_booking_label": "OM PropTech GmbH",
+        "counterparty_iban": "DE32230527500000665045",
+        "bic_in_description": "NOLADE21RZB"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 4,
+      "booking_date": "2026-03-16",
+      "value_date": null,
+      "amount": "-46.72",
+      "source_description_lines": [
+        "Stadt Schwerte",
+        "DE20440501990841000145",
+        "0100.183505.001 / Grundbesitzabgaben / Schwerte, Richardstr. 15 / Q1 2026",
+        "SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 4 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 21,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Stadt Schwerte DE20440501990841000145 0100.183505.001 / Grundbesitzabgaben / Schwerte, Richardstr. 15 / Q1 2026 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+      "source_fields": {
+        "counterparty_or_booking_label": "Stadt Schwerte",
+        "counterparty_iban": "DE20440501990841000145",
+        "bic_in_description": "DORTDE33XXX"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 5,
+      "booking_date": "2026-03-12",
+      "value_date": null,
+      "amount": "-9.87",
+      "source_description_lines": [
+        "HORNBACH 567 DORTMUND",
+        "DE71500400000600247190",
+        "HORNBACH 567 DORTMUND 100308100251349281200005670 ELV65264365 10.03",
+        "08.10 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:",
+        "10030810025134928120000567065264365 MREF: 6526436581192603100810",
+        "CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 5 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 22,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 100308100251349281200005670 ELV65264365 10.03 08.10 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 10030810025134928120000567065264365 MREF: 6526436581192603100810 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+      "source_fields": {
+        "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+        "counterparty_iban": "DE71500400000600247190",
+        "bic_in_description": "COBADEFF",
+        "end_to_end_reference": "10030810025134928120000567065264365",
+        "mandate_reference": "6526436581192603100810",
+        "creditor_identifier": "DE16E0100000020245"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 6,
+      "booking_date": "2026-03-11",
+      "value_date": null,
+      "amount": "-8.90",
+      "source_description_lines": [
+        "HORNBACH 567 DORTMUND",
+        "DE71500400000600247190",
+        "HORNBACH 567 DORTMUND 090307530146731281200005670 ELV65264370 09.03",
+        "07.53 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:",
+        "09030753014673128120000567065264370 MREF: 6526437079422603090753",
+        "CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 6 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 23,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 090307530146731281200005670 ELV65264370 09.03 07.53 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 09030753014673128120000567065264370 MREF: 6526437079422603090753 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+      "source_fields": {
+        "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+        "counterparty_iban": "DE71500400000600247190",
+        "bic_in_description": "COBADEFF",
+        "end_to_end_reference": "09030753014673128120000567065264370",
+        "mandate_reference": "6526437079422603090753",
+        "creditor_identifier": "DE16E0100000020245"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 7,
+      "booking_date": "2026-03-03",
+      "value_date": null,
+      "amount": "-38.82",
+      "source_description_lines": [
+        "Stadt Schwerte",
+        "DE20440501990841000145",
+        "0100.163732.001 Grundbesitzabgaben, Schwerte - Richardstraße 15, Fälligkeit",
+        "15.11.2015 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 7 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 24,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Stadt Schwerte DE20440501990841000145 0100.163732.001 Grundbesitzabgaben, Schwerte - Richardstraße 15, Fälligkeit 15.11.2015 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX",
+      "source_fields": {
+        "counterparty_or_booking_label": "Stadt Schwerte",
+        "counterparty_iban": "DE20440501990841000145",
+        "bic_in_description": "DORTDE33XXX"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 8,
+      "booking_date": "2026-02-27",
+      "value_date": "2026-02-28",
+      "amount": "-12.95",
+      "source_date_display": "Valuta 28.02.2026 - 27.02.2026",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 28.02.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 8 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 25,
+      "source_text_verified": true,
+      "value_date_source_confirmed": true,
+      "description": "Abschluss Abschluss per 28.02.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 3,
+      "source_block": 9,
+      "booking_date": "2026-01-30",
+      "value_date": "2026-01-31",
+      "amount": "-14.15",
+      "source_date_display": "Valuta 31.01.2026 - 30.01.2026",
+      "source_description_lines": [
+        "Abschluss",
+        "Abschluss per 31.01.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 3, Buchungsblock 9 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 26,
+      "source_text_verified": true,
+      "value_date_source_confirmed": true,
+      "description": "Abschluss Abschluss per 31.01.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Abschluss"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 4,
+      "source_block": 1,
+      "booking_date": "2026-01-29",
+      "value_date": null,
+      "amount": "-31.90",
+      "source_description_lines": [
+        "HORNBACH 567 DORTMUND",
+        "DE71500400000600247190",
+        "HORNBACH 567 DORTMUND 270116140155862281200005670 ELV65264363 27.01",
+        "16.14 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:",
+        "27011614015586228120000567065264363 MREF: 6526436376392601271614",
+        "CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 4, Buchungsblock 1 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 27,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 270116140155862281200005670 ELV65264363 27.01 16.14 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 27011614015586228120000567065264363 MREF: 6526436376392601271614 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+      "source_fields": {
+        "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+        "counterparty_iban": "DE71500400000600247190",
+        "bic_in_description": "COBADEFF",
+        "end_to_end_reference": "27011614015586228120000567065264363",
+        "mandate_reference": "6526436376392601271614",
+        "creditor_identifier": "DE16E0100000020245"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 4,
+      "source_block": 2,
+      "booking_date": "2026-01-22",
+      "value_date": null,
+      "amount": "-12.00",
+      "source_description_lines": [
+        "Jahrespreis girocard",
+        "DE75441600149973080300",
+        "Kartendaten: Felix Mechler IBAN DE35441600146708656600Gültig bis",
+        "12.2028 Folge-Nr. 0 Ausgabe einer Debitkarte: Jahrespreis girocard",
+        "bezahlt bis 12.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 4, Buchungsblock 2 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 28,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Felix Mechler IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 0 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Jahrespreis girocard",
+        "counterparty_iban": "DE75441600149973080300"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 4,
+      "source_block": 3,
+      "booking_date": "2026-01-22",
+      "value_date": null,
+      "amount": "-12.00",
+      "source_description_lines": [
+        "Jahrespreis girocard",
+        "DE75441600149973080300",
+        "Kartendaten: Daniel Dissel IBAN DE35441600146708656600Gültig bis",
+        "12.2028 Folge-Nr. 1 Ausgabe einer Debitkarte: Jahrespreis girocard",
+        "bezahlt bis 12.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 4, Buchungsblock 3 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 29,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Daniel Dissel IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 1 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Jahrespreis girocard",
+        "counterparty_iban": "DE75441600149973080300"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 4,
+      "source_block": 4,
+      "booking_date": "2026-01-22",
+      "value_date": null,
+      "amount": "-12.00",
+      "source_description_lines": [
+        "Jahrespreis girocard",
+        "DE75441600149973080300",
+        "Kartendaten: Jakob Nowak IBAN DE35441600146708656600Gültig",
+        "bis 12.2028 Folge-Nr. 2 Ausgabe einer Debitkarte: Jahrespreis girocard",
+        "bezahlt bis 12.2026"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 4, Buchungsblock 4 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 30,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Jahrespreis girocard DE75441600149973080300 Kartendaten: Jakob Nowak IBAN DE35441600146708656600Gültig bis 12.2028 Folge-Nr. 2 Ausgabe einer Debitkarte: Jahrespreis girocard bezahlt bis 12.2026",
+      "source_fields": {
+        "counterparty_or_booking_label": "Jahrespreis girocard",
+        "counterparty_iban": "DE75441600149973080300"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 4,
+      "source_block": 5,
+      "booking_date": "2026-01-21",
+      "value_date": null,
+      "amount": "-38.25",
+      "source_description_lines": [
+        "HORNBACH 567 DORTMUND",
+        "DE71500400000600247190",
+        "HORNBACH 567 DORTMUND 190110280157280281200005670 ELV65149796 19.01",
+        "10.28 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:",
+        "19011028015728028120000567065149796 MREF: G514979672842601191028",
+        "CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 4, Buchungsblock 5 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 31,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "HORNBACH 567 DORTMUND DE71500400000600247190 HORNBACH 567 DORTMUND 190110280157280281200005670 ELV65149796 19.01 10.28 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF: 19011028015728028120000567065149796 MREF: G514979672842601191028 CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF",
+      "source_fields": {
+        "counterparty_or_booking_label": "HORNBACH 567 DORTMUND",
+        "counterparty_iban": "DE71500400000600247190",
+        "bic_in_description": "COBADEFF",
+        "end_to_end_reference": "19011028015728028120000567065149796",
+        "mandate_reference": "G514979672842601191028",
+        "creditor_identifier": "DE16E0100000020245"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    },
+    {
+      "source_page": 4,
+      "source_block": 6,
+      "booking_date": "2026-01-08",
+      "value_date": null,
+      "amount": "5000.00",
+      "source_description_lines": [
+        "Jakob Paul Nowak, Saskia Nowak",
+        "DE23200411110607531100",
+        "Gesellschafterdarlehen 003 von Nowak an MeDiNo - Auszahlung"
+      ],
+      "source_file": "auszug",
+      "source_locator": "Seite 4, Buchungsblock 6 (vollständiger sichtbarer Block)",
+      "source_transaction_number": 32,
+      "source_text_verified": true,
+      "value_date_source_confirmed": false,
+      "description": "Jakob Paul Nowak, Saskia Nowak DE23200411110607531100 Gesellschafterdarlehen 003 von Nowak an MeDiNo - Auszahlung",
+      "source_fields": {
+        "counterparty_or_booking_label": "Jakob Paul Nowak, Saskia Nowak",
+        "counterparty_iban": "DE23200411110607531100"
+      },
+      "code": null,
+      "customer_reference": null,
+      "bank_reference": null
+    }
+  ],
+  "source_files": [
+    {
+      "id": "auszug",
+      "path": "original/Dokument_2026_10_03_09_59.pdf",
+      "sha256": "8314904a7b219ff949ed5fa28f2bde58b1eb8119cf23244971e47b7775bca6a7"
+    }
+  ],
+  "missing_fields_are_not_confirmed_values": true
+}

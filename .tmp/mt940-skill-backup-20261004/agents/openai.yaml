@@ -1,0 +1,8 @@
+interface:
+  display_name: "MT940-Dateien erstellen"
+  short_description: "MT940 mit Bankmodell und vollständiger Quellprüfung"
+  default_prompt: "Nutze $mt940-dateien-erstellen: Wähle das Referenzmodell dieser Bank und Exportvariante oder lege ein neues belegtes Modell an. Erzeuge MT940 ausschließlich nach diesem Modell und prüfe vor der Auslieferung jedes Feld und den vollständigen Buchungstext gegen die Originalquelle."
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+policy:
+  allow_implicit_invocation: true

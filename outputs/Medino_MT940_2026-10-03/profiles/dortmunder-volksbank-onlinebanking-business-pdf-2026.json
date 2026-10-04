@@ -1,0 +1,223 @@
+{
+  "profile_name": "dortmunder-volksbank-onlinebanking-business-pdf-2026",
+  "bank_id": "dortmunder-volksbank-genodem1dor",
+  "bank_name": "Dortmunder Volksbank eG",
+  "source_variant": "onlinebanking-business-pdf-umsatzliste-2026",
+  "profile_version": 1,
+  "source_types": [
+    "pdf"
+  ],
+  "status": "draft",
+  "reference_basis": {
+    "kind": null,
+    "reference": null,
+    "verified_against_reference": false
+  },
+  "charset": null,
+  "line_endings": null,
+  "field_mappings": {
+    "statement_reference": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "iban": {
+      "source": "Seite 1, Kopf, IBAN",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "statement_number": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "sequence_number": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "opening_balance_date": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "opening_balance": {
+      "source": "Seite 4, Startsaldo",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "closing_balance_date": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "closing_balance": {
+      "source": "Seite 1, Endsaldo",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "currency": {
+      "source": "EUR bei jedem Umsatz und Saldo",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "value_date": {
+      "source": "Explizit nur bei drei Abschlussumsätzen angezeigt; andere Valutadaten nicht separat sichtbar",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "booking_date": {
+      "source": "Datum rechts im Buchungsblock; bei expliziter Valuta das Datum rechts nach dem Trennstrich",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "amount": {
+      "source": "Vorzeichen und Betrag rechts im Buchungsblock",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "code": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "customer_reference": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "bank_reference": {
+      "source": "In der PDF-Umsatzübersicht nicht separat vorhanden oder Zuordnung unbelegt",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "description": {
+      "source": "Vollständiger sichtbarer Buchungsblock: Überschrift/Gegenpartei, Gegenkonto und sämtliche Textzeilen in sichtbarer Reihenfolge",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "counterparty_or_booking_label": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "counterparty_iban": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "bic_in_description": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "end_to_end_reference": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "mandate_reference": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "creditor_identifier": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    },
+    "reference_in_description": {
+      "source": "Sichtbarer Buchungstext bzw. Überschrift im PDF; vollständiger Wert im Quellprüfnachweis",
+      "transformation": null,
+      "target": null,
+      "status": "unmapped"
+    }
+  },
+  "statement_reference_rule": null,
+  "reference_rules": {
+    "customer_reference": null,
+    "bank_reference": null
+  },
+  "missing_customer_reference": null,
+  "allowed_underfields": [],
+  "adapter": null,
+  "adapter_sha256": null,
+  "examples": [],
+  "open_questions": [
+    "Bankindividuelle MT940-Feldzuordnung, Referenzregeln und Textsyntax anhand einer nativen Originaldatei dieser Bank und Exportvariante oder ihrer konkreten Formatdokumentation belegen.",
+    "Originale Auszugs-/Sequenznummer und Auszugsreferenz oder belegte Fehlwertbehandlung beschaffen; in der PDF nicht vorhanden.",
+    "Daten zu Start- und Endsaldo beschaffen; PDF nennt nur Filterzeitraum und Saldenbeträge, keine separaten Saldendaten.",
+    "Valutadaten für 29 Umsätze und bankseitige Buchungscodes/Kunden-/Bankreferenzen bzw. belegte Regeln für nicht angezeigte Werte beschaffen.",
+    "Für eine neu rekonstruierte DATEV-Variante erfolgreichen Probeimport und Löschung der Testumsätze dokumentieren."
+  ],
+  "probe_import": {
+    "date": null,
+    "result": "not_performed",
+    "checks": {
+      "opening_balance_correct": false,
+      "test_closing_balance_correct": false,
+      "transaction_count_and_signs_correct": false,
+      "description_complete": false,
+      "no_visible_control_characters": false,
+      "all_source_fields_correct": false
+    },
+    "test_transactions_deleted": false
+  },
+  "generation_allowed": false,
+  "bank_identity_evidence": {
+    "source_file": "C:\\Projekte\\Kanzlei-AI-Skills\\outputs\\Medino_MT940_2026-10-03\\original\\Dokument_2026_10_03_09_59.pdf",
+    "sha256": "8314904a7b219ff949ed5fa28f2bde58b1eb8119cf23244971e47b7775bca6a7",
+    "source_page": 1,
+    "visible_logo": "Dortmunder Volksbank",
+    "bic": "GENODEM1DOR",
+    "blz": "44160014"
+  },
+  "source_observations": {
+    "account_label": "Business",
+    "sort_order": "Buchungsdatum, absteigend",
+    "pages": 4,
+    "transactions": 32,
+    "filter_start": "2026-01-01",
+    "filter_end": "2026-10-03",
+    "visible_value_date_exceptions": [
+      15,
+      25,
+      26
+    ],
+    "statement_number_visible": false,
+    "balance_dates_visible": false,
+    "transaction_codes_visible": false
+  },
+  "research_checked": [
+    {
+      "url": "https://www.dovoba.de/service/banking/banking-fuer-firmenkunden/banking-software-geno-cash.html",
+      "result": "Bestätigt die Unterstützung von MT940 und CAMT durch GENO cash; liefert keine bankbezogene Feldzuordnung oder Zuordnung aus dieser PDF-Variante."
+    },
+    {
+      "url": "https://atruvia.de/profi-cash",
+      "result": "Nennt MT940/CAMT-Verarbeitung; keine geeignete bankbezogene Syntaxreferenz für diesen PDF-Export."
+    }
+  ]
+}

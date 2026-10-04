@@ -1,0 +1,254 @@
+[
+  {
+    "name": "bk-schaubilder",
+    "zip": "C:\\Users\\OBurchardt\\Downloads\\Neuer Ordner\\bk-schaubilder.zip",
+    "zip_sha256": "23D0E170FECC00D1548875CDBD67435BBFB6567DFD9F25D499BA699E8F87D4A8",
+    "stage": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-additional-skills-install-20261004-ae6b3a82\\bk-schaubilder",
+    "destination": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-schaubilder",
+    "file_count": 8,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "9C1E609A4BE6EF1C3813913406A214CA5F0D23CDE4D1AC4AD2927D25D27DB9D9"
+      },
+      {
+        "path": "references\\GESTALTUNG.md",
+        "sha256": "898FB1121B451D8C49AC70F9F99180FA9EA758C03C2B69DCA6C091DB9C088E8E"
+      },
+      {
+        "path": "references\\beispiele\\LIESMICH.md",
+        "sha256": "56FAFB7B3FDD30F0769770B35C138138C5F9791727E02CAF974175EFA102B690"
+      },
+      {
+        "path": "references\\beispiele\\schaubild-rnd-zielkonflikt.svg",
+        "sha256": "1220B7796FD43CFCA11009C8419ED17A0724DA1DCF5C82BDBE9AF5E8ACA2CC6B"
+      },
+      {
+        "path": "references\\beispiele\\schaubild-steuersatzgefaelle.svg",
+        "sha256": "B5297E6D39C98A5730C3D1F11D695D7244664CEF0850CBC4AFF186F54469F2BE"
+      },
+      {
+        "path": "references\\beispiele\\schaubild-vergleichszins-nachweis.svg",
+        "sha256": "E5FF5090AC5E94BBAE9E4269B625A7DCCD7AAA527635731FB073D46A761D8737"
+      },
+      {
+        "path": "references\\beispiele\\schaubild-zinsvorteil-berechnung.svg",
+        "sha256": "40EC82F307FAE42919BB2C87DB778CDAD3B4797881332EAFEACE9DCFB982C26F"
+      },
+      {
+        "path": "scripts\\svg_nach_webp.py",
+        "sha256": "0800A85F58FC86C8F5FE976A0BC2DEA60EDE39D421AB07C5EE153EDE170A7737"
+      }
+    ]
+  },
+  {
+    "name": "bk-monatsreview",
+    "zip": "C:\\Users\\OBurchardt\\Downloads\\Neuer Ordner\\bk-monatsreview.zip",
+    "zip_sha256": "E227D9ABC26BD5290E5E8D9EC1644C3F1EE791CA364D8ED14A6D569BFADF1D80",
+    "stage": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-additional-skills-install-20261004-ae6b3a82\\bk-monatsreview",
+    "destination": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-monatsreview",
+    "file_count": 24,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "E223E67660EA800F426293B1FE822E3DF245B36A89D615B30D0C956DA7CD828C"
+      },
+      {
+        "path": "agents\\openai.yaml",
+        "sha256": "1B9C3D9C644C092D947D5046F296913BFB95C651194D9AF710445F1780961C77"
+      },
+      {
+        "path": "assets\\Freigabeprotokoll.md",
+        "sha256": "655E85AFDF734BA1F8551ADAD76EB633653ABB48EECA9627D63B8775BE5BB831"
+      },
+      {
+        "path": "assets\\icon.svg",
+        "sha256": "E9301497FA98EF56AACA7EDE0857B9A18DC06C34040F0679C609A6BF49B1D38B"
+      },
+      {
+        "path": "assets\\Mandantendatei Vorlage.md",
+        "sha256": "E3A9A1A84C3DEE56A8CCD1D0A770612C613E9A94C8D8360146E555C771090CEF"
+      },
+      {
+        "path": "assets\\Monatsreview Arbeitspapier.xlsx",
+        "sha256": "786574BC82AE90B8C97F560CD25C2711F4FF136434ECB32FAD18B3B11D321899"
+      },
+      {
+        "path": "referenz\\DATEV Logik 1742 1759.md",
+        "sha256": "CAF68F4A0446A7E5B79C094FA12469E8FC0EEC3F2BBD9CC225AB9C30EA6C218A"
+      },
+      {
+        "path": "referenz\\Ergebnisformat.md",
+        "sha256": "9F3801A4EC9B21D8164A46195709BF8C2CF75B3686C33D42E55EEF0A0DBC1132"
+      },
+      {
+        "path": "referenz\\Klardaten Abruf.md",
+        "sha256": "9520CDE3A8069323530F917218E8E7FDE590C0B8D9AC4506E104AF7394099D52"
+      },
+      {
+        "path": "referenz\\Kontonummernregel.md",
+        "sha256": "B423D069773696AECB62E7C4BD97179DD3DE98493B403CA6440025AD579EACB9"
+      },
+      {
+        "path": "referenz\\M1 Lohnkonten.md",
+        "sha256": "8F654B44E6807CD4A77DACC9C80CDA3A6FF001F3C40A3C16E163C6CF142A2321"
+      },
+      {
+        "path": "referenz\\M2 Bank und Interim.md",
+        "sha256": "122E8EC27B37D0FA5E40940966C98D4AD2C682D475CED4FB76A2E3F87B3A321D"
+      },
+      {
+        "path": "referenz\\M3 OPOS.md",
+        "sha256": "84FBB6F3C12695EC3299E37F5B77A80CB2E58F76493A94CCD90669D959B0085B"
+      },
+      {
+        "path": "referenz\\M4 GuV.md",
+        "sha256": "E261B1AAA7DBE35055AC25AF6FCEF14F2388974BB52B7A62405CF7CB165747EF"
+      },
+      {
+        "path": "referenz\\M5 Bilanzkonten.md",
+        "sha256": "CCF3D77187C073FF08CBB6DF58B4A19ED1C0DAEEF926888786709180D35E624F"
+      },
+      {
+        "path": "referenz\\Mandantendatei.md",
+        "sha256": "DC132830D5C1017EF8FD7313BFDF04857BCEF6437638C763C2537DC829F57A1E"
+      },
+      {
+        "path": "referenz\\Quellenbasis.md",
+        "sha256": "2BDE6D4A7D95BE5070EEA89FBE60A4A6A351E9B3A8D94A8A88A2FCEFC2F54DF8"
+      },
+      {
+        "path": "skripte\\abgleich.py",
+        "sha256": "CCC86077808BD268E2EF80DAEF74A18D16A6F8C41B419F3FA9BD63E5346201F3"
+      },
+      {
+        "path": "skripte\\konto.py",
+        "sha256": "FE4A00671B047EED8BBB025879F938166DA45A0A53A706C06A2A244EE5E84BD3"
+      },
+      {
+        "path": "skripte\\wesentlichkeit.py",
+        "sha256": "DC2109AA6652A6111F56F8FF5652190CACA80CAAED689ACAF42E480F3869609D"
+      },
+      {
+        "path": "tests\\testabgleich.py",
+        "sha256": "4F9602EEF2F780FC93E4BBA191F39E7DD6F5A7C19B91C926AA9FD6222C08BB03"
+      },
+      {
+        "path": "tests\\testarbeitspapier.py",
+        "sha256": "452665F1C08B1E35AA8EAA4707D22478CA63E4317021B832BD8B70EE9988A633"
+      },
+      {
+        "path": "tests\\testkonto.py",
+        "sha256": "4EC9F4A532F24122B8A9CFE0476C84F0C2AB3404FDC3FDAEFC7C94DA3FC40AD0"
+      },
+      {
+        "path": "tests\\testwesentlichkeit.py",
+        "sha256": "1F73DB7D24E8118061DB6C63A34833F234B6E6935A3C1DB353B511DC1568F54A"
+      }
+    ]
+  },
+  {
+    "name": "bk-jahresabschluss-vorbereitung",
+    "zip": "C:\\Users\\OBurchardt\\Downloads\\Neuer Ordner\\bk-jahresabschluss-vorbereitung.zip",
+    "zip_sha256": "F3734B234B3C98D977EC4386333A213D9F59580AE4D2F2153C7EE3356691C56C",
+    "stage": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-additional-skills-install-20261004-ae6b3a82\\bk-jahresabschluss-vorbereitung",
+    "destination": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-jahresabschluss-vorbereitung",
+    "file_count": 14,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "B27E1B3B0442CBB12369CA4870C75826386F41BD133B3C45B5A30ED9658A5D31"
+      },
+      {
+        "path": "agents\\openai.yaml",
+        "sha256": "50E7007F9A2D84720A8ABE11134FE709FA2DF2773E418C080392AE07F0F64294"
+      },
+      {
+        "path": "references\\EROEFFNUNGSBILANZ.md",
+        "sha256": "A02665006DF6C772C60FA73C119AE2DBDCCD80A2B372B1E6D08FAD7E8CBF0E16"
+      },
+      {
+        "path": "references\\KANZLEIPARAMETER.md",
+        "sha256": "C7FA6D09E64FE89E9C9E01FB1174EB765A1A627621AFE16374D2C70BD4C1458E"
+      },
+      {
+        "path": "references\\MCP_UND_SHAREPOINT.md",
+        "sha256": "6435B7E2EAB5F3C187025AB601AF5164AF4DD5A7B08130D2B6162029237566A8"
+      },
+      {
+        "path": "references\\OPOS_ABGLEICH.md",
+        "sha256": "2C4C102610A8DE62B816E46736D5B6DF84F5CC6BF1E3E1AB1EE075E10FDA9C37"
+      },
+      {
+        "path": "references\\PRUEFLOGIK.md",
+        "sha256": "6F31FD7C906BD4DA7290E9A2FC049DCD4CE6409B953DC75C11284004863F9887"
+      },
+      {
+        "path": "references\\REVIEWDATEN.md",
+        "sha256": "033E6EBCBDFD4DE911C5A36E553089914DFB3FF20C23205A237F70C0EF1EC17D"
+      },
+      {
+        "path": "references\\STARTKLARHEITS_CHECKLISTE.md",
+        "sha256": "948B5173D158029107DA4D13E65ABDA73C906AD7D4883E2145F67858D5A2E8EC"
+      },
+      {
+        "path": "references\\VORBEREITUNGSABGRENZUNG.md",
+        "sha256": "D2E9105C95FBAAE7304E307397BC1E3A30F1C64C9BC6F1CFA40FF48137341BBB"
+      },
+      {
+        "path": "scripts\\sharepoint_target.py",
+        "sha256": "DFBBC761ED7EA0573209157A1EB793E80F6B881B12482288EEEB78791D1EFCE0"
+      },
+      {
+        "path": "scripts\\validate_review_data.py",
+        "sha256": "C2C80DC521AEF29F7CFDEE33928690FEEFEEA28568959F2E4335362F41B95F66"
+      },
+      {
+        "path": "tests\\test_reconciliation.py",
+        "sha256": "37CF259A915E14372FA55473533C5AFB32CC57B13556BE1BFF1939414C5C50F6"
+      },
+      {
+        "path": "tests\\test_skill_scripts.py",
+        "sha256": "257CC39D62ACEF4990EEC2134BFC593109B241141E2BFC1F84111BAAD307C415"
+      }
+    ]
+  },
+  {
+    "name": "bk-gesellschafterbeschluss",
+    "zip": "C:\\Users\\OBurchardt\\Downloads\\Neuer Ordner\\bk-gesellschafterbeschluss.zip",
+    "zip_sha256": "E6FACC90263182067377E224E03DE8A42ABEE54D87BBE227737BA86C7A160E10",
+    "stage": "C:\\Projekte\\Kanzlei-AI-Skills\\.tmp\\bk-additional-skills-install-20261004-ae6b3a82\\bk-gesellschafterbeschluss",
+    "destination": "C:\\Users\\OBurchardt\\.codex\\skills\\bk-gesellschafterbeschluss",
+    "file_count": 7,
+    "files": [
+      {
+        "path": "SKILL.md",
+        "sha256": "A4A7BD77A47F7AB2853815A994D37A9574028ACFA711C2EFC1E44ED2B0BF2F8F"
+      },
+      {
+        "path": "agents\\openai.yaml",
+        "sha256": "999F202BB3AE8B8B57B5F63E1FA2F65A6726699FD4AD2F336DCD7A262DEF543E"
+      },
+      {
+        "path": "assets\\icon.svg",
+        "sha256": "49315DDA7125EC5FC77EF5F2B96126D8B2121C6E72944B4702972E90F321D3EE"
+      },
+      {
+        "path": "references\\beschlusslogik.md",
+        "sha256": "D89B958248DF3343C551B1B7D2643FBE44FE470C5525834A91353FC24101A427"
+      },
+      {
+        "path": "references\\eingabeschema.md",
+        "sha256": "14A0E838AC52C49913CD08CDD7E12A01D0798BE8CF3DE914378FFAB9D2523037"
+      },
+      {
+        "path": "references\\rewe-berechnung.md",
+        "sha256": "7BD7394939372F3A74EDB8949E843D97AD045B1CB3FE048EAB6DFA20963BC8AA"
+      },
+      {
+        "path": "scripts\\erstelle_beschluss.py",
+        "sha256": "057A9246556B945AE161731D5C3DE5DA43317908DE215C2727543AC15303B265"
+      }
+    ]
+  }
+]

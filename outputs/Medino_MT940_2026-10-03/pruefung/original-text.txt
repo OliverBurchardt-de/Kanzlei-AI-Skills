@@ -1,0 +1,263 @@
+--- SEITE 1 ---
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+       BIC         GENODEM1DOR           Datum       03.10.2026                   
+       IBAN        DE35441600146708656600 Uhrzeit    09:58:33                     
+       Kontoinhaber MeDiNo Immobilien UG Abgefragt von Daniel Dissel              
+                                                                                  
+                                                                                  
+       Umsätze                                                                    
+                                                                                  
+                                                                                  
+       Filterparameter 01.01.2026 - 03.10.2026 Buchungsdatum, absteigend          
+                                                                                  
+       Business                                                                   
+                                                 (Endsaldo)                       
+                                                          +82.757,24EUR           
+                                                                                  
+       Abschluss                                                    -15,75 EUR    
+       Abschluss per 30.09.2026                                     30.09.2026    
+                                                                                  
+       Stadtwerke Schwerte                                         -162,30 EUR    
+       DE45440501990841000277                                       17.09.2026    
+       KD-Nummer: 199003118 / RG-Nummer: VR1000764626 Strom, Gas 2025 SecureGo    
+       plus IBAN: DE45440501990841000277 BIC: DORTDE33XXX                         
+                                                                                  
+       Adyen N.V.                                                  -132,35 EUR    
+       DE29300600100005021573                                       16.09.2026    
+       The ASH Dortmund a98dcc5a-b684-459b-afb1-abc/Europapla15.09.2026 um        
+       21:01:54 Uhr 51745200/000249/CICC/FPIN 44160014/6708656600/0/1228 REF      
+       543612/260047                                                              
+                                                                                  
+                                                                                  
+       Martin Wieslaw Aleksandrowicz                               -373,35 EUR    
+       DE29466702040077128700                                       11.09.2026    
+       RG-20260040, MeDiNo Immobilien UG (haftungsbeschränkt) SecureGo plus IBAN: 
+       DE29466702040077128700 BIC: DEUTDEDWP03                                    
+                                                                                  
+       Stadt Schwerte                                               -52,72 EUR    
+       DE20440501990841000145                                       08.09.2026    
+       Kassenzeichen 0100.183505.001, Grundsteuer B SecureGo plus IBAN:           
+       DE20440501990841000145 BIC: DORTDE33XXX                                    
+                                                                                  
+       RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE              +2.000,00 EUR   
+       DE73440501990912213196                                       08.09.2026    
+       Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der 
+       Ubergabe DATUM 07.09.2026, 15.41 UHR                                       
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                   Seite 1 von 4  
+                  Wir machen den Weg frei. Gemeinsam mit den Spezialisten der Genossenschaftlichen FinanzGruppe Volksbanken Raiffeisenbanken
+                                                                                  
+                                                                                  
+
+--- SEITE 2 ---
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+       RALF WARCHHOLD UND FRAU ANDREA WARCHHOLD-ESKE             +76.000,00 EUR   
+       DE73440501990912213196                                       08.09.2026    
+       Wohnungskauf Richardstrase 15 in 58239 Schwerte -Zahlung vorbehaltlich der 
+       Ubergabe                                                                   
+                                                                                  
+       Martin Wieslaw Aleksandrowicz                               -591,01 EUR    
+       DE29466702040077128700                                       04.09.2026    
+       RG-20260037 Kunden Nr.: 10030 MeDiNo Immobilien UG (haftungsbeschränkt)    
+       SecureGo plus IBAN: DE29466702040077128700 BIC: DEUTDEDWP03                
+                                                                                  
+       Abschluss                                                    -13,35 EUR    
+       Abschluss per 31.08.2026                                     31.08.2026    
+                                                                                  
+       Silbersiepe Immobilien                                     -1.256,87 EUR   
+       DE17450600090036142000                                       21.08.2026    
+       Jahresabrechnung Nebenkosten 2025 01.06.-31.12. Schwerte, Richardstr. 15   
+       SecureGo plus IBAN: DE17450600090036142000 BIC: GENODEM1HGN                
+                                                                                  
+       Abschluss                                                    -13,35 EUR    
+       Abschluss per 31.07.2026                                     31.07.2026    
+                                                                                  
+                                                                                  
+       Stadt Schwerte                                               -53,67 EUR    
+       DE20440501990841000145                                       22.07.2026    
+       0100.183505.001-183505 / Grundsteuer / 2026/2248 SecureGo plus IBAN:       
+       DE20440501990841000145 BIC: DORTDE33XXX                                    
+                                                                                  
+       Abschluss                                                    -13,35 EUR    
+       Abschluss per 30.06.2026                                     30.06.2026    
+                                                                                  
+       Industrie- und Handelskammer zu Dortmund                    -270,00 EUR    
+       DE86440501990301001703                                       17.06.2026    
+       10001339369 / 41388600 / Beitrag 2026 SecureGo plus IBAN:                  
+       DE86440501990301001703 BIC: DORTDE33XXX                                    
+                                                                                  
+       Abschluss                                                    -13,35 EUR    
+       Abschluss per 31.05.2026                       Valuta 31.05.2026 - 29.05.2026
+                                                                                  
+                                                                                  
+       OM PropTech GmbH                                            -199,00 EUR    
+       DE32230527500000665045                                       22.05.2026    
+       Rg 1143668 / OM-428128 SecureGo plus IBAN: DE32230527500000665045 BIC:     
+       NOLADE21RZB                                                                
+                                                                                  
+       Abschluss                                                    -13,35 EUR    
+       Abschluss per 30.04.2026                                     30.04.2026    
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                   Seite 2 von 4  
+                  Wir machen den Weg frei. Gemeinsam mit den Spezialisten der Genossenschaftlichen FinanzGruppe Volksbanken Raiffeisenbanken
+                                                                                  
+                                                                                  
+
+--- SEITE 3 ---
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+       Daniel Dissel                                                -70,34 EUR    
+       DE98200411550350428900                                       07.04.2026    
+       Erstattung Auslage Materialien für Reparaturen am Objekt Schwerte, Richardstr. 15 /
+       Einkauf bei Toom SecureGo plus IBAN: DE98200411550350428900 BIC:           
+       COBADEHD055                                                                
+                                                                                  
+       Abschluss                                                    -14,95 EUR    
+       Abschluss per 31.03.2026                                     31.03.2026    
+                                                                                  
+       OM PropTech GmbH                                            -299,00 EUR    
+       DE32230527500000665045                                       20.03.2026    
+       Rechnung 1112701 Inserat SecureGo plus IBAN: DE32230527500000665045 BIC:   
+       NOLADE21RZB                                                                
+                                                                                  
+       Stadt Schwerte                                               -46,72 EUR    
+       DE20440501990841000145                                       16.03.2026    
+       0100.183505.001 / Grundbesitzabgaben / Schwerte, Richardstr. 15 / Q1 2026  
+       SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX                
+                                                                                  
+       HORNBACH 567 DORTMUND                                         -9,87 EUR    
+       DE71500400000600247190                                       12.03.2026    
+       HORNBACH 567 DORTMUND 100308100251349281200005670 ELV65264365 10.03        
+       08.10 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:   
+       10030810025134928120000567065264365 MREF: 6526436581192603100810           
+       CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF        
+                                                                                  
+                                                                                  
+       HORNBACH 567 DORTMUND                                         -8,90 EUR    
+       DE71500400000600247190                                       11.03.2026    
+       HORNBACH 567 DORTMUND 090307530146731281200005670 ELV65264370 09.03        
+       07.53 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:   
+       09030753014673128120000567065264370 MREF: 6526437079422603090753           
+       CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF        
+                                                                                  
+       Stadt Schwerte                                               -38,82 EUR    
+       DE20440501990841000145                                       03.03.2026    
+       0100.163732.001 Grundbesitzabgaben, Schwerte - Richardstraße 15, Fälligkeit
+       15.11.2015 SecureGo plus IBAN: DE20440501990841000145 BIC: DORTDE33XXX     
+                                                                                  
+       Abschluss                                                    -12,95 EUR    
+       Abschluss per 28.02.2026                       Valuta 28.02.2026 - 27.02.2026
+                                                                                  
+       Abschluss                                                    -14,15 EUR    
+       Abschluss per 31.01.2026                       Valuta 31.01.2026 - 30.01.2026
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                   Seite 3 von 4  
+                  Wir machen den Weg frei. Gemeinsam mit den Spezialisten der Genossenschaftlichen FinanzGruppe Volksbanken Raiffeisenbanken
+                                                                                  
+                                                                                  
+
+--- SEITE 4 ---
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+       HORNBACH 567 DORTMUND                                        -31,90 EUR    
+       DE71500400000600247190                                       29.01.2026    
+       HORNBACH 567 DORTMUND 270116140155862281200005670 ELV65264363 27.01        
+       16.14 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:   
+       27011614015586228120000567065264363 MREF: 6526436376392601271614           
+       CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF        
+                                                                                  
+       Jahrespreis girocard                                         -12,00 EUR    
+       DE75441600149973080300                                       22.01.2026    
+       Kartendaten:  Felix Mechler IBAN DE35441600146708656600Gültig bis          
+       12.2028 Folge-Nr. 0  Ausgabe einer Debitkarte: Jahrespreis girocard        
+       bezahlt bis 12.2026                                                        
+                                                                                  
+       Jahrespreis girocard                                         -12,00 EUR    
+       DE75441600149973080300                                       22.01.2026    
+       Kartendaten:  Daniel Dissel IBAN DE35441600146708656600Gültig bis          
+       12.2028 Folge-Nr. 1  Ausgabe einer Debitkarte: Jahrespreis girocard        
+       bezahlt bis 12.2026                                                        
+                                                                                  
+       Jahrespreis girocard                                         -12,00 EUR    
+       DE75441600149973080300                                       22.01.2026    
+       Kartendaten:  Jakob Nowak   IBAN DE35441600146708656600Gültig              
+       bis 12.2028 Folge-Nr. 2 Ausgabe einer Debitkarte: Jahrespreis girocard     
+       bezahlt bis 12.2026                                                        
+                                                                                  
+       HORNBACH 567 DORTMUND                                        -38,25 EUR    
+       DE71500400000600247190                                       21.01.2026    
+       HORNBACH 567 DORTMUND 190110280157280281200005670 ELV65149796 19.01        
+       10.28 Der Einzug erfolgt im Namen und auf Rechnung der PAYONE GmbH EREF:   
+       19011028015728028120000567065149796 MREF: G514979672842601191028           
+       CRED: DE16E0100000020245 IBAN: DE71500400000600247190 BIC: COBADEFF        
+                                                                                  
+       Jakob Paul Nowak, Saskia Nowak                             +5.000,00 EUR   
+       DE23200411110607531100                                       08.01.2026    
+       Gesellschafterdarlehen 003 von Nowak an MeDiNo - Auszahlung                
+                                                                                  
+                                                                                  
+                                                                                  
+                                                 (Startsaldo)                     
+                                                            +3.552,86EUR          
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                                  
+                                                                   Seite 4 von 4  
+                  Wir machen den Weg frei. Gemeinsam mit den Spezialisten der Genossenschaftlichen FinanzGruppe Volksbanken Raiffeisenbanken
+                                                                                  
+                                                                                  

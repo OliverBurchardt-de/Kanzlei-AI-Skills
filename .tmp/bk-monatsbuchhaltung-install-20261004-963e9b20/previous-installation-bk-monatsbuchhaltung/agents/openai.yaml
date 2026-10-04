@@ -1,0 +1,6 @@
+interface:
+  display_name: "BK Monatsbuchhaltung v0.3.8"
+  short_description: "Belegbuchhaltung v0.3.8 mit DATEV-Paket"
+  default_prompt: "Verwende $bk-monatsbuchhaltung, um die hochgeladenen Belege für den genannten Mandanten und Monat ohne Zwischenfragen bis zum validierten DATEV-Paket zu verarbeiten."
+policy:
+  allow_implicit_invocation: true

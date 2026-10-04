@@ -2,7 +2,7 @@
 
 ## Geltungsbereich
 
-Die folgenden Regeln beschreiben den derzeit unterstützten technischen Ausschnitt des Werkzeugs. Sie sind **kein bankübergreifendes Referenzmodell**. Vor ihrer Anwendung muss das Modell der konkreten Bankvariante deren Feldzuordnung und Ausgabeform belegen. Modellverwaltung, Textadapter und getrennte Quellenprüfung stehen in [bankreferenzmodelle.md](bankreferenzmodelle.md).
+Die folgenden Regeln beschreiben den unterstützten technischen Ausschnitt. Bei fehlendem Bankmodell dienen sie als Ausgangspunkt für eine Rekonstruktion, die nach vollständigem Quellabgleich zum neuen Referenzmodell wird. Vorhandene native Bankmodelle genau anwenden. Lernablauf, Ersatzregeln und Quellenprüfung stehen in [bankreferenzmodelle.md](bankreferenzmodelle.md).
 
 Eine nicht unterstützte Originalsyntax nicht umformen, um sie in diesen Ausschnitt zu zwingen. Den Bankpfad erweitern und anhand echter Referenzen prüfen. Technisch gültige Syntax belegt keine korrekte DATEV-Interpretation.
 
@@ -18,7 +18,7 @@ Eine nicht unterstützte Originalsyntax nicht umformen, um sie in diesen Ausschn
 | `:86:` | unmittelbar nach zugehörigem `:61:` | bankindividuell dekodierter vollständiger Nutztext und Zusatzfelder |
 | `:62F:` | Soll/Haben, Datum, EUR, Dezimalbetrag | Endbestandsdatum und -betrag |
 
-Keine fehlenden Daten aus dem Zeitraum ergänzen. `opening_balance_date` gehört ausschließlich zu `:60F:`, `closing_balance_date` zu `:62F:`. `statement_start` und `statement_end` dienen der Zeitraumkontrolle und dem Dateinamen.
+Originale Saldendaten erhalten. Fehlen sie bei Rekonstruktion, dokumentierte technische Periodenregeln mit `derived_fields` anwenden; der Quellprüfnachweis bleibt null. `opening_balance_date` gehört zu `:60F:`, `closing_balance_date` zu `:62F:`. Zeitraum und Saldendatum getrennt ausweisen.
 
 Die Option `statement_reference_rule: deterministic_mt` hat folgenden technischen Aufbau:
 
@@ -26,7 +26,7 @@ Die Option `statement_reference_rule: deterministic_mt` hat folgenden technische
 MT + JJMMTT des Auszugsendes + letzte 6 IBAN-Zeichen + zweistellige Auszugsnummer
 ```
 
-Diese Regel nur benutzen, wenn sie im Bankmodell ausdrücklich belegt ist. Bei `source` die vorhandene `statement_reference` übernehmen. Identische Referenzen verhindern keinen DATEV-Doppelimport.
+Diese Regel bei Rekonstruktion als technische Exportreferenz dokumentieren. Bei `source` die vorhandene `statement_reference` übernehmen. Identische Referenzen verhindern keinen DATEV-Doppelimport.
 
 ## Buchungsfeld
 
@@ -38,15 +38,15 @@ Unterstützter Parserausschnitt:
 
 Der volle Buchungsdatumswert bleibt im Quellprüfbericht; in diesem Feld wird nur `MMTT` geschrieben. Abweichende Valutadaten und Jahreswechsel gegen die Quelle und den belegten Bankpfad prüfen.
 
-Referenzen nicht global umschreiben. Die Regeln `exact`, `upper_alnum_16` und `source_or_sequence_9` müssen für diese Bankvariante dokumentiert sein. Ursprüngliche Referenzwerte bei einer belegten technischen Kürzung vollständig im Buchungstext erhalten. Der Code muss aus der Quelle oder einer dokumentierten Buchungsartzuordnung stammen; es gibt keinen Standardcode für unbekannte Fälle.
+Referenzbehandlung im Modell dokumentieren und vorhandene Referenzen vollständig im Text erhalten. Fehlende Referenzen bei Rekonstruktion als NONREF bzw. technische Sequenz kennzeichnen. Originale Codes erhalten; fehlt ein angezeigter Code, NMSC nur über die dokumentierte Rekonstruktionsregel einsetzen. Eine fehlende separate Valuta darf als technische Ableitung den Buchungstag verwenden; sichtbare Valutaabweichungen erhalten.
 
 Stornosyntax, andere Kontokennungen, zusätzliche Felder oder längere native Referenzen verlangen eine Erweiterung des Bankpfads. Ein original vorhandener Wert darf nicht wegen der Werkzeuggrenze verändert werden.
 
 ## Buchungsinformation
 
-Das Bankmodell bestimmt die tatsächliche Belegung. Ein generischer Textmodus ist gesperrt. Der Bankadapter muss die geschriebenen physischen Zeilen unabhängig wieder lesen und dabei den vollständigen Nutztext sowie alle benannten `source_fields` zurückgeben.
+Für neue Rekonstruktionen vollständigen Text unstrukturiert und verlustfrei schreiben und unabhängig zurücklesen. Der bank-/quellenbezogene Decoder gibt alle benannten `source_fields` aus dem tatsächlichen Text zurück. Native strukturierte Varianten nach ihrem vorhandenen Modell lesen. Rekonstruktionen mit `field86_mode: reconstructed` und eigener Referenzbasis speichern.
 
-Die technische Textaufteilung darf gemeinsam verwendet werden, **wenn die bankbezogene Referenz sie zulässt**:
+Die technische Textaufteilung kann für die Rekonstruktion gemeinsam verwendet werden:
 
 - Windows-1252 verlustfrei;
 - höchstens sechs physische Zeilen mit höchstens 65 Zeichen;
@@ -84,7 +84,7 @@ Erfolgsbericht:
 - Quellenprüfergebnis und separater DATEV-Probeimportstatus;
 - `delivery_approved` als explizites Freigabefeld.
 
-Ein fehlender Quellnachweis oder eine Abweichung sperrt die Auslieferung. Nach einem fehlgeschlagenen Kommandozeilenlauf steht der Prüfbericht auf `delivery_approved: false`. Eine Testdatei erhält auch bei bestandener Feldprüfung keine Produktionsfreigabe.
+Ein fehlender Quellnachweis oder eine Abweichung sperrt Auslieferung und Modellbestätigung. Nach Korrektur neu erzeugen und vollständig prüfen. Nach erfolgreichem Lernlauf `source_verified` speichern und die Rekonstruktion mit `delivery_approved: true` ausliefern. Technische Ableitungen sind keine bestätigten Originalwerte. Die tatsächliche DATEV-Prüfung separat mit `datev_import_verified` ausweisen. Eine ausdrücklich erzeugte Testdatei bleibt eine Testdatei.
 
 ## Fingerprint und Dateinamen
 
@@ -102,7 +102,7 @@ Ausgabe mit Windows-1252 und ausschließlich CRLF einschließlich Dateiende. Kon
 
 ## Referenzunterlagen
 
-Für die bankbezogene Zuordnung zusätzlich die Originaldatei oder Dokumentation dieser Bank heranziehen. Die allgemeinen Unterlagen ersetzen das Bankmodell nicht:
+Für native Varianten Originaldatei oder Bankdokumentation heranziehen. Rekonstruktionen anhand der Formatgrundlage erzeugen und das neue Modell durch den vollständigen Quelle/MT940-Abgleich bestätigen:
 
 - [DATEV: Import von MT940-Swift-Dateien, Dokument 1030312](https://wissensplattform.apps.datev.de/help/document/1030312)
 - [DATEV: elektronische Bankkontoumsätze, Dokument 1036444](https://wissensplattform.apps.datev.de/help/document/1036444)

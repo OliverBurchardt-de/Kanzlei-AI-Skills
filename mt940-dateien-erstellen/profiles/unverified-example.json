@@ -44,8 +44,9 @@
   "examples": [],
   "open_questions": [
     "Bankidentität und Exportvariante aus Originalquelle bestimmen",
-    "Bankbezogene Referenz für Feldzuordnung und Syntax beschaffen",
-    "Schreib-/Leseadapter gegen die Originalreferenz prüfen"
+    "Quelle unabhängig erfassen und Rekonstruktion mit dokumentierten technischen Regeln erzeugen",
+    "Geschriebene MT940 vollständig gegen die Quelle prüfen; bei Fehlern korrigieren und erneut erzeugen",
+    "Erst nach erfolgreicher Quellenprüfung Modell als source_verified speichern"
   ],
   "probe_import": {
     "date": null,

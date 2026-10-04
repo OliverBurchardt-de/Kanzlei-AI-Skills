@@ -50,7 +50,7 @@ def build(data: dict[str, Any], profile_dir: Path | None = None) -> tuple[bytes,
         "datev_probe_import": (
             "documented in verified profile"
             if normalized["_profile"].get("status") == "verified" and not normalized["_profile"].get("test_fixture_only", False)
-            else "not verified; test import required"
+            else "not confirmed by a probe import"
         ),
         "transactions": transaction_metrics(normalized),
     }

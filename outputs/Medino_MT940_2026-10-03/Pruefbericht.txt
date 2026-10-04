@@ -1,0 +1,38 @@
+Medino – Vorbereitung der MT940-Erstellung, Stand 03.10.2026
+
+Status: MT940-Erzeugung gesperrt. Keine STA-Datei erstellt und keine DATEV-Freigabe erteilt.
+
+Quelle: Dokument_2026_10_03_09_59.pdf, vier Seiten, unverändert gesichert.
+Bank: Dortmunder Volksbank; BIC GENODEM1DOR
+Konto: DE35441600146708656600, MeDiNo Immobilien UG, Business, EUR
+Filterzeitraum: 2026-01-01 bis 2026-10-03
+Umsätze: 32; 3 Gutschriften, 29 Belastungen
+Gutschriften: 83000.00 EUR; Belastungen: -3795.62 EUR
+Startsaldo: 3552.86 EUR
+Umsatzsumme: 79204.38 EUR
+Endsaldo: 82757.24 EUR
+Rechnerische Differenz: 0.00 EUR
+
+Alle vier Seitenbilder visuell geprüft. Alle 32 Buchungsblöcke einschließlich vollständiger Texte, Referenzenden, Gegenkonten und explizit angezeigter Valuta unabhängig aus dem Original erfasst und mit dem getrennt aus der PDF extrahierten Manifest verglichen. Alle verfügbaren Werte stimmen überein. Die CSV ist eine Arbeitsliste; kein DATEV-Importformat. Fehlende Quellwerte bleiben leer/null.
+
+Explizite Valutaabweichungen (Quellnummern): 15 = Buchung 29.05.2026 / Valuta 31.05.2026; 25 = Buchung 27.02.2026 / Valuta 28.02.2026; 26 = Buchung 30.01.2026 / Valuta 31.01.2026.
+
+Die PDF ist eine Umsatzübersicht. Separate Saldendaten, Auszugs-/Sequenznummern, MT940-Buchungscodes und technische Bank-/Kundenreferenzen sind nicht vollständig enthalten. Der Filterzeitraum darf nicht als Nachweis der Saldendaten verwendet werden. Für 29 Umsätze wird keine separate Valuta angezeigt.
+
+Bankmodell: dortmunder-volksbank-onlinebanking-business-pdf-2026, Version 1, Entwurf. Die PDF belegt die sichtbaren Werte, keine MT940-Unterfeldsyntax. Kein passendes bestätigtes Modell vorhanden. Öffentlich gefundene Produktinformationen der Bank und Atruvia nennen Formatunterstützung, belegen jedoch nicht die benötigte Feldzuordnung dieser Variante. Es wurden keine Formatregeln einer fremden Bank übernommen.
+
+Benötigt: nativer MT940/STA- oder CAMT-Bankexport für dieses Konto/Zeitraum, oder konkrete bankbezogene Formatdokumentation plus fehlende Originalfelder. Für eine neue rekonstruierte DATEV-Variante außerdem dokumentierter Probeimport samt Löschung der Testumsätze. Vor einem erneuten Import für bereits importierte Zeiträume müssen frühere Test-/Importumsätze bereinigt sein.
+
+Quell-SHA256: 8314904a7b219ff949ed5fa28f2bde58b1eb8119cf23244971e47b7775bca6a7
+MT940-SHA256: entfällt, keine Datei erzeugt.
+DATEV-Probeimport: nicht durchgeführt.
+
+Dateien:
+original/ = unveränderter E-Mail-Anhang
+manifest.json = getrennt aus der PDF extrahierte, noch unvollständige Generator-Eingabe; gesperrt
+source-review.json = unabhängige visuelle Quellabschrift mit Fundstellen
+Pruefbericht.json = vollständiger Quelle/Manifest-Feldvergleich und Saldenrechnung
+Umsaetze_quellgeprueft.csv = Quellumsätze in unveränderter Reihenfolge, mit vollständigem Text
+profiles/ = bankindividueller Entwurf ohne erfundene Zielzuordnungen
+
+Skill-Vorgabe: „Fehlt diese Evidenz, den Entwurf trotzdem sichern, die benötigte Bankreferenz benennen und die Erzeugung sperren.“

@@ -1,0 +1,22 @@
+SPACES PRAXISTEST — FIKTIVE ÜBUNGSDATEN
+Mandant: Beispiel GmbH
+Bearbeitungsmonat: September 2026
+Alle Namen, Unterlagen und Termine sind erfunden.
+
+NOTIZ A — 1. Oktober 2026, 09:00 Uhr
+Zusammenstellung durch Mia:
+- Der September-Auszug ist noch nicht eingegangen.
+- Die Lieferantenrechnung R-142 fehlt.
+- Ein Foto des Tankbelegs liegt vor. Ob es lesbar ist, wurde nicht geprüft.
+- Leon übernimmt die Zusammenstellung der Rückfragen.
+- Interner Prüftermin in der Kanzlei: 8. Oktober 2026.
+- Es wurde weder eine gesetzliche Frist geprüft noch ein Termin mit dem Mandanten vereinbart.
+
+NOTIZ B — 3. Oktober 2026, 11:00 Uhr
+Aktualisierung durch Leon:
+- Der September-Auszug ist am 2. Oktober 2026 eingegangen.
+- Die Lieferantenrechnung R-142 fehlt weiterhin.
+- Die Lesbarkeit des Tankbelegfotos ist weiterhin ungeklärt.
+- Leon bleibt für die Zusammenstellung der Rückfragen zuständig.
+- Der interne Prüftermin 8. Oktober 2026 bleibt bestehen.
+- Die übrigen Angaben aus Notiz A bleiben bestehen.

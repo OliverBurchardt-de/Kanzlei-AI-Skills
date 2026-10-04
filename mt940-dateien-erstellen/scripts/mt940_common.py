@@ -268,15 +268,37 @@ def load_profile(data: dict[str, Any], profile_dir: Path | None = None) -> dict[
     for field in ("bank_id", "source_variant", "profile_version"):
         if not data.get(field) or data[field] != profile.get(field):
             raise MT940Error(f"Bank model mismatch in {field}; another bank/variant/version is forbidden", 4)
-    if not profile.get("bank_name") or profile.get("status") not in {"draft", "verified"}:
-        raise MT940Error("Bank model requires bank_name and status draft/verified", 4)
+    if not profile.get("bank_name") or profile.get("status") not in {"draft", "source_verified", "verified"}:
+        raise MT940Error("Bank model requires bank_name and draft/source_verified/verified status", 4)
     if data.get("source_type") not in profile.get("source_types", []):
         raise MT940Error("Bank model does not cover this source_type", 4)
     basis = profile.get("reference_basis", {})
-    if not isinstance(basis, dict) or basis.get("verified_against_reference") is not True or not basis.get("reference"):
+    reconstruction = isinstance(basis, dict) and basis.get("kind") == "source_reconstruction"
+    learning = reconstruction and profile.get("status") == "draft"
+    if profile.get("status") == "source_verified" and not reconstruction:
+        raise MT940Error("source_verified status requires a source_reconstruction model", 4)
+    if not isinstance(basis, dict) or (not learning and basis.get("verified_against_reference") is not True) or not basis.get("reference"):
         raise MT940Error("Bank model has no reviewed bank-specific reference basis", 4)
-    if basis.get("kind") not in {"native_bank_file", "bank_documentation", "confirmed_test"}:
-        raise MT940Error("Bank model reference must be a bank file, bank documentation or confirmed test", 4)
+    if basis.get("kind") not in {"native_bank_file", "bank_documentation", "confirmed_test", "source_reconstruction"}:
+        raise MT940Error("Bank model needs a bank reference or source-checked reconstruction", 4)
+    if reconstruction:
+        if data.get("field86_mode") != "reconstructed" or data.get("source_type") == "native_mt940":
+            raise MT940Error("Reconstruction model requires reconstructed mode and a non-native source", 4)
+        if profile.get("field86_structure") != "unstructured" or not isinstance(profile.get("reconstruction_rules"), dict):
+            raise MT940Error("Reconstruction model must document text structure and missing-value rules", 4)
+        if not learning:
+            evidence_path = Path(basis["reference"])
+            if not evidence_path.is_absolute():
+                evidence_path = path.parent / evidence_path
+            try:
+                evidence_bytes = evidence_path.read_bytes()
+                evidence = json.loads(evidence_bytes)
+            except (OSError, ValueError) as exc:
+                raise MT940Error("Source-checked model reference evidence is unavailable", 4) from exc
+            if hashlib.sha256(evidence_bytes).hexdigest() != basis.get("reference_sha256") or evidence.get("exit_code") != 0 or evidence.get("source_check", {}).get("source_to_mt940_match") is not True:
+                raise MT940Error("Source-checked model reference evidence failed integrity/field checks", 4)
+            if evidence.get("bank_model") != {key:data[key] for key in ("bank_id","source_variant","bank_profile","profile_version")}:
+                raise MT940Error("Source-checked evidence belongs to another bank/variant/version", 4)
     mappings = profile.get("field_mappings", {})
     required_mappings = {"statement_reference", "iban", "statement_number", "sequence_number",
                          "opening_balance_date", "opening_balance", "closing_balance_date",
@@ -293,21 +315,23 @@ def load_profile(data: dict[str, Any], profile_dir: Path | None = None) -> dict[
         raise MT940Error("Bank model must define customer_reference handling", 4)
     if rules.get("bank_reference") not in {"exact", "upper_alnum_16", "source_or_sequence_9"}:
         raise MT940Error("Bank model must define bank_reference handling", 4)
-    if not isinstance(profile.get("examples"), list) or not profile["examples"]:
+    if not isinstance(profile.get("examples"), list) or (not profile["examples"] and not learning):
         raise MT940Error("Bank model requires source/output reference examples", 4)
     if profile.get("test_fixture_only") is True and path.parent.resolve() != (
         Path(__file__).resolve().parents[1] / "tests" / "fixtures" / "profiles"
     ).resolve():
         raise MT940Error("Synthetic test models cannot be used as production profiles", 4)
     mode = data.get("field86_mode")
-    if mode not in {"native", "bank_profile", f"datev_verified:{name}"}:
-        raise MT940Error("Use native or the selected bank_profile; generic/unverified fallback is forbidden", 4)
+    if mode not in {"native", "bank_profile", "reconstructed", f"datev_verified:{name}"}:
+        raise MT940Error("Use native, bank_profile or explicit reconstructed mode", 4)
+    if mode == "reconstructed" and not reconstruction:
+        raise MT940Error("Reconstructed mode requires a source_reconstruction model", 4)
     if mode == "native" and data.get("source_type") != "native_mt940":
         raise MT940Error("native mode requires a native_mt940 source", 4)
     if mode == "native" and (profile["statement_reference_rule"] != "source"
                              or rules != {"customer_reference": "exact", "bank_reference": "exact"}):
         raise MT940Error("Native models must preserve source references exactly", 4)
-    if mode != "native" and profile["status"] == "draft" and data.get("output_scope") != "test":
+    if mode != "native" and not reconstruction and profile["status"] == "draft" and data.get("output_scope") != "test":
         raise MT940Error("A draft bank model may produce only a clearly labeled test file", 4)
     adapter = profile.get("adapter")
     if mode != "native" or adapter:
@@ -328,7 +352,7 @@ def load_profile(data: dict[str, Any], profile_dir: Path | None = None) -> dict[
             raise MT940Error("Bank adapter needs encode_field86 and independent decode_field86", 4)
         profile["_adapter"] = module
     if mode.startswith("datev_verified:") or (str(data.get("target_system", "")).upper() == "DATEV"
-                                             and mode != "native" and data.get("output_scope", "full") != "test"):
+                                             and mode not in {"native", "reconstructed"} and data.get("output_scope", "full") != "test") or (mode == "reconstructed" and profile["status"] == "verified"):
         require_probe_import(profile)
     for example in profile["examples"]:
         if not isinstance(example, dict) or not isinstance(example.get("source_transaction"), dict):
@@ -398,7 +422,7 @@ def bank_field86_result(tx: dict[str, Any], profile: dict[str, Any]) -> Field86R
         raise MT940Error("Bank model :86: decode differs from the complete source description", 3)
     if decoded.get("source_fields", {}) != tx.get("source_fields", {}):
         raise MT940Error("Bank model :86: decode loses or swaps named source fields", 3)
-    if underfields(physical.canonical_description) - set(profile.get("allowed_underfields", [])):
+    if profile.get("field86_structure") != "unstructured" and underfields(physical.canonical_description) - set(profile.get("allowed_underfields", [])):
         raise MT940Error("Bank adapter emitted underfields outside its reference model", 3)
     return Field86Result(physical.lines, len(source), physical.encoded_description_length,
                          True, False, source)
@@ -472,7 +496,7 @@ def normalize_manifest(
         raise MT940Error("transactions must be a list", 2)
 
     field86_mode = str(data.get("field86_mode", ""))
-    allowed_modes = {"native", "bank_profile"}
+    allowed_modes = {"native", "bank_profile", "reconstructed"}
     if field86_mode not in allowed_modes and not field86_mode.startswith("datev_verified:"):
         raise MT940Error(f"Unsupported field86_mode: {field86_mode!r}", 4)
     profile = load_profile(data, profile_dir)

@@ -1,142 +1,108 @@
-# Bankreferenzmodelle und Quellprüfung
+# Bankmodelle lernen und Quellen unabhängig prüfen
 
-## Ein Modell pro Bank und Variante
+## Vorhandenes Modell oder Lernlauf
 
-`profiles/<bank>-<variante>.json` gehört genau zu einer Bankidentität und einer belegten Exportvariante. Bankidentität mit BIC, BLZ oder eindeutiger Anbieterkennung in der Referenz dokumentieren; `bank_id` ist deren stabiler interner Schlüssel. Bei Zweifeln an der Identität die Quelle klären. Ein Modell einer anderen Sparkasse, einer Bankengruppe oder eines anderen Kartenanbieters nicht wegen ähnlicher Texte übernehmen.
+Ein Modell gehört genau zu `bank_id`, `source_variant`, `profile_version` und einer Quellenart. Bankidentität anhand der Originalquelle bestimmen; Banken und Varianten nicht vermischen. Native Exporte und PDF-Rekonstruktionen als getrennte Varianten führen.
 
-Bei jeder Bearbeitung Modell suchen, lesen und anwenden. Fehlt es, [unverified-example.json](../profiles/unverified-example.json) als Entwurf für die konkrete Bank kopieren und bekannte Werte eintragen. Offene Zuordnungen als `null` und in `open_questions` festhalten. Eine fehlende Referenz ist ein Klärungsfall; der Entwurf muss trotzdem angelegt werden. Ein gespeicherter Entwurf allein erlaubt keine Formatannahmen.
+Fehlt ein Modell: Quelle vollständig erfassen, MT940 erzeugen, tatsächlich geschriebene Felder gegen die unabhängig geprüfte Originalquelle vergleichen, Fehler korrigieren und erneut erzeugen. **Erst nach erfolgreichem vollständigem Abgleich ein bestätigtes Modell speichern.** Fehlende Originalexporte oder Bankdokumentation verhindern den Lernlauf nicht.
 
-Erst aus einer Originalbankdatei, bankeigenen Formatbeschreibung oder bestätigten bankbezogenen Testausgabe die tatsächliche Syntax und Feldbedeutung übernehmen. Bank-/Quellenidentität, Datum und genaue Fundstelle der Referenz speichern. Die sichtbare PDF allein belegt ihren Text, aber keine unsichtbare MT940-Unterfeldsyntax. Beispielwerte nie als reale Salden oder Buchungen übernehmen.
-
-`status: draft` bedeutet: noch nicht für produktive Verwendung bestätigt. Nach belegter Modellprüfung und bei DATEV nach dokumentiertem, anschließend bereinigtem Probeimport auf `verified` setzen. Regeln nicht still ändern: neue `profile_version` vergeben; bei anderem Exportweg/Format eine neue `source_variant` und gegebenenfalls ein neues Profil anlegen.
-
-## Modellinhalt
-
-Der Generator verlangt:
-
-- `profile_name`: identisch mit dem JSON-Dateinamen ohne Endung;
-- `bank_id`, `bank_name`, `source_variant`, `profile_version`, `source_types`;
-- `status`: `draft` oder `verified`;
-- `reference_basis`: `kind` (`native_bank_file`, `bank_documentation` oder `confirmed_test`), `reference` mit überprüfbarer Fundstelle und `verified_against_reference: true` erst nach Prüfung;
-- `field_mappings`: belegte Bedeutung, Quelle und Ziel jedes Auszugs-/Umsatzfelds, einschließlich der benannten Zusatzfelder;
-- `statement_reference_rule`: `source` zur unveränderten Übernahme oder `deterministic_mt` ausschließlich als ausdrücklich belegte Modellregel;
-- `reference_rules`: je Kunden- und Bankreferenz die ausdrücklich dokumentierte Behandlung;
-- `charset`, `line_endings`, `allowed_underfields` und Quelle/Ziel-Beispiele unter `examples`;
-- für rekonstruierten Text `adapter` und dessen `adapter_sha256`;
-- bei DATEV `probe_import` mit Datum, Ergebnis, sämtlichen Prüfpunkten und bestätigter Löschung der Testumsätze.
-
-Pflichtschlüssel in `field_mappings`: `statement_reference`, `iban`, `statement_number`, `sequence_number`, `opening_balance_date`, `opening_balance`, `closing_balance_date`, `closing_balance`, `currency`, `value_date`, `booking_date`, `amount`, `code`, `customer_reference`, `bank_reference`, `description`. Für jeden Schlüssel Herkunft, technische Transformation und Ziel angeben, nicht nur eine Zielfeldnummer. Fehlende Quellwerte und ihre zulässige Behandlung ausdrücklich dokumentieren.
-
-Die derzeitigen Skripte unterstützen einen begrenzten MT940-Ausschnitt: EUR, IBAN als `:25:`, `:60F:`/`:62F:`, Soll/Haben ohne zusätzliche Stornokennzeichen und kurze Referenzen in `:61:`. Das ist eine technische Begrenzung des Werkzeugs, **kein universelles Bankmodell**. Falls die Bankreferenz andere Felder oder Grenzen verlangt, Modell und technischen Bankpfad erweitern und verifizieren. Die Bankvariante nicht in das vorhandene Schema pressen. Bei nativen Quellen alle unterstützten Felder unverändert übernehmen; eine Quelle mit nicht unterstützter Syntax sperren, bis ein geeigneter Bankpfad vorhanden ist.
-
-Unterstützte Referenzregeln:
-
-| Regel | Anwendung |
+| Status | Bedeutung |
 | --- | --- |
-| `exact` | Vorhandenen Wert unverändert übernehmen, bei nicht darstellbarem Wert abbrechen. |
-| `upper_alnum_16` | Nur wenn das Bankmodell diese Transformation belegt: Großbuchstaben/Alphanumerik und 16 Zeichen. Vollständigen Originalwert zusätzlich in `:86:` erhalten. |
-| `source_or_sequence_9` | Nur für die Bankreferenz und nur als belegte Modellregel: vorhandene kurze Referenz unverändert, sonst neunstellige technische Sequenz. Niemals als originale Bankreferenz ausgeben. |
+| `draft` | Temporärer Kandidat für den Lernlauf; keine bestätigte Referenz oder Auslieferungsfreigabe |
+| `source_verified` | Tatsächliche MT940 vollständig gegen die Originalquelle geprüft; Modell wiederverwendbar |
+| `verified` | Zusätzlich tatsächliche DATEV-Anzeige nach erfolgreichem, bereinigtem Probeimport bestätigt |
 
-Fehlende Kundenreferenz nur mit ausdrücklich modelliertem `missing_customer_reference: NONREF` behandeln. Kein globaler `NMSC`-Standardcode: Code aus der Quelle oder der dokumentierten Zuordnung ihrer Buchungsart erfassen. Im Quellprüfbericht Originalbezeichnung und Modellregel nachvollziehbar machen.
+`reference_basis.kind: source_reconstruction` bezeichnet eine eigene Exportkonvention für diese Bank/Quellenvariante. Sie behauptet keine Nachbildung des nativen Bankformats. Native Dateien, Bankdokumentation und bestätigte Testimporte bleiben weitere Referenzarten. Synthetische Softwaretestmodelle niemals als echte Bankreferenzen ausgeben.
 
-## Bankeigener Textadapter
+## Quelle und technische Ersatzregeln
 
-Der Adapter liegt neben seinem Profil. Sein Dateiname darf keine Pfadkomponenten enthalten. Vor dem Eintragen des SHA-256 die Funktionen anhand der Referenzbeispiele prüfen:
+Originaldateien unverändert sichern und SHA-256 dokumentieren. `manifest.json` aus der Quelle erfassen; `source-review.json` getrennt gegen das Original prüfen. Quellprüfung nicht aus Manifest, MT940 oder Generatorbericht zurückkopieren. Bei PDF/Bild alle Seiten rendern und sämtliche vollständigen Buchungsblöcke visuell prüfen.
+
+Nicht angezeigte Werte im Quellprüfnachweis ausdrücklich `null` lassen. Im Manifest dürfen folgende dokumentierte technische Regeln fehlende Werte ergänzen:
+
+| Feld | Regel | Ergebnis |
+| --- | --- | --- |
+| `statement_number` | `technical_statement_one` | Technische Auszugsnummer 1 |
+| `sequence_number` | `technical_sequence_one` | Technische Sequenz 1 |
+| `opening_balance_date` | `period_start_previous_day` | Vortag des belegten Zeitraumbeginns als technische Saldendatierung |
+| `closing_balance_date` | `period_end` | Ende des belegten Zeitraums als technische Saldendatierung |
+| `value_date` | `booking_date_when_not_shown` | Technische Ersatzvaluta = Buchungstag, sofern keine separate Valuta angezeigt wird |
+| `code` | `nmsc_when_not_shown` | Technischer NMSC-Code, sofern kein Originalcode angezeigt wird |
+| Kundenreferenz | `missing_customer_reference: NONREF` | Kennzeichen für fehlende Quellreferenz |
+| Bankreferenz | `source_or_sequence_9` | Neunstellige technische Quellsequenz bei fehlender Bankreferenz |
+
+Sichtbare Originalwerte niemals ersetzen. Keine Ersatzregel für Konto, Währung, Buchungsdatum, Betrag, Saldenbetrag oder Text. Unleserliche Quellen, Widersprüche und nicht verlustfrei darstellbare Inhalte als konkrete Klärungsfälle behandeln. Die Periodenregeln bestätigen keine nicht angezeigten originalen Saldendaten.
+
+Jede Ersatzanwendung in `derived_fields` am Auszug oder Umsatz mit `source_value: null`, `rule`, `value` und `reason` protokollieren. Beispiel:
+
+```json
+{
+  "opening_balance_date": "2025-12-31",
+  "derived_fields": {
+    "opening_balance_date": {
+      "source_value": null,
+      "rule": "period_start_previous_day",
+      "value": "2025-12-31",
+      "reason": "Technische Datierung für den Zeitraum ab 01.01.2026; kein separates Saldendatum angezeigt"
+    }
+  }
+}
+```
+
+Der Quellprüfnachweis behält `opening_balance_date: null`. Der Validator berechnet die Ersatzregel erneut aus den unabhängigen Quellwerten und zeigt Originalwert, technische Ableitung und tatsächlichen MT940-Wert getrennt. Die direkte Original/Manifest-Gleichheit bleibt bei Ableitungen ausdrücklich false; die überprüfte Regelgleichheit muss true sein.
+
+## Textadapter
+
+Sämtliche sichtbaren Buchungstextzeilen in Originalreihenfolge einschließlich Gegenpartei, Gegenkonto, EREF, MREF, Gläubiger-ID und Referenzenden erhalten. Nur Leerzeichen und physische Zeilenumbrüche normalisieren; Wörter, Umlaute, Satzzeichen, Wiederholungen und Referenzen nicht kürzen oder verbessern.
+
+Für neue Rekonstruktionen unstrukturierten `:86:`-Text verwenden. `?xx` im Originaltext bleibt wörtlicher Text. Encoder und Decoder getrennt implementieren; der Decoder liest tatsächliche physische Zeilen und erhält weder Quellwerte noch Manifestwerte als Rückgabeschablone.
 
 ```python
+from mt940_common import field86_result
+
 def encode_field86(transaction):
-    # Nur die belegten Regeln DIESER Bankvariante verwenden.
-    # transaction enthält description und gegebenenfalls source_fields.
-    return [":86:...", "..."]
+    return field86_result(transaction["description"]).lines
 
 def decode_field86(lines):
-    # Tatsächliche Zeilen unabhängig von encode_field86 lesen.
-    # Nicht durch erneutes Erzeugen oder Rückgabe der Eingabequelle prüfen.
-    return {"description": "vollständiger Nutztext", "source_fields": {}}
+    if not lines or not lines[0].startswith(":86:"):
+        raise ValueError("Missing :86:")
+    text = lines[0][4:] + "".join(lines[1:])
+    return {"description": text, "source_fields": {}}
 ```
 
-Benannte Informationen wie Gegenpartei, IBAN, EREF und MREF müssen bei Bedarf einzeln unter `source_fields` zurückgegeben werden. Bedeutung und Reihenfolge aus der Bankreferenz übernehmen. Ein erlaubtes `?32` ohne dokumentierte Bedeutung reicht nicht. Ein einfacher Textadapter ist nur zulässig, wenn **diese Bankvariante** tatsächlich unstrukturierten Text verwendet. Keine zentrale Standarddatei für unbekannte Banken erstellen.
+Bei vorhandenen `source_fields` den Decoder um nachvollziehbare bank-/quellenbezogene Extraktionsregeln aus dem tatsächlichen Text erweitern. Alle benannten Felder einzeln vergleichen; diese nicht entfernen, um einen fehlenden Decoder zu umgehen. Physische Grenzen und Zeichensatz einhalten. Falls Text nicht verlustfrei hineinpasst, den geeigneten dokumentierten Bankpfad erweitern oder die konkrete Grenze klären.
 
-Referenzbeispiele müssen sowohl vollständige Quellfelder als auch die erwarteten physischen MT940-Felder und deren dekodierte Bedeutung enthalten. Schreiben und Lesen jeweils gegen diese Beispiele prüfen; ein selbstkonsistenter Rundlauf beweist keine richtige Zuordnung. Lange Texte, Umlaute, Referenzenden und gegebenenfalls mehrere Buchungsarten abdecken, soweit in der Referenz vorhanden.
+## Lernhelfer
 
-Unter `tests/fixtures/profiles/` liegen ausschließlich synthetische Softwaretestmodelle. Die Beispiele `?20`/`?32` sind keine Bankregeln. `test_fixture_only: true` darf nie entfernt werden, um ein Produktionsprofil vorzutäuschen. Der Loader sperrt diese Modelle außerhalb des Testordners, und der Validator erteilt ihnen keine Produktionsfreigabe.
-
-## Manifest
-
-Zusätzlich zu den Quelldaten ausdrücklich eintragen:
-
-```json
-{
-  "bank_id": "bankidentitaet-aus-der-quelle",
-  "bank_profile": "bankidentitaet-exportvariante",
-  "profile_version": 1,
-  "source_variant": "exportvariante-aus-der-referenz",
-  "source_type": "pdf",
-  "target_system": "DATEV",
-  "field86_mode": "bank_profile",
-  "output_scope": "test"
-}
-```
-
-Dies ist ein Ausschnitt, kein ausführbares Manifest. Zeitraum, Auszugs-/Sequenznummer, IBAN, Währung, Salden und Umsätze müssen separat vollständig vorliegen. Die Modellbezeichnungen stammen aus dem tatsächlich angelegten Profil. Fehlende Modellkennungen nicht aus ähnlichen Dateinamen ableiten.
-
-## Getrennter Quellprüfbericht
-
-`source-review.json` vor der Freigabe **aus der Originalquelle** erfassen oder unabhängig gegen diese prüfen. Der Generator erstellt ihn bewusst nicht. Beispielstruktur, keine echten Bankwerte:
-
-```json
-{
-  "bank_id": "bankidentitaet-aus-der-quelle",
-  "bank_profile": "bankidentitaet-exportvariante",
-  "profile_version": 1,
-  "source_variant": "exportvariante-aus-der-referenz",
-  "reviewed_against_original": true,
-  "review_method": "visual_original",
-  "source_files": [
-    {"id": "auszug", "path": "original.pdf", "sha256": "SHA-256-der-unveraenderten-Quelldatei"}
-  ],
-  "iban": "IBAN-aus-der-Quelle",
-  "currency": "EUR",
-  "statement_start": "2026-07-01",
-  "statement_end": "2026-07-01",
-  "statement_number": 7,
-  "sequence_number": 1,
-  "opening_balance_date": "2026-06-30",
-  "opening_balance": "100.00",
-  "closing_balance_date": "2026-07-01",
-  "closing_balance": "75.00",
-  "transactions": [
-    {
-      "source_file": "auszug",
-      "source_locator": "Seite 1, Buchungsblock 1, Zeilen 12 bis 15",
-      "value_date": "2026-07-01",
-      "booking_date": "2026-07-01",
-      "amount": "-25.00",
-      "code": "NTRF",
-      "customer_reference": "REF0001",
-      "bank_reference": null,
-      "description": "Vollständiger sichtbarer Buchungstext mit Referenz REF0001",
-      "source_fields": {}
-    }
-  ]
-}
-```
-
-Alle Feldwerte und Codes sind anhand der realen Quelle und ihrer Bankregel zu ersetzen. `bank_reference: null` bezeichnet einen tatsächlich fehlenden Quellwert und ist nur bei belegter Fehlwertregel zulässig. Die Fundstellen dürfen sich nicht wiederholen. Bei mehreren Seiten im Locator den gesamten Block angeben. Relative Originaldateipfade beziehen sich auf den Ordner des Quellprüfberichts.
-
-`visual_original` ist für PDF/Bild Pflicht. `native_field_extraction` ist für nachvollziehbare Extraktion aus einer elektronischen Originaldatei vorgesehen. Bei `native` die tatsächlichen `native_field86_lines` und deren vollständigen Text sowie `statement_reference` auch im Quellprüfbericht speichern. Alle weiteren übernommenen Informationen einzeln als `source_fields` erfassen und im Bankmodell zuordnen.
-
-Die Software kann nicht beweisen, dass eine als geprüft markierte Abschrift tatsächlich visuell geprüft wurde. Die ursprüngliche Datei erneut öffnen und mit der Abschrift vergleichen; den Nachweis nicht bloß durch Setzen eines Bool-Werts herstellen. Dateihashes sichern die Identität, nicht die Richtigkeit der Abschrift. Bei unleserlichem Text die Freigabe sperren.
-
-## Abnahme
+Das ausgelesene Manifest benötigt `bank_name`, `bank_id`, `source_variant`, `bank_profile`, `profile_version`, Quellenart, Konto, Zeitraum, Salden und sämtliche Umsätze. Fehlende technische Angaben ausdrücklich `null` lassen. Der Helfer verwendet die oben benannten Regeln oder die ausdrücklich vorgegebenen `reconstruction_rules`.
 
 ```bash
-python scripts/build-mt940.py manifest.json
-python scripts/validate-mt940.py "MT940 <IBAN> <Zeitraum>.sta" manifest.json --source-review source-review.json
+python scripts/learn-bank-profile.py manifest.json --source-review source-review.json --adapter bank-textadapter.py --profile-dir profiles --output-dir ausgabe
 ```
 
-Bei abweichendem Modellordner beide Aufrufe mit demselben `--profile-dir` ausführen. Für ein neues Modell außerdem die bankbezogenen Referenzbeispiele prüfen. Der Quellprüfbericht dient dem vollständigen Feldvergleich, der DATEV-Probeimport der tatsächlichen Interpretation in DATEV.
+Der Helfer prüft Originaldateihashes, erzeugt Modellkandidat und MT940 temporär und vergleicht anschließend die tatsächlichen Bytes mit dem unabhängigen Quellprüfnachweis. Nach einem Fehler wird kein bestätigtes Modell gespeichert. Ursache anhand der Fundstelle korrigieren und erneut ausführen, bis der vollständige Abgleich besteht. Interne Wiederholungen vor Auslieferung sind keine DATEV-Importe.
 
-Im Bericht je Feld Quelle, Manifest, tatsächlichen MT940-Wert und Vergleich speichern. Für modellbedingte technische Transformationen den Originalwert und das transformierte Ergebnis getrennt ausweisen. Auszugszeitraum und Modellkennungen werden mit dem Quellprüfbericht als Metadaten abgeglichen; der Zeitraum besitzt kein eigenes MT940-Feld. `:61:` kodiert den Buchungstag als `MMTT`; dessen vollständiges Jahr bleibt im geprüften Quellnachweis.
+Nach Erfolg werden MT940, ergänztes Manifest, vollständiger Prüfbeleg sowie Modell und Adapter gespeichert. Das Modell erhält `source_verified`, `source_reconstruction`, einen Verweis mit Hash auf den Prüfbeleg und feste Quelle/Ziel-Beispiele aus dem erfolgreichen Lauf. Es enthält Feldzuordnungen, Ersatzregeln, Adapterhash und Bank-/Quellenidentität. Die Beispiele belegen die eigene Rekonstruktion, keine behauptete Originalbankdatei. Prüfbelege dauerhaft bei den Arbeitsunterlagen erhalten. Das bestätigte Modell auch im installierten Skill speichern, damit spätere Anfragen es finden.
 
-`delivery_approved: true` verlangt eine vollständige Quellenprüfung, bestandene Struktur-/Saldenprüfung und ein für den Umfang geeignetes echtes Modell. Ein Testlauf bleibt `delivery_approved: false` und kann ausschließlich als ausdrücklich gekennzeichnete Testdatei übergeben werden. Nach jeder Änderung erneut prüfen. Alte Erfolgsberichte bei Fehlern nicht weiterverwenden.
+## Vorhandenes Modell wiederverwenden
+
+Für gelernte Modelle `field86_mode: reconstructed` verwenden. Fehlende technische Werte erneut mit den dokumentierten Regeln aus `reconstruction.fill_missing` ergänzen; Quellprüfung behält Originalwerte/null. Anschließend:
+
+```bash
+python scripts/build-mt940.py manifest.json --profile-dir profiles
+python scripts/validate-mt940.py "MT940 <IBAN> <Zeitraum>.sta" manifest.json --profile-dir profiles --source-review source-review.json
+```
+
+Der Loader prüft zusätzlich Hash und Erfolg des gespeicherten Referenzbelegs. Geänderte Adapter oder Regeln benötigen eine neue Profilversion und eine erneute Quellenprüfung. Native Varianten bleiben `native` und erhalten exakte Originalsyntax; vorhandene bankeigene Strukturmodelle bleiben `bank_profile` mit belegten Unterfeldbedeutungen.
+
+## Quellprüfschema
+
+Pflichtmetadaten: Bank-/Modellkennungen, `reviewed_against_original: true`, `review_method: visual_original` bei PDF/Bild oder `native_field_extraction` bei elektronischen Originalen; `source_files` mit id, unverändertem Pfad und SHA-256; IBAN, Währung, Zeitraum, Auszugs-/Sequenznummer, Saldendaten/-beträge. Technische Fehlwerte bei Rekonstruktion ausdrücklich `null`.
+
+Jeder Umsatz enthält eindeutige `source_file`/`source_locator`, Valuta, Buchungsdatum, vorzeichenbehafteten Dezimalbetrag mit zwei Nachkommastellen, Code, Kunden-/Bankreferenz, vollständige `description` und benannte `source_fields`. PDF/Bild zusätzlich mit `source_page`, sämtlichen exakten `source_description_lines` und `source_text_verified: true` nach tatsächlicher visueller Prüfung. Quellreihenfolge und Seitenwechsel erhalten. Native Quellen zusätzlich mit `native_field86_lines` und originaler `statement_reference` vergleichen.
+
+Relative Originaldateipfade beziehen sich auf den Ordner des Quellprüfnachweises. Fundstellen dürfen sich nicht wiederholen. Dateihashes sichern die Identität, nicht die Richtigkeit der Abschrift.
+
+## DATEV getrennt ausweisen
+
+Der erfolgreiche Quellen-/Technik-/Saldenabgleich genügt für Modellbestätigung und Übergabe der Rekonstruktion. Ohne tatsächlichen DATEV-Probeimport bleibt `datev_import_verified: false`. Dateierstellung allein beauftragt keinen Import oder Löschvorgang. Nach einem beauftragten Probeimport alle tatsächlichen DATEV-Felder und vollständigen Texte prüfen, Testumsätze bereinigen und erst dann `status: verified` samt Prüfpunkten dokumentieren.
