@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vorschau Förderrechner Altersvorsorge 2027</title>
+<meta name="robots" content="noindex">
+<style>
+body { margin: 0; background: #FFFFFF; color: #333333; font-family: Georgia, serif; }
+main { max-width: 840px; margin: 0 auto; padding: 24px 16px 64px; }
+h2 { color: #3A5791; font-size: 1.75rem; margin: 0 0 0.5em; }
+p { margin: 0 0 1em; }
+.vorschau-hinweis { font-size: 0.875rem; color: #4D4D4D; border-bottom: 1px solid #C9D3E6; padding-bottom: 12px; margin-bottom: 24px; }
+/* ==========================================================================
+   Förderrechner Altersvorsorgevertrag 2027 – Shortcode [bk_avd_rechner]
+   An das Ende des Enfold Quick CSS anhängen.
+   Alle Klassen tragen das Präfix bk-avd-, daher kein #top nötig.
+   !important nur dort, wo Enfold eigene Werte für Formularfelder,
+   Überschriften und Tabellen setzt (jeweils kommentiert).
+   ========================================================================== */
+
+/* Token-Ebene: nur ergänzen, falls diese Variablen im Quick CSS noch fehlen */
+:root {
+  --bk-gold: #F7B234;          /* Gelb-Orange: nur Flächen und Akzente, nie Text auf Weiß */
+  --bk-gold-tint: #FCE0B0;     /* helle Gold-Abtönung für Hinweisflächen */
+  --bk-blau: #0080C9;          /* kräftiges Blau: nur Flächen und Linien */
+  --bk-dunkelblau: #3A5791;    /* Überschriften, Fokusring, Rahmen */
+  --bk-rot: #E94E1B;           /* Hellrot: hier nur als Fehlerrahmen (UI-Element, 3:1 genügt) */
+  --bk-anthrazit: #333333;     /* Standard-Lesetext */
+  --bk-weiss: #FFFFFF;         /* Grundfläche */
+}
+
+.bk-avd {
+  --bk-avd-linie: #C9D3E6;     /* helle Linie aus Dunkelblau abgeleitet, nur Dekor */
+  --bk-avd-flaeche: #F4F6FA;   /* sehr helle Fläche für Ergebnisblöcke, Text bleibt Anthrazit (Kontrast > 11:1) */
+  --bk-avd-fehlertext: #B3261E;/* dunkles Rot für Fehlertext, 6,5:1 auf Weiß */
+  margin: 2.5em 0 !important;  /* Abstand zum Fließtext; Enfold setzt bei section eigene Ränder */
+  padding: clamp(0.75rem, 3vw, 2rem); /* fluider Innenabstand: 12 px mobil bis 32 px Desktop */
+  border: 1px solid var(--bk-avd-linie); /* dezente Umrandung grenzt den Rechner vom Artikel ab */
+  border-top: 4px solid var(--bk-gold); /* Gold-Akzent oben als Markenelement, keine Information */
+  border-radius: 6px;          /* leicht gerundete Ecken */
+  background: var(--bk-weiss); /* weiße Grundfläche, unabhängig vom Theme-Hintergrund */
+  color: var(--bk-anthrazit);  /* Lesetext Anthrazit, 12,6:1 auf Weiß */
+  font-size: 1rem;             /* Fließtext mindestens 16 px */
+  line-height: 1.55;           /* gut lesbare Zeilenhöhe */
+  box-sizing: border-box;      /* Innenabstand zählt zur Breite, verhindert Überlauf */
+  max-width: 100%;             /* nie breiter als die Inhaltsspalte */
+}
+
+.bk-avd *,
+.bk-avd *::before,
+.bk-avd *::after {
+  box-sizing: border-box;      /* einheitliches Boxmodell für alle Kindelemente */
+}
+
+.bk-avd .bk-avd-titel {
+  margin: 0 0 0.4em !important;            /* Enfold setzt Überschriftenabstände; hier eng an den Intro-Text */
+  color: var(--bk-dunkelblau) !important;  /* Enfold färbt h3 über die Farbsektion; Kanzlei-Dunkelblau erzwingen */
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem) !important; /* 20 bis 24 px, kleiner als die H2 des Artikels */
+  line-height: 1.3 !important;             /* kompakte Zeilenhöhe für Überschriften */
+}
+
+.bk-avd .bk-avd-intro {
+  margin: 0 0 1.25em !important; /* Abstand nur nach unten, Enfold setzt bei p eigene Werte */
+  font-size: 0.95rem;            /* etwas kleiner als Fließtext, bleibt über 15 px */
+}
+
+/* ---------- Formular ---------- */
+
+.bk-avd .bk-avd-form {
+  display: grid !important;    /* Raster für die Eingabefelder; Enfold überschreibt display bei Formularen */
+  grid-template-columns: 1fr;  /* mobil eine Spalte */
+  gap: 1rem 1.5rem;            /* 16 px zwischen Zeilen, 24 px zwischen Spalten */
+  margin: 0 0 1.5rem !important; /* Abstand zum Ergebnisbereich */
+}
+
+@media (min-width: 640px) {    /* ab Tablet-Breite */
+  .bk-avd .bk-avd-form {
+    grid-template-columns: 1fr 1fr; /* zwei Spalten nebeneinander */
+  }
+}
+
+.bk-avd .bk-avd-feld {
+  display: flex !important;    /* Label, Feld und Hinweise untereinander */
+  flex-direction: column;      /* vertikale Anordnung */
+  gap: 0.3rem;                 /* kleiner Abstand zwischen Label, Feld und Hinweis */
+  margin: 0 !important;        /* Enfold setzt Abstände an fieldset und div im Formular */
+  padding: 0 !important;       /* fieldset-Innenabstand des Browsers entfernen */
+  border: 0 !important;        /* fieldset-Rahmen des Browsers entfernen */
+  min-width: 0;                /* verhindert, dass fieldset das Raster sprengt */
+}
+
+.bk-avd .bk-avd-feld > label,
+.bk-avd .bk-avd-gruppe legend {
+  font-weight: 700;            /* Labels fett, damit sie als Beschriftung erkennbar sind */
+  color: var(--bk-anthrazit) !important; /* Enfold färbt Labels teils grau; Kontrast sichern */
+  font-size: 0.95rem;          /* knapp unter Fließtextgröße */
+  margin: 0 !important;        /* Enfold-Abstände an label und legend entfernen */
+  padding: 0;                  /* legend-Innenabstand des Browsers entfernen */
+}
+
+.bk-avd input[type="number"] {
+  width: 100% !important;      /* volle Feldbreite; Enfold begrenzt Inputs teils auf feste Breiten */
+  min-height: 44px !important; /* großes Klickziel, deutlich über 24 px (WCAG 2.2) */
+  margin: 0 !important;        /* Enfold setzt margin-bottom an Inputs */
+  padding: 0.5rem 0.75rem !important; /* angenehmer Innenabstand; überschreibt Enfold-Padding */
+  border: 1px solid #6B7A99 !important; /* Rahmen mit 4,3:1 zum Weiß, als UI-Element ausreichend (mind. 3:1) */
+  border-radius: 4px !important; /* leicht gerundet wie der Rahmen des Rechners */
+  background: var(--bk-weiss) !important; /* Enfold färbt Inputs in der Farbsektion ein */
+  color: var(--bk-anthrazit) !important;  /* gut lesbare Eingabe */
+  font-size: 1rem !important;  /* 16 px verhindert Zoom auf iOS beim Antippen */
+  line-height: 1.4 !important; /* gleichmäßige Höhe der Eingabe */
+  box-shadow: none !important; /* Enfold-Schatten an Inputs entfernen */
+}
+
+.bk-avd input[type="number"]:focus-visible,
+.bk-avd input[type="radio"]:focus-visible,
+.bk-avd summary:focus-visible,
+.bk-avd .bk-avd-tabelle-wrap:focus-visible {
+  outline: 2px solid var(--bk-dunkelblau) !important; /* sichtbarer Fokusring in Dunkelblau, Enfold entfernt Outlines */
+  outline-offset: 2px;         /* Abstand des Fokusrings zum Element */
+}
+
+.bk-avd input[aria-invalid="true"] {
+  border-color: var(--bk-rot) !important; /* Fehlerrahmen; die Meldung darunter trägt die Information zusätzlich als Text */
+  border-width: 2px !important;           /* dickerer Rahmen, damit der Fehler nicht nur über Farbe erkennbar ist */
+}
+
+.bk-avd .bk-avd-hinweis {
+  margin: 0 !important;        /* Enfold-Absatzabstand entfernen */
+  font-size: 0.875rem;         /* 14 px für Hilfetexte */
+  color: #4D4D4D;              /* etwas heller als Lesetext, 8,5:1 auf Weiß */
+}
+
+.bk-avd .bk-avd-fehler {
+  margin: 0 !important;        /* Enfold-Absatzabstand entfernen */
+  font-size: 0.875rem;         /* gleiche Größe wie der Hinweis */
+  font-weight: 700;            /* fett, damit der Fehler auffällt */
+  color: var(--bk-avd-fehlertext); /* dunkles Rot mit ausreichendem Kontrast */
+}
+
+.bk-avd .bk-avd-fehler[hidden] {
+  display: none !important;    /* verborgene Fehlermeldung sicher ausblenden, auch gegen Theme-Regeln */
+}
+
+.bk-avd .bk-avd-gruppe {
+  grid-column: 1 / -1;         /* Radiogruppe über die volle Breite */
+}
+
+.bk-avd .bk-avd-optionen {
+  display: flex !important;    /* Optionen nebeneinander, wenn Platz ist */
+  flex-wrap: wrap;             /* auf schmalen Displays umbrechen */
+  gap: 0.5rem 1.5rem;          /* Abstand zwischen den Optionen */
+}
+
+.bk-avd .bk-avd-option {
+  display: inline-flex !important; /* Radio und Text in einer Zeile */
+  align-items: center;         /* vertikal zentriert */
+  gap: 0.5rem;                 /* Abstand zwischen Radio und Text */
+  min-height: 44px;            /* großes Klickziel für die gesamte Beschriftung */
+  font-weight: 400 !important; /* normale Schrift; Enfold setzt Labels fett */
+  margin: 0 !important;        /* Enfold-Abstände entfernen */
+  cursor: pointer;             /* zeigt Klickbarkeit an */
+}
+
+.bk-avd input[type="radio"] {
+  width: 20px !important;      /* gut treffbares Radio */
+  height: 20px !important;     /* quadratisch */
+  margin: 0 !important;        /* Enfold-Abstände entfernen */
+  accent-color: var(--bk-dunkelblau); /* Markierung in Kanzlei-Dunkelblau */
+}
+
+/* ---------- Ergebnis ---------- */
+
+.bk-avd .bk-avd-ergebnis {
+  display: grid !important;    /* Ergebnisblöcke im Raster */
+  grid-template-columns: minmax(0, 1fr); /* Blöcke immer untereinander, damit die Szenariotabelle die volle Breite hat */
+  gap: 1.25rem;                /* Abstand zwischen den Blöcken */
+}
+
+.bk-avd .bk-avd-block {
+  padding: 0.875rem 0.75rem;   /* Innenabstand der Ergebnisblöcke, mobil knapp */
+  background: var(--bk-avd-flaeche); /* helle Fläche hebt Ergebnisse vom Formular ab */
+  border-radius: 6px;          /* gleiche Rundung wie der Rechner */
+  min-width: 0;                /* erlaubt der Tabelle, innerhalb des Rasters zu scrollen */
+}
+
+@media (min-width: 640px) {    /* ab Tablet-Breite */
+  .bk-avd .bk-avd-block {
+    padding: 1rem 1.25rem;     /* großzügigerer Innenabstand */
+  }
+}
+
+.bk-avd .bk-avd-vorteil {
+  border-left: 4px solid var(--bk-blau); /* blaue Kante markiert den Vorteil; Überschrift trägt die Information */
+}
+
+.bk-avd .bk-avd-preis {
+  border-left: 4px solid var(--bk-gold); /* goldene Kante markiert den Preis; Überschrift trägt die Information */
+}
+
+.bk-avd .bk-avd-blocktitel {
+  margin: 0 0 0.5em !important;            /* Enfold-Überschriftenabstand ersetzen */
+  color: var(--bk-dunkelblau) !important;  /* Enfold färbt h4; Kanzlei-Dunkelblau erzwingen */
+  font-size: 1.125rem !important;          /* 18 px, klar unter dem Rechnertitel */
+  line-height: 1.3 !important;             /* kompakte Zeilenhöhe */
+}
+
+.bk-avd .bk-avd-kernzahl {
+  margin: 0 0 0.75em !important; /* Abstand zur Liste */
+  font-weight: 700;              /* Kernaussage fett */
+  font-size: 1.05rem;            /* leicht größer als Fließtext */
+  color: var(--bk-dunkelblau);   /* Dunkelblau, 7,1:1 auf Weiß, auf der hellen Fläche etwa 6,6:1 */
+}
+
+.bk-avd .bk-avd-liste {
+  margin: 0 0 0.75em !important; /* Enfold-Abstände an dl ersetzen */
+  padding: 0;                    /* kein Innenabstand */
+}
+
+.bk-avd .bk-avd-liste > div {
+  display: flex !important;      /* Begriff links, Betrag rechts */
+  justify-content: space-between; /* Betrag an den rechten Rand */
+  align-items: baseline;         /* gemeinsame Grundlinie */
+  gap: 1rem;                     /* Mindestabstand zwischen Begriff und Betrag */
+  padding: 0.35rem 0;            /* Zeilenabstand */
+  border-bottom: 1px solid var(--bk-avd-linie); /* feine Trennlinie zwischen den Zeilen */
+}
+
+.bk-avd .bk-avd-liste dt {
+  margin: 0 !important;          /* Enfold-Abstände an dt entfernen */
+  font-weight: 400 !important;   /* Enfold setzt dt fett; hier normale Schrift */
+}
+
+.bk-avd .bk-avd-liste dd {
+  margin: 0 !important;          /* Browser-Einzug an dd entfernen */
+  font-variant-numeric: tabular-nums; /* gleich breite Ziffern, Beträge stehen sauber untereinander */
+  white-space: nowrap;           /* Betrag nicht umbrechen */
+  text-align: right;             /* rechtsbündig */
+}
+
+.bk-avd .bk-avd-summe dt,
+.bk-avd .bk-avd-summe dd,
+.bk-avd .bk-avd-summe th,
+.bk-avd .bk-avd-summe td {
+  font-weight: 700 !important;   /* Summenzeilen fett; Enfold-Tabellenstil überschreiben */
+}
+
+.bk-avd .bk-avd-text,
+.bk-avd .bk-avd-fazit {
+  margin: 0.75em 0 0 !important; /* Abstand oberhalb, keiner unterhalb */
+  font-size: 0.95rem;            /* knapp unter Fließtext */
+}
+
+.bk-avd .bk-avd-fazit {
+  font-weight: 700;              /* Fazitzeile hervorgehoben */
+}
+
+.bk-avd .bk-avd-tabelle-wrap {
+  overflow-x: auto;              /* auf schmalen Displays horizontal scrollen statt die Seite zu verbreitern */
+  -webkit-overflow-scrolling: touch; /* weiches Scrollen auf iOS */
+  margin: 0 !important;          /* Enfold-Abstände entfernen */
+}
+
+.bk-avd .bk-avd-tabelle {
+  width: 100% !important;        /* volle Breite des Blocks */
+  min-width: 260px;              /* darunter wird im Rahmen gescrollt statt gequetscht */
+  border-collapse: collapse !important; /* durchgehende Linien statt Doppelrahmen */
+  margin: 0 !important;          /* Enfold setzt Tabellenabstände */
+  background: transparent !important; /* Enfold färbt Tabellen ein */
+  font-size: 0.85rem;            /* mobil kleiner, damit vier Spalten ohne Scrollen passen */
+  border: 0 !important;          /* Enfold-Außenrahmen entfernen */
+}
+
+@media (min-width: 640px) {    /* ab Tablet-Breite */
+  .bk-avd .bk-avd-tabelle {
+    font-size: 0.9rem;         /* etwas größere Tabellenschrift, Platz ist vorhanden */
+  }
+}
+
+.bk-avd .bk-avd-tabelle caption {
+  caption-side: top;             /* Beschriftung oberhalb */
+  text-align: left;              /* linksbündig wie der Fließtext */
+  padding: 0 0 0.5rem;           /* Abstand zur Tabelle */
+  font-size: 0.875rem;           /* Hilfetextgröße */
+  color: #4D4D4D;                /* etwas heller als Lesetext, 8,5:1 auf Weiß */
+}
+
+.bk-avd .bk-avd-tabelle th,
+.bk-avd .bk-avd-tabelle td {
+  padding: 0.4rem 0.35rem !important; /* Enfold setzt großzügige Zellabstände; knapp, damit vier Spalten mobil passen */
+  border: 0 !important;              /* Enfold-Zellrahmen entfernen */
+  border-bottom: 1px solid var(--bk-avd-linie) !important; /* nur feine Zeilenlinie */
+  background: transparent !important; /* Enfold-Zebrastreifen entfernen */
+  color: var(--bk-anthrazit) !important; /* einheitliche Textfarbe */
+  text-align: right !important;  /* Beträge rechtsbündig */
+  white-space: nowrap;           /* Beträge nicht umbrechen */
+  font-variant-numeric: tabular-nums; /* gleich breite Ziffern */
+  vertical-align: baseline;      /* gemeinsame Grundlinie */
+}
+
+.bk-avd .bk-avd-tabelle th[scope="row"],
+.bk-avd .bk-avd-tabelle thead th:first-child {
+  text-align: left !important;   /* Zeilenbeschriftungen linksbündig */
+  white-space: normal;           /* Beschriftungen dürfen umbrechen */
+  font-weight: 400 !important;   /* normale Schrift für Zeilenköpfe */
+}
+
+.bk-avd .bk-avd-tabelle thead th {
+  font-weight: 700 !important;   /* Spaltenköpfe fett */
+  border-bottom: 2px solid var(--bk-dunkelblau) !important; /* kräftige Linie unter dem Kopf */
+}
+
+.bk-avd.bk-avd-ungueltig .bk-avd-liste,
+.bk-avd.bk-avd-ungueltig .bk-avd-tabelle-wrap,
+.bk-avd.bk-avd-ungueltig .bk-avd-text {
+  opacity: 0.4;                  /* veraltete Ergebnisse bei ungültiger Eingabe abschwächen; der Text darüber nennt den Grund */
+}
+
+/* ---------- Annahmen und Disclaimer ---------- */
+
+.bk-avd .bk-avd-annahmen {
+  margin: 1.5rem 0 0 !important; /* Abstand zum Ergebnis */
+  padding: 0.75rem 1rem;         /* Innenabstand */
+  border: 1px solid var(--bk-avd-linie); /* dezenter Rahmen */
+  border-radius: 6px;            /* gleiche Rundung */
+}
+
+.bk-avd .bk-avd-annahmen summary {
+  cursor: pointer;               /* zeigt Klickbarkeit an */
+  font-weight: 700;              /* Aufklapptitel fett */
+  min-height: 24px;              /* Mindestgröße des Klickziels */
+  color: var(--bk-dunkelblau);   /* Dunkelblau wie Überschriften */
+}
+
+.bk-avd .bk-avd-annahmen ul {
+  margin: 0.75rem 0 0 1.25rem !important; /* Einzug der Liste, Enfold setzt eigene Listenabstände */
+  padding: 0 !important;         /* Browser-Einzug durch margin ersetzt */
+  font-size: 0.9rem;             /* etwas kleiner */
+}
+
+.bk-avd .bk-avd-annahmen li {
+  margin: 0 0 0.35rem !important; /* kleiner Abstand zwischen Listenpunkten */
+}
+
+.bk-avd .bk-avd-disclaimer {
+  margin: 1rem 0 0 !important;   /* Abstand nach oben */
+  font-size: 0.85rem;            /* klein, bleibt über 13 px */
+  color: #4D4D4D;                /* 8,5:1 auf Weiß */
+}
+
+.bk-avd .bk-avd-hinweis-box {
+  padding: 0.75rem 1rem;         /* Innenabstand der noscript-Meldung */
+  background: var(--bk-gold-tint); /* helle Gold-Fläche, Text Anthrazit darauf gut lesbar */
+  border-radius: 4px;            /* leicht gerundet */
+}
+
+@media (prefers-reduced-motion: reduce) { /* Nutzer hat reduzierte Bewegung eingestellt */
+  .bk-avd * {
+    transition: none !important; /* keine Übergänge */
+    animation: none !important;  /* keine Animationen */
+  }
+}
+
+</style>
+</head>
+<body>
+<main>
+<p class="vorschau-hinweis">Lokale Vorschau des Rechners mit dem CSS aus dem Quick-CSS-Block. Schrift und Abstände der Website können abweichen.</p>
+<h2>Ihr eigener Fall im Rechner</h2>
+<p>Der Rechner wendet diese Mechanik auf Ihre Zahlen an. Er zeigt zuerst, wie hoch die Förderung bei Ihnen im Jahr ausfällt und ob die Zulage oder der Steuerabzug gewinnt. Darunter steht, was die Besteuerung im Alter davon wieder kostet und wie der Vertrag gegen ein freies Depot mit demselben Nettoaufwand abschneidet, jeweils in drei Renditeszenarien.</p>
+<section class="bk-avd" id="bk-avd-1" aria-labelledby="bk-avd-1-titel" data-bk-avd><h3 class="bk-avd-titel" id="bk-avd-1-titel">Förderrechner Altersvorsorgevertrag ab 2027</h3><p class="bk-avd-intro">Modellrechnung für einen geförderten Vertrag einer selbständig tätigen Person. Rechtsstand: 4. Oktober 2026. Ihre Eingaben verlassen Ihren Browser nicht.</p><noscript><p class="bk-avd-hinweis-box">Der Rechner benötigt JavaScript. Die Rechenwege finden Sie im Beitrag oberhalb.</p></noscript><form class="bk-avd-form" novalidate><div class="bk-avd-feld"><label for="bk-avd-1-beitrag">Eigenbeitrag pro Jahr (EUR)</label><input id="bk-avd-1-beitrag" data-feld="beitrag" type="number" inputmode="numeric" min="0" max="1800" step="1" value="1800" aria-describedby="bk-avd-1-beitrag-hinweis bk-avd-1-beitrag-fehler"><p class="bk-avd-hinweis" id="bk-avd-1-beitrag-hinweis">0 bis 1.800 EUR. Darüber wird nicht gefördert.</p><p class="bk-avd-fehler" id="bk-avd-1-beitrag-fehler" hidden></p></div><div class="bk-avd-feld"><label for="bk-avd-1-kinder">Kinder mit Kinderzulage bei Ihnen</label><input id="bk-avd-1-kinder" data-feld="kinder" type="number" inputmode="numeric" min="0" max="9" step="1" value="0" aria-describedby="bk-avd-1-kinder-hinweis bk-avd-1-kinder-fehler"><p class="bk-avd-hinweis" id="bk-avd-1-kinder-hinweis">Nur Kinder, für die Ihnen Kindergeld oder die Zuordnung der Zulage zusteht.</p><p class="bk-avd-fehler" id="bk-avd-1-kinder-fehler" hidden></p></div><div class="bk-avd-feld"><label for="bk-avd-1-zve">Zu versteuerndes Einkommen (EUR)</label><input id="bk-avd-1-zve" data-feld="zve" type="number" inputmode="numeric" min="0" max="5000000" step="1" value="90000" aria-describedby="bk-avd-1-zve-hinweis bk-avd-1-zve-fehler"><p class="bk-avd-hinweis" id="bk-avd-1-zve-hinweis">Aus dem letzten Steuerbescheid, ohne den Altersvorsorgebeitrag. Bei Zusammenveranlagung das gemeinsame Einkommen.</p><p class="bk-avd-fehler" id="bk-avd-1-zve-fehler" hidden></p></div><fieldset class="bk-avd-feld bk-avd-gruppe"><legend>Veranlagung</legend><div class="bk-avd-optionen"><label class="bk-avd-option"><input type="radio" name="bk-avd-1-veranlagung" data-feld="splitting" value="0" checked> Einzeln (Grundtarif)</label><label class="bk-avd-option"><input type="radio" name="bk-avd-1-veranlagung" data-feld="splitting" value="1"> Zusammen (Splittingtarif)</label></div></fieldset><div class="bk-avd-feld"><label for="bk-avd-1-jahre">Jahre bis Auszahlungsbeginn</label><input id="bk-avd-1-jahre" data-feld="jahre" type="number" inputmode="numeric" min="1" max="50" step="1" value="25" aria-describedby="bk-avd-1-jahre-hinweis bk-avd-1-jahre-fehler"><p class="bk-avd-hinweis" id="bk-avd-1-jahre-hinweis">1 bis 50 Jahre.</p><p class="bk-avd-fehler" id="bk-avd-1-jahre-fehler" hidden></p></div><div class="bk-avd-feld"><label for="bk-avd-1-steueralter">Ihr Steuersatz im Alter (%)</label><input id="bk-avd-1-steueralter" data-feld="steueralter" type="number" inputmode="numeric" min="0" max="45" step="1" value="30" aria-describedby="bk-avd-1-steueralter-hinweis bk-avd-1-steueralter-fehler"><p class="bk-avd-hinweis" id="bk-avd-1-steueralter-hinweis">Ihre Schätzung des Grenzsteuersatzes, mit dem die Auszahlungen besteuert werden. 0 bis 45 %.</p><p class="bk-avd-fehler" id="bk-avd-1-steueralter-fehler" hidden></p></div></form><div class="bk-avd-ergebnis"><div class="bk-avd-block bk-avd-vorteil"><h4 class="bk-avd-blocktitel">Die Förderung pro Jahr</h4><p class="bk-avd-kernzahl" aria-live="polite" data-out="kern"></p><dl class="bk-avd-liste"><div><dt>Grundzulage</dt><dd data-out="grund"></dd></div><div><dt>Kinderzulage</dt><dd data-out="kind"></dd></div><div><dt>Steuerersparnis durch den Sonderausgabenabzug</dt><dd data-out="entlastung"></dd></div><div><dt>davon zusätzlich mit dem Steuerbescheid erstattet</dt><dd data-out="zusatz"></dd></div><div class="bk-avd-summe"><dt>Einzahlung in den Vertrag</dt><dd data-out="zufluss"></dd></div><div class="bk-avd-summe"><dt>Ihr Nettoaufwand</dt><dd data-out="netto"></dd></div></dl><p class="bk-avd-text" data-out="foerdertext"></p></div><div class="bk-avd-block bk-avd-preis"><h4 class="bk-avd-blocktitel">Der Preis: Steuer im Alter und Bindung</h4><div class="bk-avd-tabelle-wrap" role="region" aria-labelledby="bk-avd-1-caption" tabindex="0"><table class="bk-avd-tabelle"><caption id="bk-avd-1-caption">Kapital bei Auszahlungsbeginn in EUR, drei Szenarien mit unterschiedlicher Rendite nach Kosten pro Jahr</caption><thead><tr><th scope="col">Szenario</th><th scope="col">2 %</th><th scope="col">4 %</th><th scope="col">6 %</th></tr></thead><tbody><tr><th scope="row">Kapital im Vertrag</th><td data-out="kapital-0"></td><td data-out="kapital-1"></td><td data-out="kapital-2"></td></tr><tr><th scope="row">Steuer im Alter</th><td data-out="steuer-0"></td><td data-out="steuer-1"></td><td data-out="steuer-2"></td></tr><tr><th scope="row">Vertrag nach Steuern</th><td data-out="avnetto-0"></td><td data-out="avnetto-1"></td><td data-out="avnetto-2"></td></tr><tr><th scope="row">Freies Depot nach Steuern</th><td data-out="frei-0"></td><td data-out="frei-1"></td><td data-out="frei-2"></td></tr><tr class="bk-avd-summe"><th scope="row">Unterschied</th><td data-out="diff-0"></td><td data-out="diff-1"></td><td data-out="diff-2"></td></tr></tbody></table></div><p class="bk-avd-fazit" aria-live="polite" data-out="fazit"></p><p class="bk-avd-text" data-out="preistext"></p></div></div><details class="bk-avd-annahmen"><summary>Annahmen und Grenzen der Rechnung</summary><ul><li>Einkommensteuer nach dem Tarif 2026 (§ 32a EStG). Der Tarif 2027 liegt bisher nur als Regierungsentwurf vom 2. September 2026 vor.</li><li>Solidaritätszuschlag und Kirchensteuer bleiben außer Betracht.</li><li>Ein Vertrag einer Person. Berufseinsteigerbonus und Beiträge über 1.800 EUR sind nicht abgebildet.</li><li>Einzahlung und Zulagen einmal jährlich zum Jahresende, gleichbleibende Rendite nach Kosten. Die zusätzliche Steuererstattung wird nicht wieder angelegt.</li><li>Steuer im Alter vereinfacht: Das gesamte Kapital wird mit dem angegebenen Steuersatz belastet.</li><li>Freies Depot: derselbe Nettoaufwand und dieselbe Rendite, Aktienfonds mit 30 % Teilfreistellung, 25 % Abgeltungsteuer auf den Gewinn bei Verkauf. Sparer-Pauschbetrag und Vorabpauschale sind nicht berücksichtigt.</li><li>Kaufkraft mit 2 % Inflation pro Jahr.</li></ul></details><p class="bk-avd-disclaimer">Der Rechner liefert unverbindliche Modellrechnungen. Er prüft weder die steuerliche Einordnung Ihrer Tätigkeit noch die Zertifizierung oder Eignung eines Produkts. Renditen, Kosten, Inflation und spätere Steuersätze sind nicht garantiert. Die Berechnung ersetzt keine Steuer-, Rechts- oder Anlageberatung.</p></section>
+<script>(function () { 'use strict'; var MIN_EIGENBEITRAG = 120; var GRENZE_STUFE_1 = 360; var GEFOERDERT_MAX = 1800; var KIND_MAX = 300; var ABGELTUNGSTEUER = 0.25; var TEILFREISTELLUNG = 0.30; var INFLATION = 0.02; var SZENARIEN = [0.02, 0.04, 0.06]; function estGrundtarif(zve) { var x = Math.floor(zve); var st; if (x <= 12348) { st = 0; } else if (x <= 17799) { var y = (x - 12348) / 10000; st = (914.51 * y + 1400) * y; } else if (x <= 69878) { var z = (x - 17799) / 10000; st = (173.10 * z + 2397) * z + 1034.87; } else if (x <= 277825) { st = 0.42 * x - 11135.63; } else { st = 0.45 * x - 19470.38; } return Math.floor(st); } function est(zve, splitting) { return splitting ? 2 * estGrundtarif(Math.floor(zve / 2)) : estGrundtarif(zve); } function foerderung(e, kinder, zve, splitting) { var grund = 0; var kind = 0; if (e >= MIN_EIGENBEITRAG) { grund = 0.5 * Math.min(e, GRENZE_STUFE_1) + 0.25 * Math.max(Math.min(e, GEFOERDERT_MAX) - GRENZE_STUFE_1, 0); kind = kinder * Math.min(e, KIND_MAX); } var zulagen = grund + kind; var abzug = Math.min(e, GEFOERDERT_MAX) + zulagen; var entlastung = est(zve, splitting) - est(Math.max(zve - abzug, 0), splitting); var zusatz = Math.max(0, entlastung - zulagen); var zufluss = e + zulagen; return { grund: grund, kind: kind, zulagen: zulagen, abzug: abzug, entlastung: entlastung, zusatz: zusatz, gesamt: zulagen + zusatz, zufluss: zufluss, netto: e - zusatz, quote: zufluss > 0 ? (zulagen + zusatz) / zufluss : 0 }; } function rentenfaktor(r, n) { return r === 0 ? n : (Math.pow(1 + r, n) - 1) / r; } function projektion(f, jahre, steuerAlter) { return SZENARIEN.map(function (r) { var kapital = f.zufluss * rentenfaktor(r, jahre); var steuer = kapital * steuerAlter; var avNetto = kapital - steuer; var frei = f.netto * rentenfaktor(r, jahre); var gewinn = Math.max(frei - f.netto * jahre, 0); var freiNetto = frei - gewinn * (1 - TEILFREISTELLUNG) * ABGELTUNGSTEUER; return { r: r, kapital: kapital, steuer: steuer, avNetto: avNetto, freiNetto: freiNetto, diff: avNetto - freiNetto, real: kapital / Math.pow(1 + INFLATION, jahre) }; }); } var fmtGanz = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 }); var fmtCent = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); function eur(v) { var gerundet = Math.round(v * 100) / 100; var text = Number.isInteger(gerundet) ? fmtGanz.format(gerundet) : fmtCent.format(gerundet); return text + ' EUR'; } function eurRund(v) { return fmtGanz.format(Math.round(v)) + ' EUR'; } function zahl(v) { return fmtGanz.format(Math.round(v)); } function zahlDiff(v) { var r = Math.round(v); return (r > 0 ? '+' : r < 0 ? '\u2212' : '') + fmtGanz.format(Math.abs(r)); } function prozent(v) { return fmtGanz.format(Math.round(v * 100)) + ' %'; } var FELDER = { beitrag: { min: 0, max: 1800, text: 'Bitte einen Betrag zwischen 0 und 1.800 EUR eingeben.' }, kinder: { min: 0, max: 9, text: 'Bitte eine ganze Zahl zwischen 0 und 9 eingeben.' }, zve: { min: 0, max: 5000000, text: 'Bitte einen Betrag zwischen 0 und 5.000.000 EUR eingeben.' }, jahre: { min: 1, max: 50, text: 'Bitte eine ganze Zahl zwischen 1 und 50 eingeben.' }, steueralter: { min: 0, max: 45, text: 'Bitte einen Wert zwischen 0 und 45 % eingeben.' } }; function init(root) { function feld(name) { return root.querySelector('[data-feld="' + name + '"]'); } function out(name, text) { var el = root.querySelector('[data-out="' + name + '"]'); if (el) { el.textContent = text; } } function lesen() { var werte = {}; var ok = true; Object.keys(FELDER).forEach(function (name) { var input = feld(name); var regel = FELDER[name]; var roh = input.value.trim().replace(',', '.'); var wert = Number(roh); var ganz = name === 'kinder' || name === 'jahre'; var gueltig = roh !== '' && isFinite(wert) && wert >= regel.min && wert <= regel.max && (!ganz || Number.isInteger(wert)); var fehler = root.querySelector('#' + input.id + '-fehler'); if (gueltig) { input.removeAttribute('aria-invalid'); fehler.hidden = true; fehler.textContent = ''; werte[name] = wert; } else { input.setAttribute('aria-invalid', 'true'); fehler.textContent = regel.text; fehler.hidden = false; ok = false; } }); var split = root.querySelector('[data-feld="splitting"]:checked'); werte.splitting = !!split && split.value === '1'; return ok ? werte : null; } function rechnen() { var w = lesen(); root.classList.toggle('bk-avd-ungueltig', !w); if (!w) { out('kern', 'Bitte prüfen Sie die markierten Eingaben.'); out('fazit', ''); return; } var f = foerderung(w.beitrag, w.kinder, w.zve, w.splitting); var p = projektion(f, w.jahre, w.steueralter / 100); out('grund', eur(f.grund)); out('kind', eur(f.kind)); out('entlastung', eur(f.entlastung)); out('zusatz', eur(f.zusatz)); out('zufluss', eur(f.zufluss)); out('netto', eur(f.netto)); if (f.zufluss > 0) { out('kern', 'Förderung: ' + eur(f.gesamt) + ' pro Jahr. Der Staat trägt ' + prozent(f.quote) + ' Ihrer Einzahlung.'); } else { out('kern', 'Ohne Eigenbeitrag gibt es keine Förderung.'); } var text; if (w.beitrag === 0) { text = 'Geben Sie einen Eigenbeitrag ein, um die Förderung zu sehen.'; } else if (w.beitrag < MIN_EIGENBEITRAG) { text = 'Unter 120 EUR Eigenbeitrag im Jahr gibt es keine Zulagen. Es bleibt nur der Steuerabzug.'; } else if (f.zusatz > 0) { text = 'Bei Ihnen gewinnt der Steuerabzug. Die Förderung entspricht Ihrer Steuerersparnis von ' + eur(f.entlastung) + '; die Zulagen sind darin enthalten, ' + eur(f.zusatz) + ' kommen mit dem Steuerbescheid hinzu.'; } else { text = 'Bei Ihnen gewinnt die Zulage. Die Steuerersparnis aus dem Abzug (' + eur(f.entlastung) + ') liegt darunter, eine zusätzliche Erstattung gibt es nicht.'; } if (w.kinder > 0 && w.beitrag >= MIN_EIGENBEITRAG && w.beitrag < KIND_MAX) { text += ' Mit 300 EUR Eigenbeitrag erreichen Sie die volle Kinderzulage.'; } out('foerdertext', text); p.forEach(function (s, i) { out('kapital-' + i, zahl(s.kapital)); out('steuer-' + i, zahl(s.steuer)); out('avnetto-' + i, zahl(s.avNetto)); out('frei-' + i, zahl(s.freiNetto)); out('diff-' + i, zahlDiff(s.diff)); }); var mitte = p[1]; var fazit; if (w.beitrag === 0) { fazit = ''; } else if (Math.round(mitte.diff) >= 0) { fazit = 'Im mittleren Szenario liegt der geförderte Vertrag nach Steuern rund ' + eurRund(mitte.diff) + ' vor einem freien Depot mit demselben Nettoaufwand.'; } else { fazit = 'Unter diesen Annahmen schneidet das freie Depot im mittleren Szenario um rund ' + eurRund(-mitte.diff) + ' besser ab: Die Förderung heute deckt die Steuer im Alter nicht.'; } out('fazit', fazit); out('preistext', w.beitrag === 0 ? '' : 'Ihr eigener Nettoaufwand über ' + w.jahre + ' Jahre: ' + eurRund(f.netto * w.jahre) + '. In heutiger Kaufkraft entspricht das Kapital im mittleren Szenario rund ' + eurRund(mitte.real) + '. Das Geld ist bis zur Auszahlung gebunden; wer vorher ' + 'ohne begünstigten Zweck entnimmt, zahlt die Förderung zurück.'); } root.querySelector('.bk-avd-form').addEventListener('submit', function (ev) { ev.preventDefault(); }); root.addEventListener('input', rechnen); root.addEventListener('change', rechnen); rechnen(); } window.bkAvd = { foerderung: foerderung, projektion: projektion, est: est }; function start() { var roots = document.querySelectorAll('[data-bk-avd]'); for (var i = 0; i < roots.length; i++) { init(roots[i]); } } if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', start); } else { start(); } })();</script>
+</main>
+</body>
+</html>
