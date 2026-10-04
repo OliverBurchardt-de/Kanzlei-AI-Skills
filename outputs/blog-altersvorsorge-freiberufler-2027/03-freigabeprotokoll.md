@@ -65,7 +65,7 @@ Möglicher Ausbau mit eigenem Material, falls Oliver das will: eine Beobachtung,
 
 1. Kernzahlen (540 / 300 / 120 / 200 / 1.800 / 6.840 EUR, 67 Jahre, 1,0 %, 150 EUR, 85 Jahre, 30 %, zwei Verträge) einmal gegen BGBl. 2026 I Nr. 156 halten.
 2. Satz zu angestellten Pflichtmitgliedern von Versorgungswerken gegen den Gesetzestext prüfen (nur Sekundärquellen).
-3. Internen Link auf den Beitrag zum Zusatzbeitrag Versorgungswerk und die beiden externen Links einmal aufrufen.
+3. Die beiden externen Links (BGBl, § 22 EStG) einmal aufrufen. Der interne Link ist auf dem Server bestätigt (Post-ID 2014).
 4. Entscheiden, ob die Meinung zur 100-Prozent-Garantie so stehen bleiben soll (Abgrenzung zur Anlageberatung).
 
 ## Annahmen
@@ -96,6 +96,16 @@ Alle Zahlen im Artikel stammen aus `04-rechner/rechenprobe.py` und sind zweitgep
 - `slop_scan.py --profil fachtext`: keine Füllformeln, keine Gedankenstriche, Satzlängenstreuung 8,0; drei Negativparallelen geprüft (tragen jeweils die These), Dreierketten geprüft (Aufzählungen mit eigener Information).
 - Serienprüfung gegen die drei letzten Korpustexte: Einstieg mit Gegensatz in zwei Kurzsätzen wie im Beitrag „Praxis im eigenen Haus"; deshalb Schlussform geändert (kein „nicht X, sondern Y" am Ende) und die Formel „Ein Einwand, der ernst genommen gehört" ersetzt.
 - Keine FAQ, kein Quellenverzeichnis im Artikel, kein Inhaltsverzeichnis im Markdown.
+
+## Schaubild
+
+`06-schaubild/schaubild-guenstigerpruefung-altersvorsorge.svg/.webp` nach Skill `bk-schaubilder`: Gegenüberstellung der Fälle A und B
+(Zahlen aus `04-rechner/rechenprobe.md`, Tarif 2026). Textbreiten rechnerisch geprüft (mindestens 24 px Luft), `title` und `desc` mit allen
+Zahlen, Gold nur als Fläche und Kante sowie als Zahl auf Dunkelblau. Muss neu erzeugt werden, wenn sich der Tarif ändert.
+
+## Stand in WordPress
+
+Entwurf, Post-ID 3353, nicht veröffentlicht. Rechner als Sandbox-Datei installiert. Einzelheiten in `02-cms-handoff.md`.
 
 ## Warnungen (nicht blockierend)
 

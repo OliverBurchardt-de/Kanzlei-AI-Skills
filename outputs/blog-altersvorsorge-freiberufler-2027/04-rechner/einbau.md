@@ -1,48 +1,55 @@
 # Einbau des Förderrechners auf burchardt-kollegen.de
 
-## Dateien
+## Stand der Installation (04.10.2026)
+
+| Was | Wo | Prüfung |
+|---|---|---|
+| Rechner (Shortcode `[bk_avd_rechner]`, CSS und JavaScript) | `wp-content/novamira-sandbox/bk-avd-rechner.php` | SHA1 `5e384966cc0350d5f8c8df9541c7a43087f8a22d`, `php -l` auf dem Server ohne Fehler, Shortcode registriert, Startseite Status 200 |
+| Beitrag (Entwurf) | Post-ID 3353, Slug `altersvorsorge-freiberufler-2027` | Vorschau gerendert: CSS im Head, Rechner, Schaubild, Inhaltsverzeichnis, keine Shortcode-Reste |
+
+Novamira lädt PHP-Dateien aus `wp-content/novamira-sandbox/` automatisch. Ein Plugin „Code Snippets" gibt es auf dem Server nicht.
+
+## Dateien im Repo
 
 | Datei | Zweck |
 |---|---|
-| `bk-avd-rechner-snippet.php` | Registriert den Shortcode `[bk_avd_rechner]`; liefert Markup und JavaScript |
-| `bk-avd-rechner-quickcss.css` | CSS-Block zum Anhängen an das Enfold Quick CSS |
+| `bk-avd-rechner.php` | ausgelieferte Datei für den Sandbox-Ordner: Shortcode, Markup, JavaScript, CSS |
 | `vorschau.html` | lokale Vorschau zum Ausprobieren (nicht hochladen) |
-| `rechenprobe.md` | Rechenprobe mit elf Fällen, darunter Grenzfälle |
-| `quelle/` | bearbeitbare Quellen; `python3 quelle/build.py` erzeugt die drei Dateien oben neu |
+| `rechenprobe.py`, `rechenprobe.md` | Referenzrechnung und Rechenprobe mit elf Fällen |
+| `quelle/` | bearbeitbare Quellen; `python3 quelle/build.py` erzeugt `bk-avd-rechner.php` und `vorschau.html` neu |
 
 Änderungen immer in `quelle/` vornehmen und neu bauen, nie in den erzeugten Dateien.
 
-## Reihenfolge
+## Warum kein Quick CSS
 
-1. **Backup.** Vor jeder Änderung an der Live-Seite Backup bzw. Staging bestätigen.
-2. **Snippet.** Plugin „Code Snippets" → Neues Snippet, Typ PHP, Ausführung „Nur im Frontend ausführen".
-   Inhalt von `bk-avd-rechner-snippet.php` einfügen. Bemängelt das Plugin das öffnende `<?php`, die erste Zeile weglassen.
-   Nicht in die `functions.php` des Themes: Ein fehlerhaftes Snippet lässt sich im Backend abschalten, ein Fehler in der `functions.php` legt die Seite lahm.
-3. **CSS.** Inhalt von `bk-avd-rechner-quickcss.css` ans Ende des Enfold Quick CSS anhängen.
-   Den `:root`-Block am Anfang nur übernehmen, soweit die Variablen dort noch fehlen.
-4. **Beitrag.** Im Layout Architekt in den Haupttext-Textblock in eine eigene Zeile `[bk_avd_rechner]` setzen,
-   direkt nach dem Absatz unter „Ihr eigener Fall im Rechner". In `05-wordpress/haupttext.html` steht der Shortcode bereits dort.
-5. **WP Rocket.** Wenn „JavaScript-Ausführung verzögern" aktiv ist, `bkAvd` in die Ausschlussliste aufnehmen.
-   Sonst bleibt der Ergebnisbereich leer, bis der Besucher scrollt oder klickt.
-6. **Cache leeren** und den Beitrag im Frontend prüfen.
+Das Kanzlei-CSS liegt im Customizer („Zusätzliches CSS", bk-lohn-Klassen), nicht im Enfold Quick CSS. Das aktive
+Novamira-Design untersagt eine neue globale CSS-Schicht. Der Rechner lädt sein CSS deshalb nur auf Seiten, die den
+Shortcode enthalten (`wp_add_inline_style` im Head), sonst nirgends.
 
-## Prüfung nach dem Einbau
+## Aktualisieren
 
-- Erscheint der Rechner mit Gold-Linie oben? Wenn nicht: im Entwicklertool prüfen, ob `section.bk-avd` im DOM steht (Snippet aktiv?) und ob die Regeln aus dem Quick CSS ankommen. Schnelltest: `.bk-avd { outline: 4px solid red; }` ins Quick CSS.
+1. In `quelle/` ändern, `python3 quelle/build.py`, `python3 rechenprobe.py` und den Browsertest laufen lassen.
+2. Committen und pushen (das Repo ist öffentlich).
+3. Auf dem Server per `download_url()` von `raw.githubusercontent.com/.../<commit>/...` holen, SHA1 gegen die lokale Datei prüfen.
+4. Alte Sandbox-Datei vorher als `.txt` mit Datum und Uhrzeit sichern, neue Datei mit `php -l` prüfen und erst dann ersetzen.
+5. Ist der Beitrag veröffentlicht: WP-Rocket-Cache für die URL leeren.
+
+## Prüfung im Frontend
+
 - Standardwerte (1.800 EUR, 0 Kinder, 90.000 EUR, einzeln, 25 Jahre, 30 %) müssen zeigen:
   Förderung 983 EUR, 42 %; Nettoaufwand 1.357 EUR; Kapital im mittleren Szenario 97.451; Unterschied +15.655.
-- Eingabe 2500 im Feld Eigenbeitrag muss eine rote Fehlermeldung unter dem Feld zeigen.
+- Eingabe 2500 im Feld Eigenbeitrag muss eine Fehlermeldung unter dem Feld zeigen.
 - Mobil (360 px): Tabelle passt ohne Scrollen, die Seite scrollt nicht seitlich.
 
 ## Technische Hinweise
 
-- Markup und JavaScript werden einzeilig ausgeliefert. Ein nachträglich laufendes `wpautop` kann deshalb keine `<p>`- oder `<br>`-Tags in das Skript setzen.
-- Das Skript wird nur einmal je Seite ausgegeben, auch wenn der Shortcode mehrfach vorkommt; jede Instanz bekommt eigene IDs.
+- Markup und JavaScript werden einzeilig ausgeliefert, damit `wpautop` keine `<p>`- oder `<br>`-Tags in das Skript setzen kann.
+- Das Skript trägt `nowprocket`. WP Rocket verzögert JavaScript derzeit ohnehin nicht (`delay_js` aus, Stand 04.10.2026).
+- Das Skript wird nur einmal je Seite ausgegeben; jede Instanz bekommt eigene IDs.
 - Keine externen Requests, keine Cookies, keine Speicherung. Die Eingaben bleiben im Browser.
-- `!important` steht nur an Eigenschaften, die Enfold bei Formularfeldern, Überschriften und Tabellen selbst setzt. Die Wirkung im Live-Theme ist nicht geprüft (kein Zugriff aus der Arbeitsumgebung).
+- Die Sichtprüfung im Live-Theme (Schriften, Enfold-Formularstile) steht aus: Aus der Arbeitsumgebung ist die Website nicht direkt erreichbar.
 
 ## Pflege
 
-Der Einkommensteuertarif steht in `quelle/rechner.js` in der Funktion `estGrundtarif` und in `rechenprobe.py` in `est_grundtarif_2026`.
-Nach Verkündung des Tarifs 2027 beide Stellen ändern, `python3 rechenprobe.py` und den Browsertest erneut laufen lassen,
-dann `python3 quelle/build.py` und das Snippet ersetzen.
+Der Einkommensteuertarif steht in `quelle/rechner.js` (Funktion `estGrundtarif`) und in `rechenprobe.py`
+(`est_grundtarif_2026`). Nach Verkündung des Tarifs 2027 beide Stellen ändern und wie oben beschrieben aktualisieren.

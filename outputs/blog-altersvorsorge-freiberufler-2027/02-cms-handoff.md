@@ -23,24 +23,27 @@ H1 und Meta-Daten behandeln dasselbe Hauptthema (Altersvorsorge Freiberufler 202
 - Bildunterschrift: keine nötig.
 - `_avia_attachment_copyright` individuell setzen.
 
-## Optionales Schaubild
+## Schaubild (erstellt)
 
-Nicht erstellt. Lohnt sich, weil die Günstigerprüfung der Kern des Artikels ist und sich als Rechenweg gut zeigen lässt (Skill `bk-schaubilder`).
-
-- Inhalt: Eigenbeitrag 1.800 EUR + Grundzulage 540 EUR = Einzahlung 2.340 EUR; Steuerentlastung 983 EUR = 540 EUR Zulage + 443 EUR Erstattung; Nettoaufwand 1.357 EUR.
-- Position: nach der Tabelle im Abschnitt „Warum die Zulage für Gutverdiener nur ein Rechenposten ist".
-- Alt-Text-Entwurf: „Rechenweg der Günstigerprüfung: Von 2.340 EUR Einzahlung trägt die Zahnärztin 1.357 EUR selbst, 983 EUR trägt der Staat über Zulage und Steuererstattung."
+- Dateien: `06-schaubild/schaubild-guenstigerpruefung-altersvorsorge.svg` (Quelle) und `.webp` (1760 × 1072, verlustfrei, 64 Farben, 42 KB).
+- In WordPress: Attachment-ID 3352, im Beitrag als `av_image` mit `attachment_size='full'` eingebunden.
+- Position: nach dem Absatz mit dem Beispiel des Architekten, also am Ende des Abschnitts „Warum die Zulage für Gutverdiener nur ein Rechenposten ist".
+- Inhalt: Gegenüberstellung Zahnärztin (Steuerersparnis 983 EUR gewinnt gegen Zulagen 540 EUR, 42 %) und Architekt (Zulagen 750 EUR gewinnen gegen Steuerersparnis 442 EUR, 71 %). Die Tabelle im Text trägt die Herleitung, das Schaubild den Mechanismus.
+- Alt-Text (gesetzt): „Schaubild zur Günstigerprüfung: Bei der Zahnärztin übersteigt die Steuerersparnis von 983 EUR die Zulagen von 540 EUR, beim Architekten liegen die Zulagen mit 750 EUR über der Steuerersparnis von 442 EUR. Der Staat trägt 42 beziehungsweise 71 Prozent der Einzahlung."
+- Bildunterschrift (Vorschlag, nicht gesetzt, wie bei den übrigen Schaubildern): „Wer gut verdient und den vollen Beitrag zahlt, bekommt seinen Grenzsteuersatz. Kinder und kleine Beiträge drehen das Ergebnis zugunsten der Zulage."
+- `_avia_attachment_copyright`: „Schaubild Günstigerprüfung Altersvorsorge 2027: Burchardt & Kollegen".
+- Gerendert mit Gelasio (metrisch gleich zu Georgia), weil Georgia in der Arbeitsumgebung fehlt.
 
 ## Rechner
 
-- Shortcode `[bk_avd_rechner]` steht in `05-wordpress/haupttext.html` bereits an der richtigen Stelle: in eigener Zeile direkt nach dem Absatz unter „Ihr eigener Fall im Rechner".
-- Einbau von Snippet und Quick CSS: siehe `04-rechner/einbau.md`.
+- Shortcode `[bk_avd_rechner]` steht in `05-wordpress/haupttext-2.html` in eigener Zeile direkt nach dem Absatz unter „Ihr eigener Fall im Rechner".
+- Installation auf dem Server: siehe `04-rechner/einbau.md` (Sandbox-Datei, kein Quick CSS).
 
 ## Interne Links
 
 | Ziel | Status | Position |
 |---|---|---|
-| [Zusatzbeitrag ins Versorgungswerk](https://www.burchardt-kollegen.de/zahlung-eines-zusatzbeitrags-in-das-versorgungswerk/) | im Artikel gesetzt; per Websuche am 04.10.2026 im Index gefunden, Seite selbst nicht abgerufen. Vor Veröffentlichung einmal aufrufen. | Abschnitt „Wo das Depot neben Versorgungswerk und Basisrente steht" |
+| [Zusatzbeitrag ins Versorgungswerk](https://www.burchardt-kollegen.de/zahlung-eines-zusatzbeitrags-in-das-versorgungswerk/) | im Artikel gesetzt; auf dem Server bestätigt (Post-ID 2014, veröffentlicht, Permalink identisch) | Abschnitt „Wo das Depot neben Versorgungswerk und Basisrente steht" |
 | [Steuerberatung für Heilberufe](https://www.burchardt-kollegen.de/leistungen/heilberufe/steuerberatung/) | optional, nicht gesetzt | höchstens als einziger Leistungslink, etwa im Abschnitt „Alte Riester-Verträge vor dem Neuabschluss prüfen" – nur wenn redaktionell gewollt |
 
 ## Externe Links im Artikel
@@ -50,20 +53,19 @@ Nicht erstellt. Lohnt sich, weil die Günstigerprüfung der Kern des Artikels is
 
 Beide Links konnten aus der Arbeitsumgebung nicht abgerufen werden (Netzsperre). Vor Veröffentlichung einmal klicken.
 
-## Aufbau im Layout Architekt (nach `enfold-inhalte.md`)
+## Stand in WordPress (04.10.2026)
 
-```
-av_section (custom_class='bk-intro') > av_textblock   ← 05-wordpress/einstieg.html
-av_hr
-av_textblock mit [toc]
-av_hr
-av_textblock                                          ← 05-wordpress/haupttext.html (enthält [bk_avd_rechner])
-```
+| Punkt | Stand |
+|---|---|
+| Beitrag | Post-ID 3353, **Entwurf**, Slug `altersvorsorge-freiberufler-2027`, Kategorien Allgemein und Heilberufe |
+| Bearbeiten | https://www.burchardt-kollegen.de/wp-admin/post.php?post=3353&action=edit |
+| Vorschau | https://www.burchardt-kollegen.de/?p=3353&preview=true |
+| Rank Math | Title, Description und Fokus-Keyword „Altersvorsorge Freiberufler 2027" gesetzt; robots index, follow |
+| Beitragsbild | **fehlt noch** (Motiv siehe oben) |
+| Aufbau | `av_section bk-intro > av_textblock` · `av_hr` · `av_textblock [toc]` · `av_hr` · `av_textblock` · `av_image` (Schaubild) · `av_textblock` (mit Rechner). Keine FAQ, kein Codeblock. Öffnungs-Tags aus Beitrag 3208 übernommen, `av_uid` eindeutig. |
+| Pflicht-Meta | gesetzt; `post_content` und `_aviaLayoutBuilderCleanData` identisch; Shortcode-Baum neu erzeugt |
 
-Keine FAQ, daher kein `av_codeblock`. Öffnungs-Tags aus einem aktuellen Referenzbeitrag übernehmen, nur `av_uid` ersetzen.
-Pflicht-Meta setzen (`_aviaLayoutBuilder_active`, `_aviaLayoutBuilderCleanData` identisch zu `post_content`,
-`_av_el_mgr_version`, `_avia_sc_parser_state`, `header_title_bar = hidden_title_bar`), Shortcode-Baum neu erzeugen,
-Backup-Meta mit Datum und Uhrzeit, danach WP-Rocket-Cache leeren.
+Vor dem Veröffentlichen: Beitragsbild setzen, Vorschau auf Desktop und Smartphone ansehen, Prüfpunkte im Freigabeprotokoll abhaken.
 
 ## Strukturierte Daten
 
