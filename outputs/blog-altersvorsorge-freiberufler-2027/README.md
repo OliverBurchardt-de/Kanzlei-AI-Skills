@@ -22,8 +22,14 @@ Status: **redaktionell prüfbar** (keine Veröffentlichungssperre offen, fachlic
 
 ## Wiedervorlage
 
-Eine wöchentliche Routine prüft, ob das Einkommensteuerreformgesetz 2027 verkündet ist. Danach erstellt sie Artikel,
-Rechner und Schaubild mit dem endgültigen Tarif neu und überträgt sie über Novamira in Beitrag 3353.
+Routine „Überwachung ESt-Tarif 2027 – Altersvorsorge-Artikel" (`trig_01Nu1MpWXMFXddyp9AxoVZV7`), montags 7:49 Uhr
+(Europe/Berlin), jeweils in einer neuen Sitzung. Sie prüft, ob das Einkommensteuerreformgesetz 2027 verkündet ist und die
+Tarifformel vorliegt. Danach erstellt sie Artikel, Rechner und Schaubild mit dem endgültigen Tarif neu, pusht ins Repo,
+überträgt alles über Novamira in Beitrag 3353 und schaltet sich ab.
+
+Die Routine ist **ohne Connector gespeichert** (beim Anlegen technisch nicht übertragbar). Solange der Novamira-Connector
+nicht in den Einstellungen der Routine auf claude.ai ergänzt ist, erledigt sie nur die Neuerstellung im Repo und meldet,
+dass die Übertragung nach WordPress aussteht.
 
 ## Neu erzeugen nach Änderungen
 
