@@ -17,15 +17,18 @@ Erzeuge keinen Fachaufsatz und keinen Werbetext. Kompetenz entsteht durch eine g
 
 1. `references/ARTIKELTYPEN.md` für die Wahl einer passenden Dramaturgie.
 2. `references/EVIDENZ.md` für Recherche und Quellenprotokoll.
-3. `bk-humanizer/references/STIMME-FACHTEXT.md` für Stimme und verständliche
+3. `references/stimme/STIMME-FACHTEXT.md` für Stimme und verständliche
    Fachsprache.
-4. `bk-humanizer/references/SLOP-KATALOG.md` für die Redaktionsprüfung.
+4. `references/stimme/SLOP-KATALOG.md` für die Redaktionsprüfung.
 
-> **Stimme und KI-Muster stehen nicht mehr in diesem Skill.** Sie liegen in
-> `bk-humanizer` und werden dort gepflegt, weil derselbe Stoff auch für
-> Mandantenschreiben und für die Buchprojekte gilt. Dieser Skill behält, was
-> nur Blogartikel betrifft: Artikeltypen, Evidenz, Aufbau, Schaubilder,
-> Rechner, CMS-Handoff, Veröffentlichungssperren.
+> **Die beiden Dateien unter `references/stimme/` sind erzeugte Kopien.** Die
+> Quelle liegt im Skill `bk-humanizer` und wird dort gepflegt, weil derselbe
+> Stoff auch für Mandantenschreiben und für die Buchprojekte gilt. Hier wird
+> nichts davon bearbeitet — eine Änderung ginge beim nächsten Abgleich
+> verloren. Der Ablauf dafür steht in `bk-humanizer/references/PFLEGE.md`.
+>
+> Dieser Skill behält, was nur Blogartikel betrifft: Artikeltypen, Evidenz,
+> Aufbau, Schaubilder, Rechner, CMS-Handoff, Veröffentlichungssperren.
 
 **Nach Bedarf:**
 
@@ -87,8 +90,7 @@ Lege die Gliederung vor und warte auf Freigabe, wenn der Nutzer dies verlangt od
 
 ### 5. Entwurf schreiben
 
-Schreibe nach `references/AUFBAU.md` und
-`bk-humanizer/references/STIMME-FACHTEXT.md`.
+Schreibe nach `references/AUFBAU.md` und `references/stimme/STIMME-FACHTEXT.md`.
 
 Verbindliche Sprachregel:
 
@@ -102,11 +104,16 @@ Gleiche jede Tatsachen- und Rechtsaussage mit dem Evidenzprotokoll ab. Rechne Be
 
 ### 7. Redaktionsprüfung
 
-Diese Prüfung führt der Skill `bk-humanizer` durch. Wende ihn auf den Entwurf
-an, Register **Fachtext**, und arbeite seinen Ablauf ab Durchgang 2 ab — die
-Durchgänge 1 und 6 dieses Skills haben Material und Evidenz schon geklärt.
+Arbeite `references/stimme/SLOP-KATALOG.md` durch und setze danach die Züge
+aus `references/stimme/STIMME-FACHTEXT.md` ein. Die Reihenfolge ist wichtig:
+erst entfernen, dann ersetzen. **Streichen allein erzeugt keinen Ton** — jede
+gestrichene Stelle bekommt einen Zug aus dem Repertoire oder verschwindet
+ganz.
 
-Messen lässt sich der Entwurf damit auch:
+Ist der Skill `bk-humanizer` verfügbar, nimm stattdessen dessen vollständigen
+Ablauf, Register **Fachtext**, ab Durchgang 2; die Durchgänge 1 und 6 dieses
+Skills haben Material und Evidenz schon geklärt. Dort liegt auch das
+Messskript:
 
 ```bash
 python3 ../bk-humanizer/scripts/slop_scan.py ENTWURF.md --profil fachtext
@@ -123,7 +130,8 @@ Drei Punkte sind blogspezifisch und kommen zur Prüfung dort hinzu:
 ## Authentizitätsregeln
 
 Maßgeblich ist der Abschnitt **Echtheit** in `bk-humanizer/SKILL.md`. Er gilt
-hier unverändert und wird nicht ergänzt oder gelockert.
+hier unverändert und wird nicht ergänzt oder gelockert. Steht er nicht zur
+Verfügung, gilt die Kurzfassung, und sie ist nicht verhandelbar.
 
 Kurz: keine erfundenen Fälle, Verfahren, Beobachtungen oder Praxiszahlen, auch
 nicht als Platzhalter. Tatsachen in Ich-Form nur aus dem Briefing oder einem

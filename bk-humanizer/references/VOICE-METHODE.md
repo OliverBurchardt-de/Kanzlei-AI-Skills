@@ -194,6 +194,18 @@ einmal.
 
 ---
 
+## Eine Änderung an dieser Datei bleibt hier
+
+Diese Datei wird nicht kopiert und nicht verteilt. Sie beschreibt, wie ein
+Text entsteht, und das braucht nur dieser Skill.
+
+Anders ist es bei `SLOP-KATALOG.md`, `STIMME-FACHTEXT.md` und
+`STIMME-FIKTION.md`: Die liegen als erzeugte Kopie auch im Skill
+`bk-blogartikel` und im Buchrepository. Wer eine davon ändert, führt den
+Abgleich aus und erinnert an die Neuinstallation. Der Ablauf steht in
+`PFLEGE.md`, die verbindliche Kurzform in `SKILL.md`, Abschnitt *Wenn du
+eine Regel änderst*.
+
 ## Zug 37 und Zug 78
 
 Das Handbuch schließt mit den beiden Partien gegen Lee Sedol. Zug 37 war

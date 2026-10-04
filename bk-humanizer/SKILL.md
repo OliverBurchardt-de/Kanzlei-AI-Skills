@@ -60,6 +60,10 @@ statt zu mischen.
   jedes Eingriffs.
 - `references/QUELLEN.md`, wenn belegt werden soll, woher ein Muster
   stammt, oder wenn jemand wissen will, wie belastbar der Katalog ist.
+- `references/PFLEGE.md` — **verbindlich, sobald eine der Stimmdateien
+  geändert wird.** Die Regeln liegen als erzeugte Kopien auch im Skill
+  `bk-blogartikel` und im Buchrepository. Wer die Quelle ändert und den
+  Abgleich überspringt, hinterlässt drei Fassungen derselben Regel.
 - Die Dateien in `korpus/`, wenn der Ton unsicher ist. Ein echter Text
   kalibriert schneller als jede Regelliste.
 
@@ -247,6 +251,41 @@ ohne Marker außer offenen `[OLIVER-INPUT: …]`.
 
 Punkt 6 wird nicht weggelassen. Ein Lektor, der nur meldet, was er selbst
 schon behoben hat, verschweigt die Fälle, in denen er sich nicht sicher war.
+
+## Wenn du eine Regel änderst
+
+Die Regeln dieses Skills liegen nicht nur hier. `SLOP-KATALOG.md` und
+`STIMME-FACHTEXT.md` liegen als erzeugte Kopie im Skill `bk-blogartikel`,
+`SLOP-KATALOG.md` und `STIMME-FIKTION.md` im Buchrepository
+`special-interest`. Das ist nötig, weil ein installierter Skill seine
+Nachbarn nicht verlässlich sieht und das Buchrepository gar kein Skill ist.
+
+**Hast du eine der drei Stimmdateien geändert, gehören diese drei Schritte
+zur Änderung und nicht zu einem späteren Aufräumen:**
+
+```bash
+python3 scripts/sync_stimme.py           # Kopien schreiben
+python3 scripts/sync_stimme.py --check   # muss 0 zurückgeben
+```
+
+Und dann der Schritt, der am leichtesten untergeht:
+
+> **Sage Oliver ausdrücklich, dass `bk-humanizer` und `bk-blogartikel` neu
+> installiert werden müssen, und dass die Änderung bis dahin nicht wirkt.**
+> Die Installation zieht nicht von allein nach. Dieser Hinweis wird auch bei
+> einer kleinen Änderung nicht weggelassen, weil die Lücke zwischen Repo und
+> Installation sonst unbemerkt wächst.
+
+Liefere dazu die neuen `.skill`-Pakete mit, damit die Installation ein Klick
+bleibt:
+
+```bash
+python3 ~/.claude/skills/synced/*/skill-creator/scripts/package_skill.py bk-humanizer
+```
+
+Den Rest — welche Datei wohin geht, was bei einer von Hand geänderten Kopie
+zu tun ist, warum es Kopien überhaupt gibt — regelt `references/PFLEGE.md`.
+Lies die Datei, bevor du eine Stimmdatei anfasst.
 
 ## Was dieser Skill nicht tut
 
