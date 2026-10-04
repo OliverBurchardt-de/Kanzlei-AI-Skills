@@ -19,7 +19,7 @@
 
 .bk-avd {
   --bk-avd-linie: #C9D3E6;     /* helle Linie aus Dunkelblau abgeleitet, nur Dekor */
-  --bk-avd-flaeche: #F4F6FA;   /* sehr helle Fläche für Ergebnisblöcke, Text bleibt Anthrazit (Kontrast > 11:1) */
+  --bk-avd-flaeche: #EAF5FC;   /* Pale Blue der bestehenden bk-lohn-Boxen; Anthrazit darauf 11,4:1 */
   --bk-avd-fehlertext: #B3261E;/* dunkles Rot für Fehlertext, 6,5:1 auf Weiß */
   margin: 2.5em 0 !important;  /* Abstand zum Fließtext; Enfold setzt bei section eigene Ränder */
   padding: clamp(0.75rem, 3vw, 2rem); /* fluider Innenabstand: 12 px mobil bis 32 px Desktop */
@@ -96,6 +96,7 @@
   background: var(--bk-weiss) !important; /* Enfold färbt Inputs in der Farbsektion ein */
   color: var(--bk-anthrazit) !important;  /* gut lesbare Eingabe */
   font-size: 1rem !important;  /* 16 px verhindert Zoom auf iOS beim Antippen */
+  font-family: inherit !important; /* Formularfelder erben die Schrift der Seite statt der Browser-Standardschrift */
   line-height: 1.4 !important; /* gleichmäßige Höhe der Eingabe */
   box-shadow: none !important; /* Enfold-Schatten an Inputs entfernen */
 }
@@ -197,7 +198,7 @@
   margin: 0 0 0.75em !important; /* Abstand zur Liste */
   font-weight: 700;              /* Kernaussage fett */
   font-size: 1.05rem;            /* leicht größer als Fließtext */
-  color: var(--bk-dunkelblau);   /* Dunkelblau, 7,1:1 auf Weiß, auf der hellen Fläche etwa 6,6:1 */
+  color: var(--bk-dunkelblau);   /* Dunkelblau, 7,1:1 auf Weiß, auf der Pale-Blue-Fläche 6,4:1 */
 }
 
 .bk-avd .bk-avd-liste {
@@ -255,8 +256,14 @@
   border-collapse: collapse !important; /* durchgehende Linien statt Doppelrahmen */
   margin: 0 !important;          /* Enfold setzt Tabellenabstände */
   background: transparent !important; /* Enfold färbt Tabellen ein */
-  font-size: 0.85rem;            /* mobil kleiner, damit vier Spalten ohne Scrollen passen */
+  font-size: 0.8rem;             /* mobil kleiner, damit vier Spalten ohne Scrollen passen */
   border: 0 !important;          /* Enfold-Außenrahmen entfernen */
+}
+
+@media (min-width: 400px) {    /* ab großen Smartphones */
+  .bk-avd .bk-avd-tabelle {
+    font-size: 0.85rem;        /* etwas größere Tabellenschrift */
+  }
 }
 
 @media (min-width: 640px) {    /* ab Tablet-Breite */
@@ -275,7 +282,7 @@
 
 .bk-avd .bk-avd-tabelle th,
 .bk-avd .bk-avd-tabelle td {
-  padding: 0.4rem 0.35rem !important; /* Enfold setzt großzügige Zellabstände; knapp, damit vier Spalten mobil passen */
+  padding: 0.4rem 0.25rem !important; /* Enfold setzt großzügige Zellabstände; knapp, damit vier Spalten mobil passen */
   border: 0 !important;              /* Enfold-Zellrahmen entfernen */
   border-bottom: 1px solid var(--bk-avd-linie) !important; /* nur feine Zeilenlinie */
   background: transparent !important; /* Enfold-Zebrastreifen entfernen */
