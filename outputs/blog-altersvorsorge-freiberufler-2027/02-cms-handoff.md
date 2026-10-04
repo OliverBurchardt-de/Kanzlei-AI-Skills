@@ -61,11 +61,11 @@ Beide Links konnten aus der Arbeitsumgebung nicht abgerufen werden (Netzsperre).
 | Bearbeiten | https://www.burchardt-kollegen.de/wp-admin/post.php?post=3353&action=edit |
 | Vorschau | https://www.burchardt-kollegen.de/?p=3353&preview=true |
 | Rank Math | Title, Description und Fokus-Keyword „Altersvorsorge Freiberufler 2027" gesetzt; robots index, follow |
-| Beitragsbild | **fehlt noch** (Motiv siehe oben) |
+| Beitragsbild | gesetzt: Attachment-ID 3356, `altersvorsorge-freiberufler-2027-beitragsbild.webp` (1600 × 900, WebP 82), mit Alt-Text, Bildunterschrift und individuellem Bildnachweis; erscheint als og:image, nicht zwischen Titel und Einstieg. Nachweis in `07-beitragsbild/bildnachweis.md` |
 | Aufbau | `av_section bk-intro > av_textblock` · `av_hr` · `av_textblock [toc]` · `av_hr` · `av_textblock` · `av_image` (Schaubild) · `av_textblock` (mit Rechner). Keine FAQ, kein Codeblock. Öffnungs-Tags aus Beitrag 3208 übernommen, `av_uid` eindeutig. |
 | Pflicht-Meta | gesetzt; `post_content` und `_aviaLayoutBuilderCleanData` identisch; Shortcode-Baum neu erzeugt |
 
-Vor dem Veröffentlichen: Beitragsbild setzen, Vorschau auf Desktop und Smartphone ansehen, Prüfpunkte im Freigabeprotokoll abhaken.
+Vor dem Veröffentlichen: Vorschau auf Desktop und Smartphone ansehen, Prüfpunkte im Freigabeprotokoll abhaken.
 
 ## Strukturierte Daten
 

@@ -3,7 +3,7 @@
 Erstellt am 04.10.2026 mit dem Skill `bk-blogartikel` aus dem Recherchebriefing vom 03.10.2026.
 Status: **redaktionell prüfbar** (keine Veröffentlichungssperre offen, fachliche Freigabe steht aus).
 
-**In WordPress als Entwurf angelegt** (Post-ID 3353, nicht veröffentlicht). Der Rechner ist als Sandbox-Datei installiert, das Schaubild liegt in der Mediathek (ID 3352). Es fehlen das Beitragsbild und die fachliche Freigabe.
+**In WordPress als Entwurf angelegt** (Post-ID 3353, nicht veröffentlicht). Der Rechner ist als Sandbox-Datei installiert, das Schaubild (ID 3352) und das Beitragsbild (ID 3356, OpenArt) liegen in der Mediathek. Es fehlt die fachliche Freigabe.
 
 | Datei | Inhalt |
 |---|---|
@@ -13,11 +13,12 @@ Status: **redaktionell prüfbar** (keine Veröffentlichungssperre offen, fachlic
 | `04-rechner/` | Förderrechner: Sandbox-PHP-Datei, Vorschau, Rechenprobe, Einbauanleitung |
 | `05-wordpress/` | HTML-Teile für die Enfold-Textblöcke (`einstieg.html`, `haupttext-1.html`, `haupttext-2.html` mit `[bk_avd_rechner]`) |
 | `06-schaubild/` | Schaubild zur Günstigerprüfung (SVG-Quelle und WebP) |
+| `07-beitragsbild/` | Beitragsbild (OpenArt) mit Bildnachweis, Prompt und Umwandlungsskript |
 
 ## Vor der Veröffentlichung
 
 1. Prüfpunkte 1 bis 4 im Freigabeprotokoll abarbeiten.
-2. Beitragsbild setzen und die Vorschau auf Desktop und Smartphone ansehen.
+2. Die Vorschau auf Desktop und Smartphone ansehen.
 3. Beitrag veröffentlichen.
 
 ## Wiedervorlage
