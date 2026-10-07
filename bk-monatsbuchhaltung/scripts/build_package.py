@@ -34,6 +34,8 @@ from datev_io import (
     carry_order_violations,
     carry_sort_key,
     clean_text,
+    plain_language_issues,
+    single_task_issues,
     extf_header,
     master_row,
     month_bounds,
@@ -50,7 +52,7 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "1.4.0"
+SKILL_VERSION = "1.5.0"
 OUTPUT_CONTRACT = "monthly-booking-and-clarification-batches-v4"
 
 VALID_STATUSES = {
@@ -1333,6 +1335,28 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
             errors.append(f"{tid}: nachvollziehbare Ableitung der Buchung/Behandlung fehlt")
         if doc.get("processing_status") == "Buchungszeile erzeugt" and not str(doc.get("reason", "")).strip():
             errors.append(f"{tid}: Ampelbegründung fehlt")
+        if data.get("_normalized_source_model") == "canonical":
+            errors.extend(f"{tid}: {issue}" for issue in plain_language_issues(
+                doc.get("document_summary"), "Beleg zeigt (document_summary)", min_length=30))
+            errors.extend(f"{tid}: {issue}" for issue in plain_language_issues(
+                doc.get("derivation"), "Daraus folgt (derivation)"))
+            errors.extend(f"{tid}: {issue}" for issue in plain_language_issues(
+                doc.get("exclusion_reason"), "Ausschlussgrund"))
+            if doc.get("processing_status") == "Buchungszeile erzeugt":
+                errors.extend(f"{tid}: {issue}" for issue in plain_language_issues(
+                    doc.get("reason"), "Warum Rot oder Grün (reason)", min_length=30, reject_generic=True))
+            if doc.get("traffic_light") == "Rot":
+                errors.extend(f"{tid}: {issue}" for issue in single_task_issues(doc.get("next_step")))
+            elif str(doc.get("next_step", "") or "").strip():
+                errors.extend(f"{tid}: {issue}" for issue in plain_language_issues(doc.get("next_step"), "Nächster Schritt"))
+            for line_no, booking in enumerate(doc.get("bookings", []), start=1):
+                opened = booking.get("open_fields") or {}
+                if isinstance(opened, dict):
+                    for field, text in opened.items():
+                        errors.extend(
+                            f"{tid}, Zeile {line_no}: {issue}" for issue in
+                            plain_language_issues(text, f"Begründung offenes Feld {field}", min_length=20)
+                        )
         if doc.get("processing_status") not in VALID_STATUSES:
             errors.append(f"{tid}: ungültiger Verarbeitungsstatus")
         if doc.get("processing_status") == "Buchungszeile erzeugt":
@@ -1592,6 +1616,13 @@ def validate_clarifications(data: dict[str, Any]) -> list[str]:
             errors.append(f"{case_id}: Klärungsfall muss Rot sein")
         if not str(case.get("booking_risk", "")).strip():
             errors.append(f"{case_id}: konkretes Buchungsrisiko (booking_risk) fehlt")
+        if data.get("_normalized_source_model") == "canonical":
+            for key, label in (
+                ("topic", "Thema"), ("facts", "Tatsachen"), ("booking_risk", "Buchungsrisiko"),
+                ("provisional_treatment", "Provisorische Behandlung"), ("recommendation", "Empfehlung"),
+                ("decision_needed", "Entscheidung"), ("proposed_change", "Vorgeschlagene Änderung"),
+            ):
+                errors.extend(f"{case_id}: {issue}" for issue in plain_language_issues(case.get(key), label))
         transaction_ids = case.get("transaction_ids", [])
         if not isinstance(transaction_ids, list) or not transaction_ids:
             errors.append(f"{case_id}: transaction_ids muss eine nicht leere Liste sein")
@@ -2233,18 +2264,23 @@ def write_clarification_files(root: Path, data: dict[str, Any]) -> None:
         "# Klärungsfälle", "",
         "Alle fachlichen Entscheidungen dieses Laufs sind hier gebündelt. "
         "Die Buchungsverarbeitung wurde deswegen nicht unterbrochen.", "",
-        "| Klärfall-ID | Vorgangs-ID(s) | Thema | Tatsachen | Provisorische Behandlung | "
-        "Empfehlung | Entscheidung erforderlich | Ampel | Ziel | Vorgeschlagene Änderung | Ergebnis Mitarbeiter |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Klärfall-ID | Vorgangs-ID(s) | Thema | Beleg zeigt | Warum Rot | Nächster Schritt | "
+        "Provisorische Behandlung | Empfehlung | Entscheidung erforderlich | Ziel | Vorgeschlagene Änderung | Ergebnis Mitarbeiter |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
+    documents = {str(doc.get("transaction_id")): doc for doc in data.get("documents", [])}
     if not cases:
-        lines.append("| – | – | Keine fachlichen Klärungsfälle | – | – | – | – | – | – | – | – |")
+        lines.append("| – | – | Keine fachlichen Klärungsfälle | – | – | – | – | – | – | – | – | – |")
     for case in cases:
+        linked = [documents.get(str(tid), {}) for tid in case.get("transaction_ids", [])]
         values = [
             case.get("case_id", ""), case.get("transaction_ids", []),
-            case.get("topic", ""), " – ".join(filter(None, [case.get("facts", ""), case.get("booking_risk", "")])),
+            case.get("topic", ""),
+            " / ".join(dict.fromkeys(filter(None, (str(doc.get("document_summary", "")) for doc in linked)))),
+            " – ".join(filter(None, [case.get("facts", ""), case.get("booking_risk", "")])),
+            " / ".join(dict.fromkeys(filter(None, (str(doc.get("next_step", "")) for doc in linked)))),
             case.get("provisional_treatment", ""), case.get("recommendation", ""),
-            case.get("decision_needed", ""), case.get("traffic_light", ""),
+            case.get("decision_needed", ""),
             case.get("target", ""), case.get("proposed_change", ""),
             case.get("employee_result", ""),
         ]

@@ -18,7 +18,7 @@ Ausgangs- und Rücklaufdatei mit `scripts/evaluate_review_return.py` vergleichen
 2. Alle Vorgangs-IDs sind exakt einmal und in beiden Dateien vollständig vorhanden.
 3. Keine prüfpflichtige Zeile wurde gelöscht oder hinzugefügt.
 4. Nur `Bearbeitungsstatus` und `Mitarbeiter-Ergebnis` dürfen in `Belegprüfung` geändert sein.
-5. Alle übrigen Blätter und geschützten Inhalte, insbesondere Ampel, Buchungsstapel, Betrag, Kontierung und Belegfeld 1, sind unverändert.
+5. Alle übrigen Blätter und geschützten Inhalte, insbesondere Ampel, Buchungsstapel, Betrag, Buchung (bis v1.4 „Kontierung“) und Belegfeld 1, sind unverändert.
 
 Integritätsabweichungen konkret ausweisen und niemals stillschweigend übernehmen.
 

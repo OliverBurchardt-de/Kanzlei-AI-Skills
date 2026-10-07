@@ -100,7 +100,7 @@ Wirtschaftlich zusammengehörige Bestandteile gemeinsam beurteilen. Anlagevermö
 
 ## 14. Prüfungsdatei und Abschlussnachweis
 
-Zentrales Blatt ist `Belegprüfung`: Ampel vorne und als feste Zellfüllung in der richtigen Farbe hinterlegt, unmittelbar danach der vollständige EXTF-Dateiname des Buchungsstapels, eine Zeile je logischem Vorgang, danach Datum, Partner, Belegfeld 1, Betrag, Periode, Kontierung, Ableitung, konkrete Ampelbegründung, nächster Schritt und editierbare Mitarbeiterfelder. Dasselbe gilt für die Ampel im Blatt `Buchungszeilen`. Keine Quelldateinamen, GUIDs, Links oder Spalte „Importfähig“.
+Zentrales Blatt ist `Belegprüfung`: Ampel vorne und als feste Zellfüllung in der richtigen Farbe hinterlegt, unmittelbar danach der vollständige EXTF-Dateiname des jeweiligen Stapels, eine Zeile je logischem Vorgang, danach Datum laut Beleg, Partner, Belegfeld 1, Betrag, Periode und die Klartextspalten `Beleg zeigt`, `Buchung`, `Daraus folgt`, `Warum Rot oder Grün?`, `Nächster Schritt` sowie die editierbaren Mitarbeiterfelder. Dasselbe gilt für die Ampel im Blatt `Buchungszeilen`. Keine Quelldateinamen, GUIDs, Links oder Spalte „Importfähig“. Die Klartextspalten sind für Mitarbeiter ohne Buchhaltungskürzel lesbar (Abschnitt 18).
 
 `Taetigkeitsnachweis.md` nennt Auftrag und tatsächliche Perioden, Quelldateien, logische Vorgänge, Buchungszeilen, Ampel-/Statuszahlen, alle ausdrücklich genannten Personen/Geschäftspartner samt Suchvarianten, Fundstellen und Endstatus sowie die verwendeten Datenquellen. Ein technisch gültiges Paket heißt `Importpaket erstellt – noch nicht in DATEV importiert`; `in DATEV importiert` ist nur mit Nachweis zulässig. Zusätzlich stets `fachlicher Prüfprotokoll-Rücklauf ausstehend` ausweisen.
 
@@ -124,3 +124,21 @@ Stichprobe geeigneter inländischer Rechnungen auf Pflichtangaben. Ausländische
 ## 17. Getrennte Buchungsvorläufe
 
 Nur wenn das Mandantenprofil unter `batch_config.separate_batches` einen Stapeltyp freischaltet (zum Beispiel `eigenbelege` für Eigenrechnungen eines Labors), erhalten Vorgänge mit `batch_type: <Stapeltyp>` je Periode einen eigenen Vorlauf `EXTF_Buchungsstapel_<JJJJ-MM>_<Stapeltyp>.csv` mit der konfigurierten Stapelbezeichnung. Jede Zeile trägt die vorgeschriebene Kostenstelle (`required_kost1`) und das vorgeschriebene Gegenkonto (`required_contra_account`); Abweichungen und ein `batch_type` ohne Konfiguration sind Generatorfehler. Rote Vorgänge eines Stapeltyps landen in `EXTF_Klaerungsposten_<JJJJ-MM>_<Stapeltyp>.csv`. Der Eigenbeleg-Stapel wird nach dem Standardstapel derselben Periode importiert.
+
+## 18. Begründung aus dem Beleg
+
+Die Entscheidung über jeden Vorgang wird aus dem Belegbild getroffen und so aufgeschrieben, dass ein Mitarbeiter ohne Rückfrage versteht, warum. Der Riecken-Connector liefert Stammdaten, Vorbuchungen und den Übertragungsweg; er ersetzt weder das Lesen des Belegs noch die Begründung. „Über den Connector nichts gefunden“ oder „in DATEV kein Treffer“ ist nie der Grund für Rot oder Grün; Live-Daten dürfen nur als Zusatzfakt genannt werden („Muster Juli: Telefonkosten auf 492000“).
+
+Je Vorgang vier Klartexte:
+
+1. **Beleg zeigt** (`document_summary`): was auf dem Beleg steht. Aussteller, Adressat, Leistung oder Artikel, Datum und Uhrzeit, Ort, Betrag, Umsatzsteuer, Zahlungsweg. Beispiel: „Kassenbon des WOK point in Hasbergen vom 11.08.2026, 11:43 Uhr, vier Gerichte zum Mitnehmen, 47,00 EUR bar bezahlt, 7 % Umsatzsteuer.“
+2. **Daraus folgt** (`derivation`): wie Buchung oder Ausschluss aus dem Beleg und dem Mandantenprofil folgen. Beispiel: „Hasbergen liegt am Privatwohnort, rund 60 km von der Praxis; auf dem Bon stehen weder Teilnehmer noch Anlass.“
+3. **Warum Rot oder Grün?** (`reason`): der konkrete Grund, bei Rot zusätzlich das Risiko und welches Feld offen bleibt. Beispiel Rot: „Ohne Anlass und Teilnehmer ist nicht erkennbar, ob es sich um private Verpflegung oder um eine Bewirtung handelt.“ Beispiel Grün: „Rechnung an die Praxis, Leistung Softwarewartung, Betrag und Datum eindeutig, wiederkehrend wie im Vormonat.“
+4. **Nächster Schritt** (`next_step`, bei Rot Pflicht): genau eine Aufgabe in einem Satz. Beispiel: „Beim Mandanten nach dem Anlass des Essens und den Teilnehmern fragen.“ Keine Aufzählung von Alternativen, keine zweite Aufgabe, keine Kontonummernwahl als Aufgabe; was aus der Antwort folgt, steht unter „Warum Rot oder Grün?“.
+
+Regeln für alle vier Texte, für Ausschlussgründe, offene Felder und Klärungsfälle:
+
+- Alltagssprache. Keine Feldnamen (`account`, `open_fields`, `kost1`), keine Kürzel (`BU`, `BF1`), keine Werkzeug- oder Connectornamen, kein JSON-Vokabular. Konten heißen „Sachkonto“, „Gegenkonto“, „Kreditor“, „Debitor“; der BU-Schlüssel heißt „Steuerschlüssel“; Belegfeld 1 heißt „Belegnummer“.
+- Konkret statt pauschal. „Kontierung prüfen“, „Kontierung offen“, „Prüfung erforderlich“ oder „unklar“ ohne Belegbezug weist der Generator zurück. Jede Begründung nennt die Belegtatsache, aus der sie folgt.
+- Vollständig aus dem Beleg. Ein Grund, der sich nicht aus Belegbild, Mandantenprofil oder einer benannten Vorbuchung ergibt, ist keine Begründung.
+- Konten dürfen genannt werden, wenn sie der Buchung dienen („Sachkonto 498000 Praxisbedarf“), aber nicht als Entscheidungsalternative im nächsten Schritt.

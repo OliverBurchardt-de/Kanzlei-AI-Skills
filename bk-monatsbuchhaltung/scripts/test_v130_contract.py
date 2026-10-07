@@ -54,7 +54,7 @@ def main() -> None:
             doc["duplicate_checks"] = {key: {"checked": True, "result": "no_hit", "reference": ""} for key in ("file_hash_current_upload", "logical_document_current_upload", "datev_live")}
             if field:
                 line = doc["bookings"][0]
-                line["open_fields"] = {field: f"{field} muss anhand des Originalbelegs geklärt werden."}
+                line["open_fields"] = {field: f"{datev_io.FIELD_LABELS[field]} ist auf dem Beleg nicht lesbar und muss am Original geklärt werden."}
                 if field == "recognized_date":
                     doc[field] = None
                 else:
@@ -72,10 +72,10 @@ def main() -> None:
                 if field == "exchange_rate":
                     doc["currency"] = "USD"
                     line["base_amount"] = "109.48"
-                doc["reason"] = f"Offene Angabe: {field}."
+                doc["reason"] = f"Auf dem Beleg ist {datev_io.FIELD_LABELS[field]} nicht erkennbar; ohne diese Angabe ist die Buchung unvollständig."
                 cases.append({
                     "case_id": f"K{number}", "transaction_ids": [doc["transaction_id"]],
-                    "topic": field, "facts": "Sichere Angaben im Buchungsstapel erhalten.",
+                    "topic": datev_io.FIELD_LABELS[field], "facts": "Sichere Angaben im Buchungsstapel erhalten.",
                     "booking_risk": "Ohne Klärung kann die Buchung fachlich falsch sein.",
                     "provisional_treatment": "Bekannte Angaben exportiert, konkretes Feld offen.",
                     "recommendation": "Originalbeleg prüfen; Anlagenzugänge über Anlagenvorerfassung bearbeiten.",

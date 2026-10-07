@@ -14,6 +14,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from datev_io import (
     BATCH_KIND_BOOKING,
     BATCH_KIND_CLARIFICATION,
+    FIELD_LABELS,
     STANDARD_BATCH_TYPE,
     accrual_document,
     batch_file_name,
@@ -117,28 +118,86 @@ class BatchFiles:
         return self.by_line.get((str(doc.get("transaction_id", "")), line_no)) or self.for_document(doc)
 
 
-def compact_posting(doc: dict[str, Any]) -> str:
+def _money(value: Any, currency: str) -> str:
+    number = amount(value)
+    if number is None:
+        return "Betrag noch offen"
+    text = f"{number:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    return f"{text} {currency}"
+
+
+def _account_text(number: Any, name: Any, kind: str) -> str:
+    number_text, name_text = clean(number), clean(name)
+    if not number_text:
+        return f"{kind} noch offen"
+    return " ".join(filter(None, [number_text, name_text]))
+
+
+def readable_posting(doc: dict[str, Any]) -> str:
+    """Buchung in Alltagssprache: Betrag, Soll- und Habenkonto, Steuerschlüssel, Belegnummer."""
     if doc.get("processing_status") != "Buchungszeile erzeugt":
         return clean(doc.get("processing_status")) or "Keine Buchungszeile"
     rows: list[str] = []
+    currency = clean(doc.get("currency")) or "EUR"
     for line in doc.get("bookings", []):
-        value = amount(line.get("amount"))
-        value_text = (
-            f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            if value is not None else clean(line.get("amount"))
-        )
-        account = " ".join(filter(None, [
-            clean(line.get("account")), clean(line.get("account_name"))
-        ]))
-        contra = " ".join(filter(None, [
-            clean(line.get("contra_account")), clean(line.get("contra_account_name"))
-        ]))
-        rows.append(
-            f"{value_text} {doc.get('currency', 'EUR')} {line.get('debit_credit', '')}"
-            f" | {account} an {contra} | BU {line.get('bu_key') or '–'}"
-            f" | BF1 {line.get('document_field_1') or document_field_1(doc)}"
-        )
+        account = _account_text(line.get("account"), line.get("account_name"), "Sachkonto")
+        contra = _account_text(line.get("contra_account"), line.get("contra_account_name"), "Gegenkonto")
+        if clean(line.get("debit_credit")) == "H":
+            debit, credit = contra, account
+        else:
+            debit, credit = account, contra
+        tax = clean(line.get("bu_key"))
+        reference = clean(line.get("document_field_1")) or document_field_1(doc)
+        opened = line.get("open_fields") or {}
+        parts = [
+            f"{_money(line.get('amount'), currency)}: Soll {debit}, Haben {credit}",
+            f"Steuerschlüssel {tax}" if tax else "ohne Steuerschlüssel",
+            f"Belegnummer {reference}" if reference else "Belegnummer noch offen",
+        ]
+        kost = clean(line.get("kost1"))
+        if kost:
+            parts.append(f"Kostenstelle {kost}")
+        if isinstance(opened, dict) and opened:
+            parts.append("offen: " + ", ".join(FIELD_LABELS.get(key, key) for key in opened))
+        rows.append("; ".join(parts))
     return "\n".join(rows)
+
+
+def open_field_text(doc: dict[str, Any]) -> str:
+    items = []
+    for line in doc.get("bookings", []):
+        for field, reason in (line.get("open_fields") or {}).items():
+            items.append(f"{FIELD_LABELS.get(field, field)}: {clean(reason)}")
+    return "; ".join(dict.fromkeys(items))
+
+
+def why_text(doc: dict[str, Any], case: dict[str, Any]) -> str:
+    reason = re.sub(r"^(Grün|Rot)\s*:\s*", "", clean(doc.get("reason")), flags=re.I)
+    parts = [reason]
+    risk = clean(case.get("booking_risk"))
+    if risk:
+        parts.append(f"Risiko: {risk}")
+    opened = open_field_text(doc)
+    if opened:
+        parts.append(f"Offen bleibt: {opened}")
+    return "\n".join(filter(None, parts))
+
+
+def next_step_text(doc: dict[str, Any], case: dict[str, Any]) -> str:
+    explicit = clean(doc.get("next_step"))
+    if explicit:
+        return explicit
+    if doc.get("payment_advice"):
+        return "Das gesonderte Avis-ZIP in DATEV Unternehmen online hochladen."
+    if doc.get("processing_status") == "sichere Dublette – nicht erneut gebucht":
+        return "Keine erneute Buchung."
+    if doc.get("processing_status") == "nicht buchungsrelevant":
+        return "Keine Buchung."
+    if doc.get("processing_status") == "außerhalb Auftragszeitraum":
+        return "Nicht in diesem Monat buchen."
+    if doc.get("traffic_light") == "Rot":
+        return clean(case.get("recommendation")) or clean(case.get("decision_needed"))
+    return "Keine weitere Bearbeitung."
 
 
 def apply_header(ws, row: int, start: int, end: int) -> None:
@@ -226,7 +285,10 @@ def build(data: dict[str, Any], output: Path) -> None:
     guide_rows = [
         ["Schritt / Feld", "Bedeutung"],
         ["1. Belegprüfung", "Rote Fälle bearbeiten. Grüne Vorgänge stehen im Buchungsstapel, rote im Klärungsstapel. Rechts neben der Ampel steht der vollständige Dateiname des jeweiligen Stapels. Die Spalte Belegdatum laut Beleg zeigt das sicher erkannte Datum; im Klärungsstapel ist das DATEV-Belegdatum immer leer und wird in DATEV nachgetragen."],
-        ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, BU-Schlüssel, Belegfeld 1, Buchungstext und Periode nachvollziehen."],
+        ["Beleg zeigt / Daraus folgt", "„Beleg zeigt“ beschreibt, was auf dem Beleg steht: wer, was, wann, wo, wie viel, wie bezahlt. „Daraus folgt“ erklärt, wie die Buchung aus dem Beleg und dem Mandantenprofil folgt."],
+        ["Warum Rot oder Grün?", "Nennt den konkreten Grund aus dem Beleg. Bei Rot zusätzlich das Risiko und welches Feld offen bleibt."],
+        ["Nächster Schritt", "Bei Rot genau eine Aufgabe in einem Satz. Erst diese Aufgabe erledigen, dann Bearbeitungsstatus und Mitarbeiter-Ergebnis eintragen."],
+        ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, Steuerschlüssel, Belegnummer, Buchungstext und Periode nachvollziehen."],
         ["3. Rücklaufstatus", "Für jeden roten Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
         ["4. Mitarbeiter-Ergebnis", "Bei geändert oder nicht übernommen ist die endgültige Behandlung als Mitarbeiter-Ergebnis Pflicht."],
         ["Grün", "Vollständig und plausibel; keine offene fachliche Frage."],
@@ -245,8 +307,9 @@ def build(data: dict[str, Any], output: Path) -> None:
         guide.cell(row, 1).font = Font(bold=True)
         guide.cell(row, 2).alignment = Alignment(wrap_text=True, vertical="top")
         guide.row_dimensions[row].height = 34
-    for row, color in ((6, GREEN), (7, RED)):
-        guide.cell(row, 1).fill = PatternFill("solid", fgColor=color)
+        label = clean(guide.cell(row, 1).value)
+        if label in {"Grün", "Rot"}:
+            guide.cell(row, 1).fill = PatternFill("solid", fgColor=GREEN if label == "Grün" else RED)
     set_widths(guide, [25, 90])
     guide.freeze_panes = "A2"
     add_title(guide, f"Buchungsprüfung {run['mandantennummer']} – {run['buchungsmonat']}", 8)
@@ -310,32 +373,16 @@ def build(data: dict[str, Any], output: Path) -> None:
 
     review_headers = [
         "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum laut Beleg", "Geschäftspartner",
-        "Belegfeld 1", "Betrag", "Währung", "Buchungsperiode", "Kontierung",
-        "Ableitung", "Prüfergebnis / Ampelbegründung",
-        "Offener Punkt / nächster Schritt", "Bearbeitungsstatus", "Mitarbeiter-Ergebnis",
+        "Belegfeld 1", "Betrag", "Währung", "Buchungsperiode", "Beleg zeigt", "Buchung",
+        "Daraus folgt", "Warum Rot oder Grün?",
+        "Nächster Schritt", "Bearbeitungsstatus", "Mitarbeiter-Ergebnis",
     ]
     if cost_config:
-        review_headers.insert(review_headers.index("Kontierung") + 1, "KOST1")
+        review_headers.insert(review_headers.index("Buchung") + 1, "KOST1")
     review_col = {name: index for index, name in enumerate(review_headers, start=1)}
     review.append(review_headers)
     for doc in docs:
         case = cases.get(str(doc.get("transaction_id", "")), {})
-        next_step = " – ".join(dict.fromkeys(filter(None, [
-            clean(case.get("recommendation")), clean(case.get("decision_needed"))
-        ])))
-        open_details = "; ".join(dict.fromkeys(
-            f"{field}: {clean(reason)}" for line in doc.get("bookings", [])
-            for field, reason in line.get("open_fields", {}).items()
-        ))
-        if not next_step:
-            if doc.get("payment_advice"):
-                next_step = "Gesondertes Avis-ZIP in DATEV Unternehmen online hochladen."
-            elif doc.get("processing_status") == "sichere Dublette – nicht erneut gebucht":
-                next_step = "Keine erneute Buchung."
-            elif doc.get("processing_status") == "nicht buchungsrelevant":
-                next_step = "Keine Buchung."
-            elif doc.get("traffic_light") == "Grün":
-                next_step = "Keine weitere Bearbeitung."
         row_values = [
             doc.get("traffic_light") or "",
             batch_files.for_document(doc),
@@ -346,10 +393,11 @@ def build(data: dict[str, Any], output: Path) -> None:
             amount(doc.get("total_amount")),
             doc.get("currency") or "",
             doc.get("period") or "",
-            compact_posting(doc),
+            clean(doc.get("document_summary")),
+            readable_posting(doc),
             clean(doc.get("derivation")),
-            " – ".join(filter(None, [re.sub(r"^(Grün|Rot)\s*:\s*", "", clean(doc.get("reason")), flags=re.I), clean(case.get("booking_risk"))])),
-            " – ".join(filter(None, [open_details, next_step])),
+            why_text(doc, case) if doc.get("processing_status") == "Buchungszeile erzeugt" else clean(doc.get("exclusion_reason")) or clean(doc.get("reason")),
+            next_step_text(doc, case),
             "offen" if doc.get("traffic_light") == "Rot" else "",
             "",
         ]
@@ -368,7 +416,7 @@ def build(data: dict[str, Any], output: Path) -> None:
     apply_header(review, 1, 1, column_count)
     review.freeze_panes = "C2"
     review.auto_filter.ref = review.dimensions
-    widths = [18, 38, 14, 14, 27, 22, 14, 10, 16, 58, 52, 48, 48, 27, 48]
+    widths = [18, 38, 14, 14, 27, 22, 14, 10, 16, 52, 48, 48, 48, 44, 27, 48]
     if cost_config:
         widths.insert(review_col["KOST1"] - 1, 14)
     set_widths(review, widths)
@@ -379,9 +427,9 @@ def build(data: dict[str, Any], output: Path) -> None:
     for row in range(2, review.max_row + 1):
         review.cell(row, review_col["Belegdatum laut Beleg"]).number_format = "dd.mm.yyyy"
         review.cell(row, review_col["Betrag"]).number_format = '#,##0.00'
-        for col in range(review_col["Kontierung"], column_count + 1):
+        for col in range(review_col["Beleg zeigt"], column_count + 1):
             review.cell(row, col).alignment = Alignment(wrap_text=True, vertical="top")
-        review.row_dimensions[row].height = 52
+        review.row_dimensions[row].height = 64
     traffic_format(review, review.max_row)
     status_validation = DataValidation(
         type="list",

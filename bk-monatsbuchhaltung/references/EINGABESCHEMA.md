@@ -186,7 +186,8 @@ Rollen: `primary_invoice`, `supporting_document`, `payment_notice`, `cover_sheet
 Pflichtfelder je `transactions[]`:
 
 - `transaction_id`, `document_type`, `partner`, `recognized_date`, `total_amount`, `currency`, `period`
-- `processing_status`, `traffic_light`, `derivation`, `reason`, `business_purpose_status`, `bookings`
+- `processing_status`, `traffic_light`, `document_summary`, `derivation`, `reason`, `business_purpose_status`, `bookings`
+- bei Rot `next_step` (genau eine Aufgabe in einem Satz); bei Grün optional
 - optional `batch_type` (`standard` oder ein in `batch_config` konfigurierter Stapeltyp)
 - `entity_assessment`; bei buchungsrelevanten oder als Dublette behandelten Vorgängen zusätzlich `duplicate_checks`
 
@@ -198,6 +199,19 @@ Zulässige Status:
 - `außerhalb Auftragszeitraum`
 
 Ampel `Grün` oder `Rot` nur bei `Buchungszeile erzeugt`; sonst `null`.
+
+## Begründung aus dem Beleg
+
+Vier Klartextfelder je Vorgang, geschrieben für den Mitarbeiter (Regeln in `FACHLICHE_ENTSCHEIDUNGEN.md` Abschnitt 18):
+
+```json
+"document_summary": "Kassenbon des WOK point in Hasbergen vom 11.08.2026, 11:43 Uhr, vier Gerichte zum Mitnehmen, 47,00 EUR bar bezahlt, 7 % Umsatzsteuer.",
+"derivation": "Hasbergen liegt am Privatwohnort, rund 60 km von der Praxis; auf dem Bon stehen weder Teilnehmer noch Anlass.",
+"reason": "Ohne Anlass und Teilnehmer ist nicht erkennbar, ob es sich um private Verpflegung oder um eine Bewirtung handelt.",
+"next_step": "Beim Mandanten nach dem Anlass des Essens und den Teilnehmern fragen."
+```
+
+Der Generator weist zurück: `document_summary` oder `reason` unter 30 Zeichen, pauschale Begründungen („Kontierung prüfen“, „Kontierung offen“, „Prüfung erforderlich“, „unklar“), technische Bezeichner in `document_summary`, `derivation`, `reason`, `next_step`, `exclusion_reason`, in Begründungen offener Felder und in allen Textfeldern der Klärungsfälle (Feldnamen wie `account`, `open_fields`, `kost1`, Kürzel wie `BF1`, Werkzeug- oder Connectornamen, JSON-Vokabular), bei Rot einen fehlenden `next_step` sowie einen `next_step` mit mehr als einem Satz, mit Gedankenstrich-Kette, Semikolon oder Nummerierung. Begründungen offener Felder haben mindestens 20 Zeichen und nennen die Belegtatsache.
 
 ## Rechtsträger, Dokumentart und Ausschluss
 
