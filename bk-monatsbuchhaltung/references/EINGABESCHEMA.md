@@ -243,7 +243,7 @@ Ergebnisse: `no_hit`, `possible_duplicate`, `secure_duplicate`. Treffer enthalte
 
 ## Belegampel und Zahlungsabstimmung
 
-Rot ist nur bei einer Unsicherheit des Belegs zulässig: Kontierung, Betrag, Geschäftspartner, Periode, Umsatzsteuer, betrieblicher Anlass, Anlagenbehandlung oder Dublette. Fehlende Konto-/Kreditkartenabrechnung, Zahlungsnachweis, Kartenumsatz oder Kursdifferenz verändern die Belegampel nicht.
+Rot ist nur bei einer Unsicherheit zulässig, die aus dem Beleg selbst eine konkrete Frage offenlässt: Kontierung, Betrag, Geschäftspartner, Periode, Umsatzsteuer, betrieblicher Anlass, Anlagenbehandlung oder Dublette. Fehlende Konto-/Kreditkartenabrechnung, Zahlungsnachweis, Kartenumsatz oder Kursdifferenz verändern die Belegampel nicht. Ebenso wenig eine fehlende Standardzuordnung, Profilregel, Vorbuchung oder ein fehlendes Buchungsmuster: Dann wird der Beleg fachlich ausgewertet und nach dem Ergebnis Grün oder Rot gesetzt. Der Generator weist bei Rot Begründungen wie „keine Standardzuordnung“, „keine Profilregel“, „kein Buchungsmuster“, „kein Treffer“ oder „neuer Lieferant“ in `reason`, in Begründungen offener Felder sowie in `facts` und `booking_risk` der Klärungsfälle zurück.
 
 ```json
 "payment_reconciliation": {

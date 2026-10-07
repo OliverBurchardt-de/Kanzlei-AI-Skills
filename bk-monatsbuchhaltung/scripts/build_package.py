@@ -34,6 +34,7 @@ from datev_io import (
     carry_order_violations,
     carry_sort_key,
     clean_text,
+    missing_mapping_issues,
     plain_language_issues,
     single_task_issues,
     extf_header,
@@ -1347,6 +1348,10 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
                     doc.get("reason"), "Warum Rot oder Grün (reason)", min_length=30, reject_generic=True))
             if doc.get("traffic_light") == "Rot":
                 errors.extend(f"{tid}: {issue}" for issue in single_task_issues(doc.get("next_step")))
+                errors.extend(f"{tid}: {issue}" for issue in missing_mapping_issues(doc.get("reason"), "Warum Rot (reason)"))
+                for line_no, booking in enumerate(doc.get("bookings", []), start=1):
+                    for field, text in (booking.get("open_fields") or {}).items() if isinstance(booking.get("open_fields"), dict) else []:
+                        errors.extend(f"{tid}, Zeile {line_no}: {issue}" for issue in missing_mapping_issues(text, f"Begründung offenes Feld {field}"))
             elif str(doc.get("next_step", "") or "").strip():
                 errors.extend(f"{tid}: {issue}" for issue in plain_language_issues(doc.get("next_step"), "Nächster Schritt"))
             for line_no, booking in enumerate(doc.get("bookings", []), start=1):
@@ -1623,6 +1628,8 @@ def validate_clarifications(data: dict[str, Any]) -> list[str]:
                 ("decision_needed", "Entscheidung"), ("proposed_change", "Vorgeschlagene Änderung"),
             ):
                 errors.extend(f"{case_id}: {issue}" for issue in plain_language_issues(case.get(key), label))
+            for key, label in (("facts", "Tatsachen"), ("booking_risk", "Buchungsrisiko")):
+                errors.extend(f"{case_id}: {issue}" for issue in missing_mapping_issues(case.get(key), label))
         transaction_ids = case.get("transaction_ids", [])
         if not isinstance(transaction_ids, list) or not transaction_ids:
             errors.append(f"{case_id}: transaction_ids muss eine nicht leere Liste sein")

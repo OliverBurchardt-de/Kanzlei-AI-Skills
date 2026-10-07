@@ -33,6 +33,9 @@ def test_plain_language_helpers() -> None:
     assert datev_io.single_task_issues("Rechnung anfordern – Sachkonto festlegen")
     assert datev_io.single_task_issues("")
     assert datev_io.single_task_issues("1. Rechnung anfordern 2. buchen")
+    assert datev_io.missing_mapping_issues("Für diesen Lieferanten gibt es keine Standardzuordnung im Profil.", "x")
+    assert datev_io.missing_mapping_issues("Neuer Lieferant, bisher nicht gebucht.", "x")
+    assert datev_io.missing_mapping_issues("Ohne Anlass ist nicht erkennbar, ob privat oder Bewirtung.", "x") == []
 
 
 def test_generator_rules(root: Path) -> None:
@@ -55,6 +58,16 @@ def test_generator_rules(root: Path) -> None:
     broken = copy.deepcopy(base)
     broken.docs[1]["reason"] = "Über den Riecken-Connector wurde zu diesem Lieferanten keine Vorbuchung gefunden."
     expect_issue(broken.document_errors("connector"), "technische Bezeichner", "Connector in reason")
+    # Fehlende Standardzuordnung ist kein Klärungsgrund.
+    broken = copy.deepcopy(base)
+    broken.docs[1]["reason"] = "Für den Lieferanten WOK point gibt es keine Standardzuordnung im Mandantenprofil."
+    expect_issue(broken.document_errors("mapping"), "kein zulässiger Klärungsgrund", "Standardzuordnung als Rot-Grund")
+    broken = copy.deepcopy(base)
+    broken.docs[1]["bookings"][0]["open_fields"] = {"account": "Kein Buchungsmuster für diesen Lieferanten vorhanden."}
+    expect_issue(broken.document_errors("mapping-open"), "kein zulässiger Klärungsgrund", "Buchungsmuster in offenem Feld")
+    broken = copy.deepcopy(base)
+    broken.cases[0]["facts"] = "Lieferant ist neu, keine Vorbuchung in DATEV."
+    expect_issue(build_package.validate_clarifications(broken.load("mapping-case")), "kein zulässiger Klärungsgrund", "Vorbuchung in Klärungsfall")
     # Beleg zeigt fehlt.
     broken = copy.deepcopy(base)
     broken.docs[0]["document_summary"] = ""
@@ -138,6 +151,14 @@ def test_workbook(root: Path) -> None:
     wb.save(tampered)
     errors = validate_package.validate_review_workbook(tampered, manifest)
     assert any("technische Bezeichner" in item for item in errors), errors
+    wb = load_workbook(next((package / "02_Buchungspruefung").glob("*.xlsx")))
+    ws = wb["Belegprüfung"]
+    for row in range(2, ws.max_row + 1):
+        if ws.cell(row, 1).value == "Rot":
+            ws.cell(row, headers.index("Warum Rot oder Grün?") + 1).value = "Keine Standardzuordnung im Profil hinterlegt."
+    wb.save(tampered)
+    errors = validate_package.validate_review_workbook(tampered, manifest)
+    assert any("kein zulässiger Klärungsgrund" in item for item in errors), errors
 
 
 def main() -> None:

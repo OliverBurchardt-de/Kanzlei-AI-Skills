@@ -406,6 +406,30 @@ def plain_language_issues(text: Any, label: str, *, min_length: int = 0,
     return issues
 
 
+# Formulierungen, die eine fehlende technische oder profilseitige Zuordnung als
+# Klärungsgrund ausgeben. Rot ist nur zulässig, wenn aus dem Beleg selbst eine
+# konkrete Frage offenbleibt.
+MISSING_MAPPING_PATTERN = re.compile(
+    r"(standard-?zuordnung|standard-?kontierung|keine\s+(?:profil-?)?regel|nicht\s+(?:im|in\s+der)\s+(?:mandanten-?)?profil"
+    r"|kein(?:e)?\s+(?:buchungs-?)?muster|keine\s+vorbuchung|kein\s+treffer|erstmalig|neuer\s+lieferant|unbekannter\s+lieferant"
+    r"|nicht\s+konfiguriert|keine\s+erfahrung|noch\s+nie\s+gebucht|bisher\s+nicht\s+gebucht)",
+    re.IGNORECASE,
+)
+
+
+def missing_mapping_issues(text: Any, label: str) -> list[str]:
+    """A missing standard mapping, profile rule or booking pattern is never a reason for Rot."""
+    value = clean_text(text)
+    match = MISSING_MAPPING_PATTERN.search(value)
+    if not match:
+        return []
+    return [
+        f"{label}: „{match.group(0)}“ ist kein zulässiger Klärungsgrund; fehlende Standardzuordnung, "
+        "Profilregel oder Vorbuchung ersetzt die fachliche Auswertung des Belegs nicht. Rot nur, wenn aus dem "
+        "Beleg selbst eine konkrete Frage offenbleibt; diese Frage benennen"
+    ]
+
+
 def single_task_issues(text: Any, label: str = "Nächster Schritt") -> list[str]:
     """Exactly one task in one plain sentence for the employee."""
     issues: list[str] = []

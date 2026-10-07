@@ -30,6 +30,7 @@ from datev_io import (
     carry_order_violations,
     carry_sort_key,
     clean_text,
+    missing_mapping_issues,
     plain_language_issues,
     fiscal_year_start,
     month_bounds,
@@ -298,14 +299,19 @@ def validate_review_workbook(path: Path, manifest: dict | None = None) -> list[s
                         index for index, name in enumerate(actual)
                         if name in {"Beleg zeigt", "Buchung", "Daraus folgt", "Warum Rot oder Grün?", "Nächster Schritt"}
                     }
+                    why_column = actual.index("Warum Rot oder Grün?") if "Warum Rot oder Grün?" in actual else -1
                     for row in sheet_root.findall(f".//{{{XLSX_MAIN_NS}}}row"):
                         if int(row.get("r", "0")) < 2:
                             continue
-                        for item in row.findall(f"{{{XLSX_MAIN_NS}}}c"):
-                            column = excel_column_index(item.get("r", ""))
+                        cells = {excel_column_index(item.get("r", "")): item for item in row.findall(f"{{{XLSX_MAIN_NS}}}c")}
+                        light = xlsx_cell_text(cells[0], shared_strings) if 0 in cells else ""
+                        for column, item in cells.items():
                             if column not in text_columns:
                                 continue
-                            issues = plain_language_issues(xlsx_cell_text(item, shared_strings), f"{sheet_name}!{item.get('r', '')}")
+                            text = xlsx_cell_text(item, shared_strings)
+                            issues = plain_language_issues(text, f"{sheet_name}!{item.get('r', '')}")
+                            if light == "Rot" and column == why_column:
+                                issues.extend(missing_mapping_issues(text, f"{sheet_name}!{item.get('r', '')}"))
                             errors.extend(f"{path.name}: {issue}" for issue in issues)
                 if sheet_name in {"Belegprüfung", "Buchungszeilen"}:
                     expected_colors = {
