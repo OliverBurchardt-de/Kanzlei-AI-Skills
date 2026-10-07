@@ -6,7 +6,7 @@ Verarbeitet werden ausschließlich die bereitgestellten Dateien innerhalb des au
 
 ## 2. Ausgabe und Stapel
 
-Alle DATEV-Dateien liegen unmittelbar in `01_DATEV_Import/`. Es gibt keine Unterordner für Ampeln, Perioden, Stammdaten oder Stapel. Je Buchungsmonat gibt es genau einen Buchungsstapel mit allen grünen und roten Buchungszeilen einschließlich fälliger Abgrenzungsauflösungen. Verschiedene Buchungsmonate bleiben getrennt. Keine Klärungsstapel oder Klärungs-CSV-Dateien.
+Alle DATEV-Dateien liegen unmittelbar in `01_DATEV_Import/`. Es gibt keine Unterordner für Ampeln, Perioden, Stammdaten oder Stapel. Je Buchungsmonat gibt es einen Buchungsstapel `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit allen grünen Buchungszeilen und fälligen Abgrenzungsauflösungen sowie, nur bei roten Vorgängen, einen Klärungsstapel `EXTF_Klaerungsposten_<JJJJ-MM>.csv` mit ausschließlich roten Buchungszeilen. Verschiedene Buchungsmonate bleiben getrennt. Alle Zeilen eines Vorgangs gehören in denselben Stapel (belegweit schlechteste Ampel). Keine Ersatzkonten. Im Klärungsstapel bleibt das DATEV-Belegdatum in jeder Zeile leer (Pflichtleerung); das erkannte Datum bleibt in Lauf-JSON, Manifest und Prüfungsdatei erhalten. In jedem Stapel gilt die Sortierregel gegen das Schleppen leerer Felder: Zeilen mit leerem gefährdetem Feld stehen vor Zeilen mit gefülltem Feld; ist das nicht erfüllbar, wird nur der Klärungsstapel in `_02` usw. geteilt. Ein im Mandantenprofil konfigurierter getrennter Vorlauf (`batch_config`, zum Beispiel Eigenbelege) erhält je Periode eine eigene Datei `EXTF_Buchungsstapel_<JJJJ-MM>_<Stapeltyp>.csv`.
 
 - Grün: vollständige, belastbare Buchung ohne offene Entscheidung.
 - Rot: konkrete fachliche oder prozessbedingte Bearbeitung erforderlich; alle sicheren Angaben erhalten, nur konkret ungeklärte Felder dokumentiert leer lassen. Gelb entfällt.
@@ -40,7 +40,7 @@ Belegfeld 1 enthält eine sicher erkannte externe Referenz. Fehlt eine belastbar
 
 ## 5. Durchlauf ohne Zwischenfragen
 
-Nach dem technischen Preflight wird nicht unterbrochen. Fachliche Unsicherheit wird mit sämtlichen sicheren Angaben und konkret offenen Feldern in denselben Monatsstapel exportiert und genau einmal als Klärungsfall dokumentiert. Mitarbeitername ist mandantenseitig fest zugeordnet; die Excel-Datei braucht nur Bearbeitungsstatus und Mitarbeiter-Ergebnis.
+Nach dem technischen Preflight wird nicht unterbrochen. Fachliche Unsicherheit wird mit sämtlichen sicheren Angaben und konkret offenen Feldern in den Klärungsstapel des Monats exportiert und genau einmal als Klärungsfall dokumentiert. Mitarbeitername ist mandantenseitig fest zugeordnet; die Excel-Datei braucht nur Bearbeitungsstatus und Mitarbeiter-Ergebnis.
 
 ## 6. Betrieblicher Anlass
 
@@ -58,7 +58,7 @@ Details stehen in `UMSATZSTEUER_UND_BEWIRTUNG.md`.
 
 ## 8. Bewirtung
 
-Eine automatisierte 70/30-Aufteilung erfolgt nur bei vollständig prüfbarem Rechnungs- und Bewirtungsnachweis. Trinkgeld folgt der 70/30-Aufteilung, ohne Vorsteuer. Unvollständige oder unklare Bewirtungsnachweise bleiben buchungsrelevant und werden Rot mit sicheren Angaben und offenen Feldern im gemeinsamen Monatsstapel exportiert; keine Ersatzbuchung auf 1590 oder andere Zwischenkonten. Eindeutig private Bewirtung folgt der Privatregel.
+Eine automatisierte 70/30-Aufteilung erfolgt nur bei vollständig prüfbarem Rechnungs- und Bewirtungsnachweis. Trinkgeld folgt der 70/30-Aufteilung, ohne Vorsteuer. Unvollständige oder unklare Bewirtungsnachweise bleiben buchungsrelevant und werden Rot mit sicheren Angaben und offenen Feldern im Klärungsstapel exportiert; keine Ersatzbuchung auf 1590 oder andere Zwischenkonten. Eindeutig private Bewirtung folgt der Privatregel.
 
 ## 9. Stammdaten
 
@@ -80,7 +80,7 @@ Jeden Nicht-Avis-Vorgang auf drei Ebenen prüfen und Treffergrund sowie Referenz
 
 1. identischer Datei-SHA-256 im aktuellen Upload,
 2. dasselbe logische Dokument im aktuellen Upload anhand Geschäftspartner, Rechnungsnummer, Datum und Betrag,
-3. bereits vorhandene Buchung in DATEV live.
+3. bereits vorhandene Buchung in DATEV live, abgerufen über den Riecken-DATEV-Connector (`datev_get_account_postings`).
 
 Sichere Dublette nicht erneut buchen. Mögliche Dublette Rot exportieren; ein sicher bekanntes Datum und alle weiteren sicheren Werte bleiben erhalten. Das Dublettenrisiko und die Entscheidung stehen in der Prüfungsdatei. Identische Dateien nur einmal übertragen; weitere Kopien als `duplicate_copy` ausschließen.
 
@@ -96,7 +96,7 @@ Nur bei Bilanz, nur geschäftsjahresübergreifend und nur über 800 EUR maßgebl
 
 ## 13. Anlagen/GWG
 
-Wirtschaftlich zusammengehörige Bestandteile gemeinsam beurteilen. Anlagevermögen und GWG sind stets Rot mit `asset_booking: true`. Das betroffene Sachkontenfeld bleibt grundsätzlich leer, auch wenn das passende Anlagenkonto eindeutig ist; je Zeile `asset_account_field` und `open_fields` erfassen. Bekannte Personenkonten, Beträge, Daten und Belegverknüpfungen erhalten. Die Prüfungsdatei weist den Mitarbeiter konkret zur Anlage in der Anlagenvorerfassung an, damit Anlagenbuchführung und Finanzbuchhaltung verknüpft entstehen. Vorschläge zu GWG, Anlagenkonto und Nutzungsdauer ausschließlich dort dokumentieren. Keine direkte Anlagenkontenbuchung, Abschreibung oder Sammelposten.
+Wirtschaftlich zusammengehörige Bestandteile gemeinsam beurteilen. Anlagevermögen und GWG sind stets Rot mit `asset_booking: true`. Das betroffene Sachkontenfeld bleibt grundsätzlich leer, auch wenn das passende Anlagenkonto eindeutig ist; je Zeile `asset_account_field` und `open_fields` erfassen. Bekannte Personenkonten, Beträge, Daten und Belegverknüpfungen erhalten. Die Prüfungsdatei weist den Mitarbeiter konkret zur Anlage in der Anlagenvorerfassung an, damit Anlagenbuchführung und Finanzbuchhaltung verknüpft entstehen. Vorschläge zu GWG, Anlagenkonto und Nutzungsdauer ausschließlich dort dokumentieren. Keine direkte Anlagenkontenbuchung, Abschreibung oder Sammelposten. Anlagenzugänge landen als Rot im Klärungsstapel des Monats.
 
 ## 14. Prüfungsdatei und Abschlussnachweis
 
@@ -109,3 +109,18 @@ Zentrales Blatt ist `Belegprüfung`: Ampel vorne und als feste Zellfüllung in d
 ## 15. Mandanten-Hinweise
 
 Stichprobe geeigneter inländischer Rechnungen auf Pflichtangaben. Ausländische Rechnungen nicht in diese §14-Stichprobe aufnehmen. Auffällige Bankänderungen und sonstige Mehrwert-Hinweise ebenfalls hier dokumentieren.
+
+## 16. Kostenstellen
+
+- Kostenstellen kommen ausschließlich aus dem Mandantenprofil (`cost_center_config`) und werden live gegen DATEV validiert (`validated_cost_centers`, über den Riecken-Connector aus Vorbuchungen und Anlagenverzeichnis). Eine Kostenstelle wird immer bebucht, wenn sie eingerichtet ist und sich aus Beleg oder Profil ableiten lässt; die Ableitung steht je Vorgang in `derivation`.
+- Die Kostenstellenpflicht (`kostenstellenpflicht`) entscheidet nur, was bei fehlender Ableitung geschieht: Pflicht bedeutet Rot mit offenem `kost1`; ohne Pflicht bleibt das Feld leer ohne Ampelwirkung und die Prüfungsdatei weist die Zeile als „ohne Kostenstelle“ aus.
+- Gemischte Rechnungen werden in getrennte Buchungszeilen je Kostenstelle aufgeteilt.
+- Die Kostenstelle steuert keine Umsatzsteuer automatisch. Vorsteuerbehandlung und KOST1 werden gemeinsam aus Beleginhalt und Profil abgeleitet und müssen zueinander passen. Ein Widerspruch (zum Beispiel eine Kostenstelle ohne Vorsteuerabzug mit vollem Vorsteuerabzug) ist Rot.
+- Eine unsichere Zuordnung zwischen Kostenstellen ist Rot mit offenem `kost1`; keine Ersatzkostenstelle, insbesondere keine Sammelkostenstelle als Verlegenheitslösung.
+- Eine im Profil genannte, aber live in DATEV nicht vorhandene Kostenstelle wird nicht exportiert; der Vorgang ist Rot mit offenem `kost1` und Klärungsfall „Kostenstelle in DATEV anlegen“.
+- Jede gefüllte Kostenstelle muss in `kost1_allowed` beziehungsweise `kost2_allowed` stehen; eine unbekannte Kostenstelle ist ein Generatorfehler.
+- Mandantenspezifische Zuordnungen (welche Kostenstelle mit welcher Vorsteuer und welchem Erlöskonto) gehören ausschließlich in das Mandantenprofil, nicht in diese Referenz.
+
+## 17. Getrennte Buchungsvorläufe
+
+Nur wenn das Mandantenprofil unter `batch_config.separate_batches` einen Stapeltyp freischaltet (zum Beispiel `eigenbelege` für Eigenrechnungen eines Labors), erhalten Vorgänge mit `batch_type: <Stapeltyp>` je Periode einen eigenen Vorlauf `EXTF_Buchungsstapel_<JJJJ-MM>_<Stapeltyp>.csv` mit der konfigurierten Stapelbezeichnung. Jede Zeile trägt die vorgeschriebene Kostenstelle (`required_kost1`) und das vorgeschriebene Gegenkonto (`required_contra_account`); Abweichungen und ein `batch_type` ohne Konfiguration sind Generatorfehler. Rote Vorgänge eines Stapeltyps landen in `EXTF_Klaerungsposten_<JJJJ-MM>_<Stapeltyp>.csv`. Der Eigenbeleg-Stapel wird nach dem Standardstapel derselben Periode importiert.

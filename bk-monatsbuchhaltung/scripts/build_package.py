@@ -18,10 +18,22 @@ from typing import Any
 
 from sharepoint_target import build_targets
 from datev_io import (
+    BATCH_KIND_BOOKING,
+    BATCH_KIND_CLARIFICATION,
     BOOKING_FIELDS,
+    CARRY_FIELDS,
+    DATEV_IMPORT_ORDER,
     MASTER_FIELDS,
+    STANDARD_BATCH_TYPE,
     ascii_filename,
+    batch_file_name,
+    batch_label,
+    batch_type_suffix,
     booking_row,
+    carry_empty_fields,
+    carry_order_violations,
+    carry_sort_key,
+    clean_text,
     extf_header,
     master_row,
     month_bounds,
@@ -38,8 +50,8 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "1.3.0"
-OUTPUT_CONTRACT = "single-monthly-booking-batch-v3"
+SKILL_VERSION = "1.4.0"
+OUTPUT_CONTRACT = "monthly-booking-and-clarification-batches-v4"
 
 VALID_STATUSES = {
     "Buchungszeile erzeugt",
@@ -302,6 +314,19 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
         for value in account_set
     ):
         raise ValueError("Abbruch: DATEV-Kontennachweis enthält ungültige Konten.")
+    cost_center_set: list[str] = []
+    cost_system_active = None
+    if isinstance(run.get("cost_center_config"), dict):
+        if live.get("cost_system_active") is not True:
+            raise ValueError(
+                "Abbruch: DATEV-Livenachweis cost_system_active=true fehlt, obwohl "
+                "Kostenstellen konfiguriert sind."
+            )
+        live_cost_centers = live.get("validated_cost_centers")
+        if not isinstance(live_cost_centers, list):
+            raise ValueError("Abbruch: DATEV-Livenachweis validated_cost_centers fehlt.")
+        cost_center_set = sorted({clean_text(value) for value in live_cost_centers} - {""})
+        cost_system_active = True
     bu_set = {_normalized_internal_bu_key(value) for value in valid_bu_keys}
     if "" in bu_set:
         bu_set.remove("")
@@ -347,12 +372,16 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
         "abgrenzungsregister": accrual_summary,
         "datev": {
             "source": "DATEV live",
+            "connector": live.get("connector"),
+            "retrieved_via": live.get("retrieved_via"),
             "retrieved_at": str(live["retrieved_at"]),
             "validated_accounts": sorted(account_set),
             "validated_accounts_count": len(account_set),
             "validated_bu_keys": sorted(bu_set),
             "highest_creditor_account": live.get("highest_creditor_account"),
             "highest_debtor_account": live.get("highest_debtor_account"),
+            "cost_system_active": cost_system_active,
+            "validated_cost_centers": cost_center_set,
             "beraternummer": live.get("beraternummer"),
             "mandantennummer": live.get("mandantennummer"),
             "wirtschaftsjahr_beginn": live.get("wirtschaftsjahr_beginn"),
@@ -374,6 +403,7 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
     }
     run["_validated_accounts"] = sorted(account_set)
     run["_validated_bu_keys"] = sorted(bu_set)
+    run["_validated_cost_centers"] = cost_center_set
     run["_used_person_accounts"] = person_account_map
 
 
@@ -399,11 +429,13 @@ def validate_run_values(run: dict[str, Any]) -> None:
         raise ValueError("Sachkontenrahmen muss zwei oder vier Ziffern enthalten.")
     if not re.fullmatch(r"[A-Z]{3}", str(run.get("waehrung", "EUR")).upper()):
         raise ValueError("Basiswährung muss ein dreistelliger ISO-Code sein.")
-    if run.get("kostenstellenpflicht") is not False:
+    if not isinstance(run.get("kostenstellenpflicht"), bool):
         raise ValueError(
-            "Abbruch: Kostenstellenpflicht muss aus dem Profil ausdrücklich "
-            "als false bestätigt sein."
+            "Abbruch: kostenstellenpflicht muss aus dem Profil ausdrücklich "
+            "als true oder false übernommen sein."
         )
+    validate_cost_center_config(run)
+    validate_batch_config(run)
 
     vat = run.get("vat_config")
     if not isinstance(vat, dict):
@@ -455,12 +487,100 @@ def validate_run_values(run: dict[str, Any]) -> None:
             raise ValueError(f"Personenkontenbereich {kind} ist ungültig.")
 
 
+def validate_cost_center_config(run: dict[str, Any]) -> None:
+    """Cost centers are booked whenever configured; the Pflicht only decides what an empty KOST1 means."""
+    required = run.get("kostenstellenpflicht") is True
+    config = run.get("cost_center_config")
+    if config is None:
+        if required:
+            raise ValueError(
+                "Abbruch: unkonfigurierte Pflichtkostenstelle; kostenstellenpflicht=true "
+                "erfordert cost_center_config aus dem Mandantenprofil."
+            )
+        return
+    prefix = "Abbruch: unkonfigurierte Pflichtkostenstelle; " if required else ""
+    if not isinstance(config, dict):
+        raise ValueError(f"{prefix}cost_center_config muss ein Objekt sein.")
+    missing = [
+        key for key in ("kost_system", "kost1_required", "kost2_required", "kost1_allowed", "kost2_allowed", "rules_source")
+        if key not in config
+    ]
+    if missing:
+        raise ValueError(f"{prefix}cost_center_config unvollständig: " + ", ".join(missing))
+    if not isinstance(config.get("kost_system"), int) or config["kost_system"] not in (1, 2):
+        raise ValueError(f"{prefix}cost_center_config.kost_system muss 1 oder 2 sein.")
+    for key in ("kost1_required", "kost2_required"):
+        if not isinstance(config.get(key), bool):
+            raise ValueError(f"{prefix}cost_center_config.{key} muss true oder false sein.")
+    if required and config["kost1_required"] is not True:
+        raise ValueError(f"{prefix}kostenstellenpflicht=true erfordert kost1_required=true.")
+    if config["kost1_required"] is True and not required:
+        raise ValueError("cost_center_config.kost1_required=true widerspricht kostenstellenpflicht=false.")
+    for key in ("kost1_allowed", "kost2_allowed"):
+        allowed = config.get(key)
+        if not isinstance(allowed, dict):
+            raise ValueError(f"{prefix}cost_center_config.{key} muss ein Objekt aus Nummer und Bezeichnung sein.")
+        for number, name in allowed.items():
+            text = clean_text(number)
+            if not text or len(text) > 36 or not re.fullmatch(r"[A-Za-z0-9_$&%*+\-/]+", text):
+                raise ValueError(f"{prefix}cost_center_config.{key} enthält eine ungültige Kostenstelle: {number!r}")
+            if not clean_text(name):
+                raise ValueError(f"{prefix}cost_center_config.{key}: Bezeichnung für {text} fehlt.")
+    if not config["kost1_allowed"]:
+        raise ValueError(f"{prefix}cost_center_config.kost1_allowed ist leer.")
+    if config["kost2_required"] is True and not config["kost2_allowed"]:
+        raise ValueError(f"{prefix}kost2_required=true erfordert kost2_allowed.")
+    if not clean_text(config.get("rules_source")):
+        raise ValueError(f"{prefix}cost_center_config.rules_source fehlt.")
+
+
+def validate_batch_config(run: dict[str, Any]) -> None:
+    config = run.get("batch_config")
+    if config is None:
+        return
+    if not isinstance(config, dict) or not isinstance(config.get("separate_batches"), dict):
+        raise ValueError("batch_config.separate_batches muss ein Objekt je Stapeltyp sein.")
+    cost_config = run.get("cost_center_config")
+    allowed_kost1 = {
+        clean_text(key) for key in ((cost_config or {}).get("kost1_allowed") or {})
+    } if isinstance(cost_config, dict) else set()
+    seen_suffixes: set[str] = set()
+    for batch_type, item in config["separate_batches"].items():
+        key = str(batch_type)
+        if key == STANDARD_BATCH_TYPE or not re.fullmatch(r"[a-z][a-z0-9]*", key):
+            raise ValueError(f"batch_config: ungültiger Stapeltyp {key!r} (Kleinbuchstaben/Ziffern, nicht standard).")
+        if not isinstance(item, dict):
+            raise ValueError(f"batch_config.{key} muss ein Objekt sein.")
+        label = clean_text(item.get("label", ""))
+        if not label or len(label) > 30:
+            raise ValueError(f"batch_config.{key}.label fehlt oder ist länger als 30 Zeichen.")
+        suffix = batch_type_suffix(key)
+        if suffix in seen_suffixes:
+            raise ValueError(f"batch_config: Dateisuffix {suffix} ist doppelt.")
+        seen_suffixes.add(suffix)
+        required_kost1 = clean_text(item.get("required_kost1", ""))
+        if required_kost1:
+            if not isinstance(cost_config, dict):
+                raise ValueError(f"batch_config.{key}.required_kost1 erfordert cost_center_config.")
+            if required_kost1 not in allowed_kost1:
+                raise ValueError(f"batch_config.{key}.required_kost1 {required_kost1} ist nicht in kost1_allowed.")
+        contra = clean_text(item.get("required_contra_account", ""))
+        if contra and not contra.isdigit():
+            raise ValueError(f"batch_config.{key}.required_contra_account muss numerisch sein.")
+
+
+def document_batch_type(document: dict[str, Any]) -> str:
+    return clean_text(document.get("batch_type") or STANDARD_BATCH_TYPE)
+
+
 def validate_live_datev_usage(data: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     run = data["run"]
     live = run["datev_live_evidence"]
     valid_accounts = set(run.get("_validated_accounts", []))
     valid_bu_keys = set(run.get("_validated_bu_keys", []))
+    valid_cost_centers = set(run.get("_validated_cost_centers", []))
+    cost_centers_configured = isinstance(run.get("cost_center_config"), dict)
     records = data.get("master_records", [])
     new_accounts: set[str] = set()
     new_account_names: dict[str, str] = {}
@@ -593,6 +713,13 @@ def validate_live_datev_usage(data: dict[str, Any]) -> list[str]:
                     errors.append(
                         f"{tid}: BU-Schlüssel {key} ist nicht live in DATEV bestätigt"
                     )
+            kost1 = clean_text(booking.get("kost1", ""))
+            if kost1 and cost_centers_configured and kost1 not in valid_cost_centers:
+                errors.append(
+                    f"{tid}: Kostenstelle {kost1} ist nicht live in DATEV vorhanden; "
+                    "nur als Rot mit offenem kost1 und Klärungsfall "
+                    "'Kostenstelle in DATEV anlegen' zulässig"
+                )
     return errors
 
 
@@ -1118,11 +1245,31 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
         for case in data.get("clarification_cases", [])
         for transaction_id in case.get("transaction_ids", [])
     )
+    separate_batches = (run.get("batch_config") or {}).get("separate_batches") or {}
     for index, doc in enumerate(data.get("documents", []), start=1):
         tid = str(doc.get("transaction_id", f"Zeile {index}"))
         if tid in seen_ids:
             errors.append(f"Doppelte Vorgangs-ID: {tid}")
         seen_ids.add(tid)
+        batch_type = document_batch_type(doc)
+        if batch_type != STANDARD_BATCH_TYPE:
+            batch_rule = separate_batches.get(batch_type)
+            if not isinstance(batch_rule, dict):
+                errors.append(
+                    f"{tid}: batch_type {batch_type} ohne entsprechende batch_config.separate_batches"
+                )
+            elif doc.get("processing_status") == "Buchungszeile erzeugt":
+                required_kost1 = clean_text(batch_rule.get("required_kost1", ""))
+                required_contra = clean_text(batch_rule.get("required_contra_account", ""))
+                for line_no, booking in enumerate(doc.get("bookings", []), start=1):
+                    if required_kost1 and clean_text(booking.get("kost1", "")) != required_kost1:
+                        errors.append(
+                            f"{tid}, Zeile {line_no}: Stapeltyp {batch_type} verlangt KOST1 {required_kost1}"
+                        )
+                    if required_contra and clean_text(booking.get("contra_account", "")) != required_contra:
+                        errors.append(
+                            f"{tid}, Zeile {line_no}: Stapeltyp {batch_type} verlangt Gegenkonto {required_contra}"
+                        )
         source_paths = doc.get("source_paths") or [doc.get("source_path", "")]
         if not any(str(path).strip() for path in source_paths):
             errors.append(f"{tid}: keine Quelldatei zugeordnet")
@@ -1480,27 +1627,72 @@ def prepare_output(base: Path, run: dict[str, Any]) -> Path:
     return root
 
 
+def _assign_carry_parts(
+    entries: list[dict[str, Any]], kind: str, group_label: str
+) -> tuple[list[list[dict[str, Any]]], list[str]]:
+    """Sort rows so that empty endangered fields precede filled ones; split only when unavoidable.
+
+    A valid single order exists exactly when the sets of empty endangered
+    fields form a chain under inclusion. Sorting by the number of empty fields
+    (descending) then yields that order. Otherwise rows are distributed greedily
+    onto further files (``_02``, ``_03`` ...); only the clarification batch may
+    be split.
+    """
+    entries.sort(key=lambda item: carry_sort_key(item["row"], item["transaction_id"], item["line"]))
+    violations = carry_order_violations([item["row"] for item in entries])
+    if not violations:
+        return [entries], []
+    if kind != BATCH_KIND_CLARIFICATION:
+        raise ValueError(
+            f"{group_label}: Sortierregel gegen das Schleppen leerer Felder im Buchungsstapel "
+            "nicht erfüllbar: " + "; ".join(violations)
+        )
+    parts: list[list[dict[str, Any]]] = []
+    for item in entries:
+        empty = carry_empty_fields(item["row"])
+        for part in parts:
+            if empty <= carry_empty_fields(part[-1]["row"]):
+                part.append(item)
+                break
+        else:
+            parts.append([item])
+    reasons = [
+        f"{group_label}: Sortierregel ohne Teilung nicht erfüllbar ({'; '.join(violations[:3])}"
+        f"{'; …' if len(violations) > 3 else ''}); Klärungsstapel in {len(parts)} Dateien geteilt."
+    ]
+    return parts, reasons
+
+
 def write_booking_batches(root: Path, data: dict[str, Any]) -> list[dict[str, Any]]:
     run = data["run"]
-    groups: dict[str, list[list[Any]]] = defaultdict(list)
+    groups: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
     trace: list[dict[str, Any]] = []
 
     def add_row(doc: dict[str, Any], booking: dict[str, Any], line_no: int,
                 kind: str = "document") -> None:
         period = doc.get("period") or run["buchungsmonat"]
         row = booking_row(doc, booking, run)
-        groups[period].append(row)
-        trace.append({
+        batch_type = STANDARD_BATCH_TYPE if kind == "accrual" else document_batch_type(doc)
+        batch_kind = (
+            BATCH_KIND_CLARIFICATION
+            if kind == "document" and doc["traffic_light"] == "Rot"
+            else BATCH_KIND_BOOKING
+        )
+        entry = {
             "transaction_id": doc["transaction_id"], "line": line_no,
             "traffic_light": doc["traffic_light"], "period": period,
-            "file": f"EXTF_Buchungsstapel_{period}.csv",
-            "csv_row": len(groups[period]) + 2, "kind": kind,
+            "kind": kind, "batch_kind": batch_kind, "batch_type": batch_type,
             "open_fields": booking.get("open_fields", {}),
             "asset_booking": doc.get("asset_booking") is True,
             "asset_account_field": booking.get("asset_account_field"),
+            "recognized_date": doc.get("recognized_date"),
+            "kost1": clean_text(booking.get("kost1", "")) or None,
+            "kost2": clean_text(booking.get("kost2", "")) or None,
             "export_values": ["" if value is None else str(value) for value in row],
             "reason": doc.get("reason", ""),
-        })
+            "row": row,
+        }
+        groups[(period, batch_type, batch_kind)].append(entry)
 
     for doc in data.get("documents", []):
         if doc.get("processing_status") != "Buchungszeile erzeugt":
@@ -1510,19 +1702,62 @@ def write_booking_batches(root: Path, data: dict[str, Any]) -> list[dict[str, An
     for number, release in enumerate(data.get("accrual_releases", []), start=1):
         synthetic_doc = accrual_document(release, run, number)
         add_row(synthetic_doc, release, number, "accrual")
-    for period, rows in groups.items():
-        if len(rows) > 99999:
-            raise ValueError(f"{period}: DATEV-Grenze von 99.999 Buchungen überschritten; nicht eigenmächtig teilen")
-        target = root / FOLDERS["datev"] / f"EXTF_Buchungsstapel_{period}.csv"
-        write_extf(
-            target,
-            extf_header(
-                run, category=21, format_name="Buchungsstapel", version=13,
-                label="Buchungsstapel", period=period
-            ),
-            BOOKING_FIELDS,
-            rows,
-        )
+
+    batches: list[dict[str, Any]] = []
+    split_reasons: list[str] = []
+    for (period, batch_type, batch_kind) in sorted(groups):
+        entries = groups[(period, batch_type, batch_kind)]
+        group_label = batch_file_name(period, batch_kind, batch_type)
+        parts, reasons = _assign_carry_parts(entries, batch_kind, group_label)
+        split_reasons.extend(reasons)
+        label = batch_label(batch_kind, batch_type, run)
+        for part_number, part in enumerate(parts, start=1):
+            file_name = batch_file_name(period, batch_kind, batch_type, part_number)
+            rows = [item["row"] for item in part]
+            if len(rows) > 99999:
+                raise ValueError(
+                    f"{file_name}: DATEV-Grenze von 99.999 Buchungen überschritten; nicht eigenmächtig teilen"
+                )
+            violations = carry_order_violations(rows)
+            if violations:
+                raise ValueError(f"{file_name}: Sortierregel verletzt: " + "; ".join(violations))
+            for csv_row, item in enumerate(part, start=3):
+                item["file"] = file_name
+                item["csv_row"] = csv_row
+                item["carry_order_ok"] = True
+                item["batch_part"] = part_number
+            write_extf(
+                root / FOLDERS["datev"] / file_name,
+                extf_header(
+                    run, category=21, format_name="Buchungsstapel", version=13,
+                    label=label, period=period
+                ),
+                BOOKING_FIELDS,
+                rows,
+            )
+            batches.append({
+                "file": file_name, "period": period, "batch_type": batch_type,
+                "batch_kind": batch_kind, "part": part_number, "parts": len(parts),
+                "label": label, "rows": len(rows),
+                "transactions": sorted({item["transaction_id"] for item in part}),
+                "amount_total": str(sum(
+                    Decimal(item["export_values"][0].replace(".", "").replace(",", ".") or "0")
+                    for item in part
+                )),
+            })
+    ordered_entries = sorted(
+        (item for entries in groups.values() for item in entries),
+        key=lambda item: (item["file"], item["csv_row"]),
+    )
+    trace_keys = (
+        "transaction_id", "line", "traffic_light", "period", "file", "csv_row",
+        "kind", "batch_kind", "batch_type", "batch_part", "carry_order_ok",
+        "open_fields", "asset_booking", "asset_account_field", "recognized_date",
+        "kost1", "kost2", "export_values", "reason",
+    )
+    trace = [{key: item[key] for key in trace_keys} for item in ordered_entries]
+    data["_booking_batches"] = batches
+    data["_batch_split_reasons"] = split_reasons
     return trace
 
 
@@ -2091,9 +2326,22 @@ def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
         f"- Bearbeitungsstatus: {report.get('datev_import_status', 'Importpaket erstellt – noch nicht in DATEV importiert')}",
         "- Fachstatus: fachlicher Prüfprotokoll-Rücklauf ausstehend",
         "",
+        "## DATEV-Stapel",
+        "",
+        "| Datei | Stapelbezeichnung | Zeilen | Summe |",
+        "|---|---|---:|---:|",
+    ]
+    for batch in data.get("_booking_batches", []):
+        lines.append(f"| {batch['file']} | {batch['label']} | {batch['rows']} | {batch['amount_total']} |")
+    if not data.get("_booking_batches"):
+        lines.append("| – | – | 0 | 0 |")
+    for reason in data.get("_batch_split_reasons", []):
+        lines.append(f"\nTeilungsgrund: {reason}")
+    lines.extend([
+        "",
         "## Verwendete Datenquellen",
         "",
-    ]
+    ])
     sources_used = report.get("sources_used", [])
     lines.extend([f"- {source}" for source in sources_used] or ["- Keine zusätzliche Quellenliste übergeben (Legacy-Lauf)"])
     lines.extend([
@@ -2147,8 +2395,10 @@ def build_review(root: Path, data: dict[str, Any], node: str) -> None:
         if isinstance(evidence, dict):
             evidence.pop("content_utf8", None)
             evidence.pop("raw_file_path", None)
-    for key in ("_validated_accounts", "_validated_bu_keys", "_used_person_accounts"):
+    for key in ("_validated_accounts", "_validated_bu_keys", "_validated_cost_centers", "_used_person_accounts"):
         sanitized.get("run", {}).pop(key, None)
+    sanitized["booking_trace"] = data.get("_booking_trace", [])
+    sanitized["booking_batches"] = data.get("_booking_batches", [])
     review_json.write_text(json.dumps(sanitized, ensure_ascii=False, indent=2), encoding="utf-8")
     script = Path(__file__).with_name("build_review_workbook.py")
     output = root / FOLDERS["review"] / (
@@ -2197,6 +2447,8 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
             "waehrung": data["run"].get("waehrung", "EUR"),
             "accounting_method": data["run"]["accounting_method"],
             "kostenstellenpflicht": data["run"]["kostenstellenpflicht"],
+            "cost_center_config": data["run"].get("cost_center_config"),
+            "batch_config": data["run"].get("batch_config"),
             "vat_config": data["run"]["vat_config"],
             "account_config": data["run"]["account_config"],
             "person_account_ranges": data["run"]["person_account_ranges"],
@@ -2226,17 +2478,16 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "handoffs": data.get("handoffs", []),
         "payment_reconciliation": data.get("payment_reconciliation", []),
         "booking_trace": trace,
+        "booking_batches": data.get("_booking_batches", []),
+        "batch_split_reasons": data.get("_batch_split_reasons", []),
+        "carry_fields": sorted(CARRY_FIELDS),
         "datev_test_import": data.get("datev_test_import", {"status": "pending"}),
         "document_index": document_index,
         "belegtransfer_status": (
             "DATEV Document-Package v6.0; Buchungsbelege und Avis getrennt, jeweils ZIP mit document.xml"
         ),
         "payment_advice_packages": sum(1 for item in document_index if item.get("document_package_kind") == "advice"),
-        "datev_import_order": [
-            "EXTF_Debitoren_Kreditoren.csv (falls vorhanden)",
-            "Belegtransfer_*.zip und Belegtransfer_Avise_*.zip",
-            "EXTF Kategorie 21: ein gemeinsamer Buchungsstapel je Monat",
-        ],
+        "datev_import_order": list(DATEV_IMPORT_ORDER),
         "preflight_evidence": data["run"].get("_preflight_summary", {}),
     }
     (root / FOLDERS["logs"] / "Laufmanifest.json").write_text(
@@ -2259,8 +2510,25 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         f"- Nicht buchungsrelevant: {status_counts.get('nicht buchungsrelevant', 0)}",
         f"- Rote Belege mit konkret dokumentiertem Bearbeitungsbedarf: {light_counts.get('Rot', 0)}",
         "",
-        "Belegtransfer wurde als DATEV Document-Package mit document.xml erzeugt.",
+        "## DATEV-Stapel",
+        "",
+        "| Datei | Stapelbezeichnung | Art | Zeilen | Summe |",
+        "|---|---|---|---:|---:|",
     ]
+    for batch in data.get("_booking_batches", []):
+        summary.append(
+            f"| {batch['file']} | {batch['label']} | {batch['batch_kind']} | {batch['rows']} | {batch['amount_total']} |"
+        )
+    if not data.get("_booking_batches"):
+        summary.append("| – | – | – | 0 | 0 |")
+    summary.append("")
+    for reason in data.get("_batch_split_reasons", []):
+        summary.append(f"- Teilung: {reason}")
+    summary.extend([
+        "- Importreihenfolge: " + "; ".join(DATEV_IMPORT_ORDER),
+        "",
+        "Belegtransfer wurde als DATEV Document-Package mit document.xml erzeugt.",
+    ])
     (root / FOLDERS["logs"] / "Laufprotokoll.md").write_text(
         "\n".join(summary) + "\n", encoding="utf-8"
     )
@@ -2288,6 +2556,7 @@ def main() -> int:
         transfer_packages, document_index = prepare_document_transfer(data)
         root = prepare_output(args.output, data["run"])
         trace = write_booking_batches(root, data)
+        data["_booking_trace"] = trace
         write_master_data(root, data)
         write_belegtransfer_packages(
             root, data, transfer_packages, document_index

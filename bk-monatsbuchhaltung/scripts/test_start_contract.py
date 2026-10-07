@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -20,6 +20,21 @@ def parse_simple_yaml(path: Path) -> dict:
     stack: list[tuple[int, dict]] = [(-1, root)]
     for raw in path.read_text(encoding="utf-8").splitlines():
         if not raw.strip() or raw.lstrip().startswith("#"):
+            continue
+        list_match = re.match(r"^(\s*)-\s+(.*)$", raw)
+        if list_match:
+            indent = len(list_match.group(1))
+            while stack[-1][0] >= indent:
+                stack.pop()
+            if not stack[-1][1] and len(stack) > 1:
+                stack.pop()
+            parent = stack[-1][1]
+            if not parent:
+                raise AssertionError(f"Listeneintrag ohne Schlüssel in {path.name}: {raw!r}")
+            last_key = next(reversed(parent))
+            if not isinstance(parent[last_key], list):
+                parent[last_key] = []
+            parent[last_key].append(list_match.group(2).strip())
             continue
         match = re.match(r"^(\s*)([^:#]+):(?:\s*(.*))?$", raw)
         if not match:
@@ -58,8 +73,8 @@ def test_structural_yaml_and_version_mismatch() -> None:
         temp = Path(temp_name)
         quoted = temp / "quoted.yaml"
         unquoted = temp / "unquoted.yaml"
-        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.3.0"\n', encoding="utf-8")
-        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.3.0\n', encoding="utf-8")
+        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.4.0"\n', encoding="utf-8")
+        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.4.0\n', encoding="utf-8")
         assert parse_simple_yaml(quoted) == parse_simple_yaml(unquoted)
         mismatch = temp / "mismatch.py"
         mismatch.write_text('SKILL_VERSION = "9.9.9"\n', encoding="utf-8")
@@ -88,6 +103,12 @@ def main() -> None:
     require(skill, "eine unabhängige Kontrolle, nicht Laufzeit oder eine feste Agentenzahl", "Qualitätsziel Mehragentenmodus")
     require(skill, "doppelte GUIDs technisch abweisen", "GUID-Integritätskontrolle")
     require(skill, "niemals Kassenbuchungen", "Ausschluss Kassenbuchung")
+    require(skill, "getrennte Stapel Buchungsstapel/Klärungsposten", "Startnachweis Output-Vertrag v1.4")
+    require(skill, "Kostenstellen nach Profil", "Startnachweis Kostenstellen")
+    require(skill, "EXTF_Klaerungsposten_<JJJJ-MM>.csv", "Klärungsstapel-Dateiname")
+    require(skill, "unkonfigurierter Pflichtkostenstelle", "verbleibender Kostenstellen-Stopp")
+    require(skill, "Riecken-DATEV-Connector", "DATEV-Anbindung über Riecken")
+    require(skill, "`datev_health_check`", "Riecken-Erreichbarkeitsprüfung")
 
     interface = ui.get("interface", {})
     policy = ui.get("policy", {})

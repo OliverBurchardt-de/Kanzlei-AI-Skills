@@ -332,8 +332,131 @@ OPEN_FIELD_INDEXES = {
     "amount": 0, "debit_credit": 1, "currency": 2,
     "exchange_rate": 3, "base_amount": 4, "account": 6,
     "contra_account": 7, "bu_key": 8, "recognized_date": 9,
-    "document_field_1": 10, "service_date": 114, "tax_period_date": 115,
+    "document_field_1": 10, "kost1": 36, "kost2": 37,
+    "service_date": 114, "tax_period_date": 115,
 }
+
+# Felder, die DATEV beim Import nachweislich (Konto) oder vorsorglich aus der
+# Vorzeile übernimmt, wenn sie leer sind. Spaltenindex 0-basiert.
+# Nach dem DATEV-Test (SKILL v1.4, Testplan) auf die tatsächlich geschleppten
+# Felder reduzieren.
+CARRY_FIELDS = {
+    "account": 6, "contra_account": 7, "bu_key": 8,
+    "recognized_date": 9, "document_field_1": 10,
+}
+CARRY_FIELD_LABELS = {
+    "account": "Konto", "contra_account": "Gegenkonto", "bu_key": "BU-Schlüssel",
+    "recognized_date": "Belegdatum", "document_field_1": "Belegfeld 1",
+}
+STANDARD_BATCH_TYPE = "standard"
+DATEV_IMPORT_ORDER = [
+    "EXTF_Debitoren_Kreditoren.csv (falls vorhanden)",
+    "reguläre Belegtransfer_*.zip",
+    "Belegtransfer_Avise_*.zip in DUO",
+    "EXTF_Buchungsstapel_<JJJJ-MM>.csv je Periode, danach konfigurierte Stapeltypen derselben Periode (z. B. _Eigenbelege)",
+    "EXTF_Klaerungsposten_<JJJJ-MM>.csv (und ggf. _02 usw.) als eigener Importvorgang",
+]
+CARRY_RESULTS = {"carried", "not_carried", "not_tested"}
+BATCH_KIND_BOOKING = "buchung"
+BATCH_KIND_CLARIFICATION = "klaerung"
+CLARIFICATION_LABEL = "Klärungsposten"
+BOOKING_LABEL = "Buchungsstapel"
+
+
+def _cell_text(value: Any) -> str:
+    return "" if value is None else str(value)
+
+
+def carry_empty_fields(row: list[Any]) -> frozenset[str]:
+    """Names of the carry-endangered fields that are empty in this export row."""
+    return frozenset(
+        name for name, index in CARRY_FIELDS.items()
+        if not _cell_text(row[index]).strip()
+    )
+
+
+def carry_sort_key(row: list[Any], transaction_id: str = "", line: int = 0) -> tuple:
+    """Rows with more empty endangered fields first, then stable by transaction and line."""
+    return (-len(carry_empty_fields(row)), str(transaction_id), int(line))
+
+
+def carry_order_violations(rows: Iterable[list[Any]], first_row_number: int = 3) -> list[str]:
+    """Report every endangered field that is empty behind a filled row.
+
+    DATEV would fill such an empty field with the value of the preceding row.
+    Row numbers are CSV line numbers (header = 1, field names = 2).
+    """
+    violations: list[str] = []
+    last_filled: dict[str, int | None] = {name: None for name in CARRY_FIELDS}
+    for offset, row in enumerate(rows):
+        number = first_row_number + offset
+        for name, index in CARRY_FIELDS.items():
+            if _cell_text(row[index]).strip():
+                last_filled[name] = number
+            elif last_filled[name] is not None:
+                violations.append(
+                    f"{CARRY_FIELD_LABELS[name]}: Zeile {number} ist leer hinter "
+                    f"gefüllter Zeile {last_filled[name]}"
+                )
+    return violations
+
+
+def batch_type_suffix(batch_type: str) -> str:
+    """File name suffix of a configured separate batch type (``eigenbelege`` → ``Eigenbelege``)."""
+    text = clean_text(batch_type)
+    if text == STANDARD_BATCH_TYPE or not text:
+        return ""
+    return text[:1].upper() + text[1:]
+
+
+def batch_file_name(period: str, kind: str, batch_type: str = STANDARD_BATCH_TYPE,
+                    part: int = 1) -> str:
+    if kind == BATCH_KIND_CLARIFICATION:
+        stem = f"EXTF_Klaerungsposten_{period}"
+    elif kind == BATCH_KIND_BOOKING:
+        stem = f"EXTF_Buchungsstapel_{period}"
+    else:
+        raise ValueError(f"Unbekannte Stapelart: {kind}")
+    suffix = batch_type_suffix(batch_type)
+    if suffix:
+        stem = f"{stem}_{suffix}"
+    if part > 1:
+        if kind != BATCH_KIND_CLARIFICATION:
+            raise ValueError("Nur der Klärungsstapel darf geteilt werden.")
+        stem = f"{stem}_{part:02d}"
+    return f"{stem}.csv"
+
+
+def batch_label(kind: str, batch_type: str, run: dict[str, Any] | None = None) -> str:
+    configured = ""
+    if batch_type != STANDARD_BATCH_TYPE:
+        separate = ((run or {}).get("batch_config") or {}).get("separate_batches") or {}
+        configured = clean_text((separate.get(batch_type) or {}).get("label", ""))
+        if not configured:
+            raise ValueError(f"Stapeltyp {batch_type} ist nicht in batch_config konfiguriert.")
+    if kind == BATCH_KIND_CLARIFICATION:
+        return clean_text(f"{CLARIFICATION_LABEL} {configured}".strip(), 30)
+    return clean_text(configured or BOOKING_LABEL, 30)
+
+
+BATCH_FILE_PATTERN = re.compile(
+    r"^EXTF_(Buchungsstapel|Klaerungsposten)_(\d{4}-\d{2})(?:_([A-Z][a-z0-9]*))?(?:_(\d{2}))?\.csv$"
+)
+
+
+def parse_batch_file_name(name: str) -> dict[str, Any] | None:
+    """Split a Kategorie-21 file name into kind, period, batch type suffix and part."""
+    match = BATCH_FILE_PATTERN.fullmatch(name)
+    if not match:
+        return None
+    kind = BATCH_KIND_BOOKING if match.group(1) == "Buchungsstapel" else BATCH_KIND_CLARIFICATION
+    suffix = match.group(3) or ""
+    part = int(match.group(4)) if match.group(4) else 1
+    return {
+        "kind": kind, "period": match.group(2), "suffix": suffix,
+        "batch_type": (suffix[:1].lower() + suffix[1:]) if suffix else STANDARD_BATCH_TYPE,
+        "part": part,
+    }
 
 
 def accrual_document(release: dict[str, Any], run: dict[str, Any], number: int) -> dict[str, Any]:
@@ -361,9 +484,12 @@ def validate_open_fields(document: dict[str, Any], booking: dict[str, Any],
         raise ValueError("open_fields muss ein Objekt aus Feld und Begründung sein.")
     if opened and light != "Rot":
         raise ValueError("Offene Buchungsfelder erfordern Rot.")
+    cost_config = (run or {}).get("cost_center_config")
     for field, reason in opened.items():
         if field not in OPEN_FIELD_INDEXES or not clean_text(reason):
             raise ValueError(f"Ungültiges offenes Feld oder fehlende Begründung: {field}")
+        if field in {"kost1", "kost2"} and not isinstance(cost_config, dict):
+            raise ValueError(f"Offenes Feld {field} ohne cost_center_config ist unzulässig.")
         value = document.get(field) if field in {"currency", "recognized_date"} else booking.get(field)
         if field == "document_field_1":
             value = value or document.get("invoice_number")
@@ -381,6 +507,39 @@ def validate_open_fields(document: dict[str, Any], booking: dict[str, Any],
         if light != "Rot" or side not in {"account", "contra_account"} or side not in opened:
             raise ValueError("Anlagenzugang erfordert Rot und ein dokumentiertes leeres Anlagenkontofeld (asset_account_field).")
     return opened
+
+
+def cost_center_values(
+    document: dict[str, Any],
+    booking: dict[str, Any],
+    run: dict[str, Any] | None,
+    opened: dict[str, str],
+) -> tuple[str | None, str | None]:
+    """KOST1/KOST2 for EXTF fields 37/38 according to the client's cost center profile."""
+    run = run or {}
+    config = run.get("cost_center_config")
+    required = run.get("kostenstellenpflicht") is True
+    tid = document.get("transaction_id", "")
+    kost1 = clean_text(booking.get("kost1", ""), 36)
+    kost2 = clean_text(booking.get("kost2", ""), 36)
+    if not isinstance(config, dict):
+        if kost1 or kost2:
+            raise ValueError(f"{tid}: Kostenstellen ohne cost_center_config sind unzulässig.")
+        if required:
+            raise ValueError("Abbruch: unkonfigurierte Pflichtkostenstelle; cost_center_config fehlt.")
+        return None, None
+    allowed1 = {clean_text(key) for key in (config.get("kost1_allowed") or {})}
+    allowed2 = {clean_text(key) for key in (config.get("kost2_allowed") or {})}
+    kost2_required = config.get("kost2_required") is True
+    if kost1 and kost1 not in allowed1:
+        raise ValueError(f"{tid}: Kostenstelle {kost1} ist nicht in kost1_allowed konfiguriert.")
+    if kost2 and kost2 not in allowed2:
+        raise ValueError(f"{tid}: Kostenstelle {kost2} ist nicht in kost2_allowed konfiguriert.")
+    if required and not kost1 and "kost1" not in opened:
+        raise ValueError(f"{tid}: kost1 fehlt ohne dokumentierte Unsicherheit.")
+    if required and kost2_required and not kost2 and "kost2" not in opened:
+        raise ValueError(f"{tid}: kost2 fehlt ohne dokumentierte Unsicherheit.")
+    return (kost1 or None), (kost2 or None)
 
 
 def booking_row(
@@ -440,8 +599,13 @@ def booking_row(
     row[6] = supplied("account", booking.get("account"), lambda value: digits_raw(value, "Konto"))
     row[7] = supplied("contra_account", booking.get("contra_account"), lambda value: digits_raw(value, "Gegenkonto"))
     row[8] = extf_bu_key
-    row[9] = supplied("recognized_date", document.get("recognized_date"), ddmm_raw)
+    recognized_date = supplied("recognized_date", document.get("recognized_date"), ddmm_raw)
+    # Pflichtleerung: jede Zeile des Klärungsstapels wird ohne Belegdatum
+    # exportiert, damit DATEV sie zwingend als fehlerhaft kennzeichnet. Das
+    # sicher erkannte Datum bleibt im Lauf-JSON, Manifest und in der Prüfungsdatei.
+    row[9] = None if document.get("traffic_light") == "Rot" else recognized_date
     row[10] = doc_field
+    row[36], row[37] = cost_center_values(document, booking, run, opened)
     text = clean_text(booking.get("booking_text", ""), 60)
     warning_pattern = re.compile(
         r"\b(?:ACHTUNG|PRÜFUNG\s+ERFORDERLICH|"

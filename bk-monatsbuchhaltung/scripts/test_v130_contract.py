@@ -124,26 +124,40 @@ def main() -> None:
         result = subprocess.run([sys.executable, str(Path(build_package.__file__)), "--input", str(input_path), "--output", str(root / "package")], capture_output=True, text=True, encoding="utf-8", errors="replace")
         assert result.returncode == 0, result.stderr + result.stdout
         package = root / "package" / "12861_2025-12"
-        import_files = list((package / "01_DATEV_Import").glob("EXTF_*.csv"))
-        assert [path.name for path in import_files] == ["EXTF_Buchungsstapel_2025-12.csv"]
-        rows = [validate_package.split_extf(line) for line in import_files[0].read_text(encoding="cp1252").splitlines()[2:]]
-        assert len(rows) == len(docs)
-        assert all(row[9] == "1512" for number, row in enumerate(rows) if number != 2)
-        assert rows[2][9] == ""
-        assert rows[1][6] == "" and rows[1][7] == "70001"
-        assert rows[3][8] == "" and rows[3][6] == "4900"
-        assert rows[4][0] == "" and rows[4][7] == "70001"
+        # Seit v1.4 liegen rote Zeilen im Klärungsstapel; die v1.3-Regeln zu offenen
+        # Feldern, Anlagenworkflow und Nachweis gelten dort unverändert.
+        import_files = sorted((package / "01_DATEV_Import").glob("EXTF_*.csv"))
+        names = [path.name for path in import_files]
+        # Die sieben roten Zeilen haben paarweise verschiedene offene Felder; die
+        # Sortierregel gegen das Schleppen ist deshalb nur mit Teilung erfüllbar.
+        assert names[0] == "EXTF_Buchungsstapel_2025-12.csv" and names[1] == "EXTF_Klaerungsposten_2025-12.csv", names
+        assert all(name.startswith("EXTF_Klaerungsposten_2025-12") for name in names[1:]), names
+        manifest = json.loads((package / "03_Technische_Protokolle" / "Laufmanifest.json").read_text(encoding="utf-8"))
+        by_tid = {}
+        for path in import_files:
+            lines = path.read_text(encoding="cp1252").splitlines()
+            for number, line in enumerate(lines[2:], start=3):
+                trace_item = next(item for item in manifest["booking_trace"] if item["file"] == path.name and item["csv_row"] == number)
+                by_tid[trace_item["transaction_id"]] = (path.name, validate_package.split_extf(line))
+        assert len(by_tid) == len(docs)
+        assert by_tid["V0001"][0] == "EXTF_Buchungsstapel_2025-12.csv" and by_tid["V0001"][1][9] == "1512"
+        assert all(name.startswith("EXTF_Klaerungsposten_2025-12") and row[9] == "" for tid, (name, row) in by_tid.items() if tid != "V0001")
+        assert by_tid["V0002"][1][6] == "" and by_tid["V0002"][1][7] == "70001"
+        assert by_tid["V0004"][1][8] == "" and by_tid["V0004"][1][6] == "4900"
+        assert by_tid["V0005"][1][0] == "" and by_tid["V0005"][1][7] == "70001"
         report = json.loads((package / "03_Technische_Protokolle" / "Validierungsbericht.json").read_text(encoding="utf-8"))
         assert report["valid"] and report["datev_test_import_status"] == "pending"
         assert not report["datev_import_compatibility_confirmed"]
         workbook = load_workbook(next((package / "02_Buchungspruefung").glob("*.xlsx")))
-        assert all(row[1].value == import_files[0].name for row in list(workbook["Belegprüfung"].rows)[1:])
+        for row in list(workbook["Belegprüfung"].rows)[1:]:
+            assert row[1].value == by_tid[row[2].value][0], (row[2].value, row[1].value)
         assert all(row[0].value in {"Grün", "Rot"} for row in list(workbook["Belegprüfung"].rows)[1:])
         assert "Anlagenvorerfassung" in " ".join(str(cell.value) for row in workbook["Belegprüfung"] for cell in row)
         workbook.close()
-        manifest = json.loads((package / "03_Technische_Protokolle" / "Laufmanifest.json").read_text(encoding="utf-8"))
-        manifest["booking_trace"][1]["traffic_light"] = "Grün"
-        assert validate_package.validate_csv(import_files[0], manifest)[0]
+        clarification = package / "01_DATEV_Import" / by_tid["V0002"][0]
+        broken = copy.deepcopy(manifest)
+        next(item for item in broken["booking_trace"] if item["transaction_id"] == "V0002")["traffic_light"] = "Grün"
+        assert validate_package.validate_csv(clarification, broken)[0]
         assert validate_package.validate_test_import({"status": "confirmed"}, import_files)
 
         # Accrual releases join the same month; they cannot create another CSV.
@@ -152,7 +166,8 @@ def main() -> None:
         release = {**docs[0]["bookings"][0], "accrual_id": "A1", "period": "2025-12", "booking_date": "2025-12-31"}
         trace = build_package.write_booking_batches(accrual_root, {"run": run, "documents": [docs[0]], "accrual_releases": [release]})
         assert len(list((accrual_root / "01_DATEV_Import").glob("*.csv"))) == 1
-        assert len(trace) == 2 and trace[1]["kind"] == "accrual"
+        assert len(trace) == 2 and sum(item["kind"] == "accrual" for item in trace) == 1
+        assert {item["file"] for item in trace} == {"EXTF_Buchungsstapel_2025-12.csv"}
     print("v1.3 export, open fields, asset workflow, workbook and import-evidence tests: OK")
 
 

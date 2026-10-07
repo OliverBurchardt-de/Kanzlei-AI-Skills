@@ -1,4 +1,4 @@
-# Eingabeschema für `build_package.py` (v1.3)
+# Eingabeschema für `build_package.py` (v1.4)
 
 Der Agent erstellt eine UTF-8-JSON-Datei. Technische GUIDs, Paketnamen und Dateinamen erzeugt ausschließlich der Generator. Neue Läufe verwenden das normalisierte Modell `source_files` → `transaction_sources` → `transactions`. Das v1.0-Modell `input_inventory`/`documents` bleibt ausschließlich zur Rückwärtskompatibilität lesbar.
 
@@ -12,14 +12,100 @@ Pflichtfelder:
 - `sachkontenlaenge`, `sachkontenrahmen`, `waehrung`, `accounting_method`
 - `datev_connection_verified: true`
 - bei vorhandenem Profil `mandantenprofil_verified: true`, beim kontrollierten Erstlauf stattdessen `provisional_profile_verified: true`
-- `kostenstellenpflicht: false`
+- `kostenstellenpflicht`: `true` oder `false` aus dem Mandantenprofil
+- `cost_center_config`, sobald das Mandantenprofil Kostenstellen nennt oder DATEV live ein aktives Kostenrechnungssystem meldet; bei `kostenstellenpflicht: true` zwingend (sonst Preflight-Abbruch „unkonfigurierte Pflichtkostenstelle“)
+- optional `batch_config` für im Profil freigeschaltete getrennte Buchungsvorläufe
 - `mandantenprofil_evidence`, bei Bilanz `abgrenzungsregister_evidence`, `datev_live_evidence`
 - `vat_config`, `account_config`, `person_account_ranges`
 - optional `requested_entities`: alle vom Nutzer ausdrücklich genannten Personen oder Geschäftspartner
 
 Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stelle mehr. `account_config.asset_accounts` ist vollständig, duplikatfrei und enthält das GWG-Konto.
 
-`datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys`, höchste Debitoren-/Kreditorennummer, Abrufzeitpunkt und `used_person_accounts`. Sammel-/CPD-Konten sind unzulässig.
+`datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys`, höchste Debitoren-/Kreditorennummer, Abrufzeitpunkt, `used_person_accounts` sowie `connector: "Riecken"` und je Prüfung das verwendete Werkzeug (`retrieved_via`). Sammel-/CPD-Konten sind unzulässig. Bei vorhandener `cost_center_config` zusätzlich `cost_system_active: true` und `validated_cost_centers` (Liste der live in DATEV nachgewiesenen KOST1-Nummern, siehe Abschnitt DATEV-Anbindung).
+
+## DATEV-Anbindung (Riecken-Connector)
+
+Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
+
+| Prüfung | Riecken-Werkzeug | Nachweisfeld |
+|---|---|---|
+| Erreichbarkeit | `datev_health_check` (`master-data` und `accounting`) | `datev_connection_verified: true`, `retrieved_via.health` |
+| Mandant und Kerndaten (Berater-/Mandantennummer, Wirtschaftsjahr, Kontenrahmen, Sachkontenlänge) | `datev_search_clients` (Mandantennummer), `datev_get_client_dossier`; Wirtschaftsjahr zusätzlich über `datev_suggest_posting` mit Belegdatum | `beraternummer`, `mandantennummer`, `wirtschaftsjahr_beginn`, `sachkontenrahmen`, `sachkontenlaenge`, `retrieved_via.core` |
+| Personenkonten, Stammdaten, höchste Nummer je Bereich | `datev_search_business_partners` (`role` debitor/creditor), `datev_suggest_posting` (nächste freie Kontonummer) | `used_person_accounts`, `highest_creditor_account`, `highest_debtor_account`, `master_data_checked`, `master_data_records_found`, `retrieved_via.master_data` |
+| Vorbuchungen und DATEV-Dublettenprüfung | `datev_get_account_postings` (Personenkonto und Aufwands-/Erlöskonto, Belegzeitraum), `datev_get_accounting_statistics` | `prior_bookings_checked`, `prior_booking_records_found`, `duplicate_checks.datev_live`, `retrieved_via.prior_bookings` |
+| Sachkonten | `datev_get_account_balances` (`account_number` oder Bereich), `datev_suggest_posting` (Kontenplan-Kandidaten) | `validated_accounts`, `retrieved_via.accounts` |
+| BU-Schlüssel | `datev_suggest_posting` (Steuerschlüssel zum Konto) | `validated_bu_keys`, `retrieved_via.bu_keys` |
+| Kostenstellen | KOST1/KOST2 aus `datev_get_account_postings` (Vorbuchungen) und `datev_get_asset_inventory`; der Connector bietet keinen eigenen Kostenstellenkatalog | `cost_system_active`, `validated_cost_centers`, `retrieved_via.cost_centers` |
+
+Beispiel:
+
+```json
+"datev_live_evidence": {
+  "source": "DATEV live",
+  "connector": "Riecken",
+  "retrieved_at": "2026-10-07T10:00:00+02:00",
+  "retrieved_via": {
+    "health": "datev_health_check",
+    "core": "datev_get_client_dossier",
+    "master_data": "datev_search_business_partners",
+    "prior_bookings": "datev_get_account_postings",
+    "accounts": "datev_get_account_balances",
+    "bu_keys": "datev_suggest_posting",
+    "cost_centers": "datev_get_account_postings"
+  }
+}
+```
+
+Regeln:
+
+- Jeder Wert in `datev_live_evidence` stammt aus einem Riecken-Abruf dieses Laufs. Werte aus Erinnerung, früheren Läufen oder anderen DATEV-Zugängen sind unzulässig.
+- Liefert der Connector einen Kernwert nicht, ist das ein technischer Preflight-Blocker; das Mandantenprofil ersetzt den Live-Abruf nicht.
+- Eine im Profil genannte Kostenstelle, die über den Connector in keiner Vorbuchung und keinem Anlagegut nachweisbar ist, gilt nicht als live validiert. Der Vorgang wird Rot mit offenem `kost1` und Klärungsfall „Kostenstelle in DATEV anlegen/bestätigen“ (Abschnitt Kostenstellen, Regel 6).
+- `datev_get_account_balances` nur mit `account_number` oder einem Kontenbereich aufrufen; `confirmed_full_list` bleibt in diesem Skill ungenutzt.
+
+## Kostenstellen
+
+```json
+"kostenstellenpflicht": true,
+"cost_center_config": {
+  "kost_system": 1,
+  "kost1_required": true,
+  "kost2_required": false,
+  "kost1_allowed": {
+    "1000": "Praxis",
+    "2000": "Labor",
+    "9999": "Sammelkostenstelle/-träger"
+  },
+  "kost2_allowed": {},
+  "rules_source": "Mandantenprofil 13481, Abschnitt Kostenstellenregeln"
+}
+```
+
+Prüfregeln des Generators:
+
+1. Keine `cost_center_config`: `kost1`/`kost2` müssen leer sein.
+2. `cost_center_config` vorhanden, `kostenstellenpflicht: false`: ableitbare Kostenstelle setzen; nicht ableitbar bleibt leer ohne Ampelwirkung.
+3. `kostenstellenpflicht: true` ohne vollständige `cost_center_config`: Abbruch im Preflight („unkonfigurierte Pflichtkostenstelle“); `kost1_required` muss dann `true` sein.
+4. `kostenstellenpflicht: true`, Grün: `kost1` gefüllt und in `kost1_allowed`; `kost2` entsprechend bei `kost2_required: true`.
+5. `kostenstellenpflicht: true`, Rot: `kost1` darf leer bleiben, wenn es in `open_fields` begründet ist. Ein bekannter Wert wird nie gelöscht.
+6. Jeder gefüllte Wert muss in `kost1_allowed`/`kost2_allowed` und in `validated_cost_centers` stehen; eine unbekannte Kostenstelle ist ein Generatorfehler, eine live fehlende Kostenstelle ist nur als Rot mit offenem `kost1` und Klärungsfall „Kostenstelle in DATEV anlegen“ zulässig.
+7. Die Ableitung der Kostenstelle wird je Vorgang in `derivation` begründet.
+
+## Getrennte Buchungsvorläufe
+
+```json
+"batch_config": {
+  "separate_batches": {
+    "eigenbelege": {
+      "label": "Eigenbelege Labor",
+      "required_kost1": "2000",
+      "required_contra_account": "800010"
+    }
+  }
+}
+```
+
+Je Vorgang optional `batch_type` mit `standard` (Default) oder einem konfigurierten Schlüssel. Ein `batch_type` ohne Konfiguration ist ein Generatorfehler. Stapeltypen bestehen aus Kleinbuchstaben und Ziffern; der Dateisuffix ist der Schlüssel mit großem Anfangsbuchstaben (`eigenbelege` → `_Eigenbelege`). `label` (höchstens 30 Zeichen) wird Stapelbezeichnung in Header-Feld 17.
 
 ## Mandantenprofil
 
@@ -101,6 +187,7 @@ Pflichtfelder je `transactions[]`:
 
 - `transaction_id`, `document_type`, `partner`, `recognized_date`, `total_amount`, `currency`, `period`
 - `processing_status`, `traffic_light`, `derivation`, `reason`, `business_purpose_status`, `bookings`
+- optional `batch_type` (`standard` oder ein in `batch_config` konfigurierter Stapeltyp)
 - `entity_assessment`; bei buchungsrelevanten oder als Dublette behandelten Vorgängen zusätzlich `duplicate_checks`
 
 Zulässige Status:
@@ -159,7 +246,7 @@ Ein Lauf wird abgelehnt, wenn Rot ausschließlich mit fehlender Zahlungs- oder K
 
 ## Buchungszeilen
 
-Eine Buchungszeile enthält `amount`, `debit_credit`, `account`, `account_name`, `contra_account`, `contra_account_name`, `bu_key`, `document_field_1`, `booking_text`. `bu_key` ist intern leer oder dreistellig, zum Beispiel `511`; eine führende Null entsteht erst beim Export. Bekannte Referenzen für Belegfeld 1 erhalten; unbekannte Referenzen bei Rot dokumentiert leer lassen. Anlagen/GWG erfordern `asset_booking: true`, Rot und ein grundsätzlich leeres Anlagenkontofeld. Je betroffener Zeile `asset_account_field: "account"` oder `"contra_account"` setzen. Der Generator weist direkte Anlagenkonten und Ersatzbuchungen zurück.
+Eine Buchungszeile enthält `amount`, `debit_credit`, `account`, `account_name`, `contra_account`, `contra_account_name`, `bu_key`, `document_field_1`, `booking_text` sowie bei konfigurierten Kostenstellen `kost1` und optional `kost2` (Text, höchstens 36 Zeichen, DATEV-Zeichensatz). Rote Zeilen werden im Klärungsstapel `EXTF_Klaerungsposten_<JJJJ-MM>.csv` exportiert, grüne im Buchungsstapel; die Zuordnung ergibt sich allein aus `traffic_light`, ein Feld zur manuellen Stapelwahl ist ausdrücklich nicht vorgesehen. Im Klärungsstapel bleibt das DATEV-Belegdatum immer leer; `recognized_date` bleibt trotzdem Pflicht, soweit sicher erkannt. `bu_key` ist intern leer oder dreistellig, zum Beispiel `511`; eine führende Null entsteht erst beim Export. Bekannte Referenzen für Belegfeld 1 erhalten; unbekannte Referenzen bei Rot dokumentiert leer lassen. Anlagen/GWG erfordern `asset_booking: true`, Rot und ein grundsätzlich leeres Anlagenkontofeld. Je betroffener Zeile `asset_account_field: "account"` oder `"contra_account"` setzen. Der Generator weist direkte Anlagenkonten und Ersatzbuchungen zurück.
 
 Bei Rot enthält jede Buchungszeile `open_fields` als Objekt aus exakt offenem Feld und konkreter Begründung, zum Beispiel:
 
@@ -169,7 +256,7 @@ Bei Rot enthält jede Buchungszeile `open_fields` als Objekt aus exakt offenem F
 "open_fields": {"account": "Anlagenzugang zuerst in der Anlagenvorerfassung anlegen; fachlicher Vorschlag 0480 GWG."}
 ```
 
-Erlaubte Feldnamen: `amount`, `debit_credit`, `currency`, `exchange_rate`, `base_amount`, `account`, `contra_account`, `bu_key`, `recognized_date`, `document_field_1`, `service_date`, `tax_period_date`. `currency` und `recognized_date` stehen am Vorgang, die übrigen Werte an der Buchungszeile. Ein offenes Feld ist `null` oder leer; ein bekannt ausgefüllter Wert darf nicht zugleich als offen deklariert werden. Grün hat keine offenen Felder. Ein fachlich korrekt leeres BU-Feld benötigt keine Unsicherheitsbegründung. Rote Fälle mit vollständig bekannten Feldern benötigen weiterhin einen konkreten Klärungsfall, aber keine künstliche Leerstelle.
+Erlaubte Feldnamen: `amount`, `debit_credit`, `currency`, `exchange_rate`, `base_amount`, `account`, `contra_account`, `bu_key`, `recognized_date`, `document_field_1`, `kost1`, `kost2`, `service_date`, `tax_period_date`. `kost1`/`kost2` sind nur bei vorhandener `cost_center_config` zulässig. `currency` und `recognized_date` stehen am Vorgang, die übrigen Werte an der Buchungszeile. Ein offenes Feld ist `null` oder leer; ein bekannt ausgefüllter Wert darf nicht zugleich als offen deklariert werden. Grün hat keine offenen Felder. Ein fachlich korrekt leeres BU-Feld benötigt keine Unsicherheitsbegründung. Rote Fälle mit vollständig bekannten Feldern benötigen weiterhin einen konkreten Klärungsfall, aber keine künstliche Leerstelle.
 
 Jeder rote Vorgang benötigt `requires_clarification: true` und genau einen Klärungsfall mit `booking_risk`. Die Prüfungsdatei zeigt die konkreten offenen Felder, das Risiko und die Mitarbeiterentscheidung. Buchungstexte bleiben sachliche Beleg-/Leistungsbeschreibungen.
 
@@ -224,9 +311,9 @@ Typische Ziele: Bank-/Kreditkartenprozess, Lohnbuchhaltung, DUO-Avispaket, Rück
 
 Vor einem produktiven Import das Paket in einem dafür freigegebenen DATEV-Testbestand testen. Prüfen, ob unvollständige rote Zeilen als bearbeitungsbedürftig übernommen werden oder ob DATEV Zeilen beziehungsweise den gesamten Stapel zurückweist. Den tatsächlich getesteten Dateistand über SHA-256 nachweisen; Ergebnis, DATEV-Version, Testbestand und genaue Meldungen dokumentieren. Bei fehlendem Zugang Status `pending` und `DATEV-Testimport ausstehend` ausweisen; keinen Erfolg behaupten. Die Paketübergabe mit internem `valid=true` bleibt zulässig, ohne damit DATEV-Importfähigkeit zu bestätigen.
 
-Optionales Lauf-JSON-Feld `datev_test_import`: `status` ist `pending`, `confirmed` oder `rejected`. Bei ausgeführtem Test sind `tested_at`, `datev_version`, `test_client`, `evidence_reference`, `result_detail` und `tested_files` Pflicht. `tested_files` ordnet jedem tatsächlich erzeugten EXTF-Dateinamen den SHA-256 des getesteten Inhalts zu. `confirmed` bedeutet: Alle Zeilen wurden übernommen und rote Zeilen sind bearbeitungsbedürftig; `rejected` protokolliert insbesondere eine Zurückweisung des gesamten Stapels. Ein Nachweis für andere Dateiinhalte bestätigt das aktuelle Paket nicht. Ein ergebnisloser oder nicht ausgeführter Test bleibt `pending`.
+Optionales Lauf-JSON-Feld `datev_test_import`: `status` ist `pending`, `confirmed` oder `rejected`. Bei ausgeführtem Test sind `tested_at`, `datev_version`, `test_client`, `evidence_reference`, `result_detail`, `tested_files` und `carry_over_result` Pflicht. `tested_files` ordnet jeder tatsächlich erzeugten EXTF-Datei, also auch jedem Klärungsstapel und jeder Teilungsdatei, den SHA-256 des getesteten Inhalts zu. `carry_over_result` hält je gefährdetem Feld (`account`, `contra_account`, `bu_key`, `recognized_date`, `document_field_1`) das beobachtete Verhalten fest: `carried`, `not_carried` oder `not_tested`. `confirmed` bedeutet: Alle Zeilen wurden übernommen und rote Zeilen sind bearbeitungsbedürftig; `rejected` protokolliert insbesondere eine Zurückweisung des gesamten Stapels. Ein Nachweis für andere Dateiinhalte bestätigt das aktuelle Paket nicht. Ein ergebnisloser oder nicht ausgeführter Test bleibt `pending`.
 
-Weist DATEV den gesamten Stapel zurück, Fehler und betroffene Felder offen melden; keine Ersatzbuchung, kein Entfernen roter Fälle und kein eigenmächtiges Aufteilen des Monatsstapels. Einen lokalen Strukturtest niemals als DATEV-Testimport ausgeben.
+Weist DATEV den gesamten Stapel zurück, Fehler und betroffene Felder offen melden; keine Ersatzbuchung, kein Entfernen roter Fälle und keine Teilung über die Sortierregel hinaus. Einen lokalen Strukturtest niemals als DATEV-Testimport ausgeben.
 
 Quelle: [DATEV-Schnittstellenvorgaben und Testimport](https://developer.datev.de/de/product-detail/accounting-extf-files/2.0/documentation/interface-requirements-file).
 

@@ -11,7 +11,13 @@ from openpyxl import Workbook
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.worksheet.datavalidation import DataValidation
-from datev_io import accrual_document
+from datev_io import (
+    BATCH_KIND_BOOKING,
+    BATCH_KIND_CLARIFICATION,
+    STANDARD_BATCH_TYPE,
+    accrual_document,
+    batch_file_name,
+)
 
 
 NAVY = "183B56"
@@ -65,23 +71,50 @@ def document_field_1(doc: dict[str, Any]) -> str:
     return clean(doc.get("invoice_number"))
 
 
-BATCH_FILE_STEMS = {
-    "Grün": "Buchungsstapel",
-    "Rot": "Buchungsstapel",
+BATCH_KINDS_BY_LIGHT = {
+    "Grün": BATCH_KIND_BOOKING,
+    "Rot": BATCH_KIND_CLARIFICATION,
 }
 
 
-def booking_batch_filename(
-    doc: dict[str, Any], run: dict[str, Any]
-) -> str:
-    if doc.get("processing_status") != "Buchungszeile erzeugt":
-        return "Kein Buchungsstapel"
-    light = clean(doc.get("traffic_light"))
-    stem = BATCH_FILE_STEMS.get(light)
-    period = clean(doc.get("period")) or clean(run.get("buchungsmonat"))
-    if not stem or not period:
-        return "Nicht bestimmbar"
-    return f"EXTF_{stem}_{period}.csv"
+class BatchFiles:
+    """Actual EXTF file names per transaction and booking line from the generator's booking_trace."""
+
+    def __init__(self, data: dict[str, Any]) -> None:
+        self.run = data.get("run", {})
+        self.by_transaction: dict[str, list[str]] = {}
+        self.by_line: dict[tuple[str, int], str] = {}
+        for item in data.get("booking_trace", []) or []:
+            tid = str(item.get("transaction_id", ""))
+            file_name = str(item.get("file", ""))
+            if not tid or not file_name:
+                continue
+            files = self.by_transaction.setdefault(tid, [])
+            if file_name not in files:
+                files.append(file_name)
+            self.by_line[(tid, int(item.get("line", 0) or 0))] = file_name
+
+    def _fallback(self, doc: dict[str, Any]) -> str:
+        kind = BATCH_KINDS_BY_LIGHT.get(clean(doc.get("traffic_light")))
+        period = clean(doc.get("period")) or clean(self.run.get("buchungsmonat"))
+        if not kind or not period:
+            return "Nicht bestimmbar"
+        batch_type = clean(doc.get("batch_type")) or STANDARD_BATCH_TYPE
+        try:
+            return batch_file_name(period, kind, batch_type)
+        except ValueError:
+            return "Nicht bestimmbar"
+
+    def for_document(self, doc: dict[str, Any]) -> str:
+        if doc.get("processing_status") != "Buchungszeile erzeugt":
+            return "Kein Buchungsstapel"
+        files = self.by_transaction.get(str(doc.get("transaction_id", "")))
+        return ", ".join(sorted(files)) if files else self._fallback(doc)
+
+    def for_line(self, doc: dict[str, Any], line_no: int) -> str:
+        if doc.get("processing_status") != "Buchungszeile erzeugt":
+            return "Kein Buchungsstapel"
+        return self.by_line.get((str(doc.get("transaction_id", "")), line_no)) or self.for_document(doc)
 
 
 def compact_posting(doc: dict[str, Any]) -> str:
@@ -159,6 +192,9 @@ def add_title(ws, title: str, end_column: int) -> None:
 
 def build(data: dict[str, Any], output: Path) -> None:
     run = data["run"]
+    batch_files = BatchFiles(data)
+    cost_config = run.get("cost_center_config") if isinstance(run.get("cost_center_config"), dict) else None
+    with_kost2 = bool(cost_config and (cost_config.get("kost2_required") is True or cost_config.get("kost2_allowed")))
     order = {"Rot": 0, "Grün": 1, None: 9, "": 9}
     if any(doc.get("traffic_light") not in {"Grün", "Rot", None, ""} for doc in data.get("documents", [])):
         raise ValueError("Nur Grün und Rot sind zulässig.")
@@ -189,15 +225,19 @@ def build(data: dict[str, Any], output: Path) -> None:
 
     guide_rows = [
         ["Schritt / Feld", "Bedeutung"],
-        ["1. Belegprüfung", "Rote Fälle bearbeiten. Rot und Grün stehen im selben Monatsstapel. Direkt rechts neben der Ampel steht dessen vollständiger Dateiname."],
+        ["1. Belegprüfung", "Rote Fälle bearbeiten. Grüne Vorgänge stehen im Buchungsstapel, rote im Klärungsstapel. Rechts neben der Ampel steht der vollständige Dateiname des jeweiligen Stapels. Die Spalte Belegdatum laut Beleg zeigt das sicher erkannte Datum; im Klärungsstapel ist das DATEV-Belegdatum immer leer und wird in DATEV nachgetragen."],
         ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, BU-Schlüssel, Belegfeld 1, Buchungstext und Periode nachvollziehen."],
         ["3. Rücklaufstatus", "Für jeden roten Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
         ["4. Mitarbeiter-Ergebnis", "Bei geändert oder nicht übernommen ist die endgültige Behandlung als Mitarbeiter-Ergebnis Pflicht."],
         ["Grün", "Vollständig und plausibel; keine offene fachliche Frage."],
         ["Rot", "Aktive Bearbeitung erforderlich. Nur konkret ungeklärte Felder bleiben leer; bei Anlagenzugängen bleibt das Anlagenkonto immer offen. Arbeitsanweisungen stehen ausschließlich hier."],
         ["Zahlungsavise", "Nicht buchen. Das gesonderte Belegtransfer_Avise-ZIP in DATEV Unternehmen online hochladen."],
-        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. gemeinsamer Buchungsstapel je Monat. DATEV-Testimportstatus beachten."],
+        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. Buchungsstapel je Monat (danach konfigurierte Stapeltypen wie _Eigenbelege derselben Periode), 5. Klärungsstapel je Monat als eigener Importvorgang; erst festschreiben, wenn alle roten Zeilen bearbeitet sind. DATEV-Testimportstatus beachten."],
     ]
+    if cost_config:
+        allowed = ", ".join(f"{number} {name}" for number, name in cost_config.get("kost1_allowed", {}).items())
+        pflicht = "Pflicht auf jeder Buchungszeile" if run.get("kostenstellenpflicht") is True else "wird gesetzt, wenn ableitbar; sonst leer ohne Ampelwirkung"
+        guide_rows.append(["Kostenstellen", f"KOST1 für diesen Mandanten: {pflicht}. Zulässige Kostenstellen: {allowed}. Offenes kost1 steht wie andere offene Felder in der Begründungsspalte."])
     for row in guide_rows:
         guide.append(row)
     apply_header(guide, 1, 1, 2)
@@ -226,6 +266,7 @@ def build(data: dict[str, Any], output: Path) -> None:
     ])
     summary.append([])
     summary.append(["Kontrollpunkt", "Ergebnis"])
+    batch_rows = data.get("booking_batches") or []
     controls = [
         ("Vorperiodenbelege", sum(1 for doc in docs if str(doc.get("period", "")) < run["buchungsmonat"])),
         ("Zukunftsbelege", sum(1 for doc in docs if str(doc.get("period", "")) > run["buchungsmonat"])),
@@ -239,21 +280,43 @@ def build(data: dict[str, Any], output: Path) -> None:
     ]
     for item in controls:
         summary.append(list(item))
+    summary.append([])
+    batch_header_row = summary.max_row + 1
+    summary.append(["DATEV-Stapel", "Stapelbezeichnung", "Zeilen", "Summe"])
+    if batch_rows:
+        for batch in batch_rows:
+            summary.append([batch.get("file", ""), batch.get("label", ""), int(batch.get("rows", 0)), amount(batch.get("amount_total"))])
+    else:
+        per_file: dict[str, tuple[int, float]] = {}
+        for doc in posting_docs:
+            for line_no, line in enumerate(doc.get("bookings", []), start=1):
+                name = batch_files.for_line(doc, line_no)
+                count, total = per_file.get(name, (0, 0.0))
+                per_file[name] = (count + 1, total + (amount(line.get("amount")) or 0.0))
+        for name, (count, total) in sorted(per_file.items()):
+            summary.append([name, "", count, total])
     apply_header(summary, 1, 1, 4)
     apply_header(summary, 6, 1, 2)
+    apply_header(summary, batch_header_row, 1, 4)
     for row in range(2, 5):
         for col in range(2, 5):
             summary.cell(row, col).number_format = '#,##0.00' if row == 3 else '#,##0'
-    set_widths(summary, [34, 20, 16, 16])
+    for row in range(batch_header_row + 1, summary.max_row + 1):
+        summary.cell(row, 3).number_format = '#,##0'
+        summary.cell(row, 4).number_format = '#,##0.00'
+    set_widths(summary, [44, 24, 16, 16])
     summary.freeze_panes = "A2"
     add_title(summary, f"Übersicht {run['mandantennummer']} – {run['buchungsmonat']}", 4)
 
     review_headers = [
-        "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum", "Geschäftspartner",
+        "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum laut Beleg", "Geschäftspartner",
         "Belegfeld 1", "Betrag", "Währung", "Buchungsperiode", "Kontierung",
-        "Ableitung", "Prüfergebnis / Ampelbegrgründung".replace("begrgründung", "begründung"),
+        "Ableitung", "Prüfergebnis / Ampelbegründung",
         "Offener Punkt / nächster Schritt", "Bearbeitungsstatus", "Mitarbeiter-Ergebnis",
     ]
+    if cost_config:
+        review_headers.insert(review_headers.index("Kontierung") + 1, "KOST1")
+    review_col = {name: index for index, name in enumerate(review_headers, start=1)}
     review.append(review_headers)
     for doc in docs:
         case = cases.get(str(doc.get("transaction_id", "")), {})
@@ -273,9 +336,9 @@ def build(data: dict[str, Any], output: Path) -> None:
                 next_step = "Keine Buchung."
             elif doc.get("traffic_light") == "Grün":
                 next_step = "Keine weitere Bearbeitung."
-        review.append([
+        row_values = [
             doc.get("traffic_light") or "",
-            booking_batch_filename(doc, run),
+            batch_files.for_document(doc),
             doc.get("transaction_id") or "",
             datetime.strptime(doc["recognized_date"], "%Y-%m-%d") if doc.get("recognized_date") else None,
             doc.get("partner") or "",
@@ -289,15 +352,34 @@ def build(data: dict[str, Any], output: Path) -> None:
             " – ".join(filter(None, [open_details, next_step])),
             "offen" if doc.get("traffic_light") == "Rot" else "",
             "",
-        ])
-    apply_header(review, 1, 1, 15)
+        ]
+        if cost_config:
+            kost_values = [
+                clean(line.get("kost1")) or ("offen" if "kost1" in (line.get("open_fields") or {}) else "")
+                for line in doc.get("bookings", [])
+            ]
+            if doc.get("processing_status") == "Buchungszeile erzeugt" and not any(kost_values):
+                kost_text = "ohne Kostenstelle"
+            else:
+                kost_text = ", ".join(dict.fromkeys(value for value in kost_values if value))
+            row_values.insert(review_col["KOST1"] - 1, kost_text)
+        review.append(row_values)
+    column_count = len(review_headers)
+    apply_header(review, 1, 1, column_count)
     review.freeze_panes = "C2"
     review.auto_filter.ref = review.dimensions
-    set_widths(review, [18, 38, 14, 14, 27, 22, 14, 10, 16, 58, 52, 48, 48, 27, 48])
+    widths = [18, 38, 14, 14, 27, 22, 14, 10, 16, 58, 52, 48, 48, 27, 48]
+    if cost_config:
+        widths.insert(review_col["KOST1"] - 1, 14)
+    set_widths(review, widths)
+    status_col = review_col["Bearbeitungsstatus"]
+    result_col = review_col["Mitarbeiter-Ergebnis"]
+    status_letter = review.cell(1, status_col).column_letter
+    result_letter = review.cell(1, result_col).column_letter
     for row in range(2, review.max_row + 1):
-        review.cell(row, 4).number_format = "dd.mm.yyyy"
-        review.cell(row, 7).number_format = '#,##0.00'
-        for col in range(10, 16):
+        review.cell(row, review_col["Belegdatum laut Beleg"]).number_format = "dd.mm.yyyy"
+        review.cell(row, review_col["Betrag"]).number_format = '#,##0.00'
+        for col in range(review_col["Kontierung"], column_count + 1):
             review.cell(row, col).alignment = Alignment(wrap_text=True, vertical="top")
         review.row_dimensions[row].height = 52
     traffic_format(review, review.max_row)
@@ -306,11 +388,11 @@ def build(data: dict[str, Any], output: Path) -> None:
         formula1='"offen,unverändert übernommen,geändert,nicht übernommen"',
     )
     review.add_data_validation(status_validation)
-    status_validation.add(f"N2:N{max(2, review.max_row)}")
+    status_validation.add(f"{status_letter}2:{status_letter}{max(2, review.max_row)}")
     review.conditional_formatting.add(
-        f"O2:O{max(2, review.max_row)}",
+        f"{result_letter}2:{result_letter}{max(2, review.max_row)}",
         FormulaRule(
-            formula=['AND(OR($N2="geändert",$N2="nicht übernommen"),$O2="")'],
+            formula=[f'AND(OR(${status_letter}2="geändert",${status_letter}2="nicht übernommen"),${result_letter}2="")'],
             fill=PatternFill("solid", fgColor=RED),
             font=Font(color="9C0006", bold=True),
         ),
@@ -322,11 +404,20 @@ def build(data: dict[str, Any], output: Path) -> None:
         "BU-Schlüssel", "Erkanntes Belegdatum", "Belegfeld 1",
         "Buchungstext", "Buchungsperiode",
     ]
+    booking_widths = [18, 38, 14, 14, 12, 12, 26, 14, 28, 13, 19, 23, 42, 16]
+    if cost_config:
+        position = booking_headers.index("BU-Schlüssel") + 1
+        booking_headers.insert(position, "KOST1")
+        booking_widths.insert(position, 12)
+        if with_kost2:
+            booking_headers.insert(position + 1, "KOST2")
+            booking_widths.insert(position + 1, 12)
+    booking_col = {name: index for index, name in enumerate(booking_headers, start=1)}
     bookings.append(booking_headers)
     for doc in posting_docs:
-        for line in doc.get("bookings", []):
-            bookings.append([
-                doc.get("traffic_light") or "", booking_batch_filename(doc, run),
+        for line_no, line in enumerate(doc.get("bookings", []), start=1):
+            values = [
+                doc.get("traffic_light") or "", batch_files.for_line(doc, line_no),
                 doc.get("transaction_id") or "", amount(line.get("amount")), line.get("debit_credit") or "",
                 str(line.get("account") or ""), line.get("account_name") or "",
                 str(line.get("contra_account") or ""), line.get("contra_account_name") or "",
@@ -334,15 +425,20 @@ def build(data: dict[str, Any], output: Path) -> None:
                 datetime.strptime(doc["recognized_date"], "%Y-%m-%d") if doc.get("recognized_date") else None,
                 line.get("document_field_1") or document_field_1(doc),
                 line.get("booking_text") or "", doc.get("period") or "",
-            ])
-    apply_header(bookings, 1, 1, 14)
+            ]
+            if cost_config:
+                values.insert(booking_col["KOST1"] - 1, clean(line.get("kost1")))
+                if with_kost2:
+                    values.insert(booking_col["KOST2"] - 1, clean(line.get("kost2")))
+            bookings.append(values)
+    apply_header(bookings, 1, 1, len(booking_headers))
     bookings.freeze_panes = "C2"
     bookings.auto_filter.ref = bookings.dimensions
-    set_widths(bookings, [18, 38, 14, 14, 12, 12, 26, 14, 28, 13, 19, 23, 42, 16])
+    set_widths(bookings, booking_widths)
     for row in range(2, bookings.max_row + 1):
-        bookings.cell(row, 4).number_format = '#,##0.00'
-        bookings.cell(row, 11).number_format = "dd.mm.yyyy"
-        bookings.cell(row, 13).alignment = Alignment(wrap_text=True)
+        bookings.cell(row, booking_col["Betrag"]).number_format = '#,##0.00'
+        bookings.cell(row, booking_col["Erkanntes Belegdatum"]).number_format = "dd.mm.yyyy"
+        bookings.cell(row, booking_col["Buchungstext"]).alignment = Alignment(wrap_text=True)
     traffic_format(bookings, bookings.max_row)
 
     notes.append(["Vorgangs-ID", "Geschäftspartner", "Hinweis", "Empfohlenes Vorgehen"])

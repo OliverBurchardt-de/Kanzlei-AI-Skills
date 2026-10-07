@@ -122,7 +122,7 @@ Der Hauptagent prüft und entscheidet anschließend global:
 4. neue Personenkonten fortlaufend ab der live geprüften Höchstnummer,
 5. Kollisionen und Zusammenlegung von Klärungsfällen,
 6. Abgrenzungen, Übergaben und periodenübergreifende Sachverhalte,
-7. alle verwendeten Konten und BU-Schlüssel erneut gegen DATEV live.
+7. alle verwendeten Konten und BU-Schlüssel erneut gegen DATEV live über den Riecken-Connector.
 
 Erst danach `person_account_proposals` in vollständige `master_records` überführen, `_parallel_review.global_reconciliation_required` auf `false` setzen und das endgültige Lauf-JSON nach `EINGABESCHEMA.md` erstellen. `build_package.py` mit diesem finalen Lauf-JSON ausführen.
 

@@ -1,0 +1,54 @@
+{
+  "skill_version": "1.4.0",
+  "tests": [
+    {
+      "test": "test_accrual_register_first_run.py",
+      "passed": true
+    },
+    {
+      "test": "test_accrual_register_manifest.py",
+      "passed": true
+    },
+    {
+      "test": "test_datev_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_document_xml_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_parallel_processing.py",
+      "passed": true
+    },
+    {
+      "test": "test_review_return.py",
+      "passed": true
+    },
+    {
+      "test": "test_review_workbook.py",
+      "passed": true
+    },
+    {
+      "test": "test_sharepoint_target.py",
+      "passed": true
+    },
+    {
+      "test": "test_start_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v110_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v130_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v140_contract.py",
+      "passed": true
+    }
+  ],
+  "datev_test_import": "not_performed"
+}

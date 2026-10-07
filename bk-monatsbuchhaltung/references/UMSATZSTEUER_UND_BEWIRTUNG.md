@@ -43,6 +43,6 @@ Bei vollständigem Nachweis:
 Bei fehlendem oder unklarem Nachweis:
 
 - nicht weglassen und nicht als „nicht buchungsrelevant“ behandeln;
-- Rot im gemeinsamen Monatsstapel exportieren, sicheres Datum und Betrag erhalten;
+- Rot im Klärungsstapel exportieren, sicheren Betrag erhalten; das sichere Datum bleibt in Lauf-JSON und Prüfungsdatei, das DATEV-Belegdatum bleibt im Klärungsstapel leer;
 - nur konkret ungesicherte Buchungsfelder mit `open_fields` offen lassen, keine Ersatzkontierung;
 - genau einen Klärungsfall mit den fehlenden Nachweisen.
