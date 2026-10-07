@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import calendar
+import hashlib
 import json
 import posixpath
 import re
@@ -14,7 +15,7 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path, PurePosixPath
 
-from datev_io import BOOKING_FIELDS, MASTER_FIELDS, fiscal_year_start, month_bounds
+from datev_io import BOOKING_FIELDS, MASTER_FIELDS, OPEN_FIELD_INDEXES, fiscal_year_start, month_bounds
 from sharepoint_target import build_targets
 
 
@@ -71,8 +72,8 @@ FORBIDDEN_DATEV_FOLDERS = {
 }
 
 
-EXPECTED_SKILL_VERSION = "1.2.0"
-EXPECTED_OUTPUT_CONTRACT = "single-datev-import-folder-v2"
+EXPECTED_SKILL_VERSION = "1.3.0"
+EXPECTED_OUTPUT_CONTRACT = "single-monthly-booking-batch-v3"
 
 
 def normalized_person_account_name(value: object) -> str:
@@ -96,6 +97,7 @@ def is_collective_person_account_name(value: object) -> bool:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Erzeugtes Buchhaltungspaket prüfen")
     parser.add_argument("--package", required=True, type=Path)
+    parser.add_argument("--datev-test-import", type=Path, help="Tatsächlichen DATEV-Testimportnachweis für exakt diese EXTF-Dateien prüfen")
     return parser.parse_args()
 
 
@@ -246,7 +248,6 @@ def validate_review_workbook(path: Path) -> list[str]:
                 if sheet_name in {"Belegprüfung", "Buchungszeilen"}:
                     expected_colors = {
                         "Grün": "C6E0B4",
-                        "Gelb": "FFE699",
                         "Rot": "F4CCCC",
                     }
                     for row in sheet_root.findall(f".//{{{XLSX_MAIN_NS}}}row"):
@@ -262,6 +263,8 @@ def validate_review_workbook(path: Path) -> list[str]:
                         if cell is None:
                             continue
                         value = xlsx_cell_text(cell, shared_strings)
+                        if value == "Gelb":
+                            errors.append(f"{path.name}: Gelb ist in Version 1.3 nicht zulässig.")
                         expected_color = expected_colors.get(value)
                         if not expected_color:
                             continue
@@ -327,6 +330,9 @@ def validate_datev_import_layout(package_root: Path) -> list[str]:
             "DATEV-Importdateien liegen außerhalb von 01_DATEV_Import: "
             + ", ".join(sorted(misplaced))
         )
+    for path in datev_dir.glob("EXTF_*.csv"):
+        if path.name != "EXTF_Debitoren_Kreditoren.csv" and not re.fullmatch(r"EXTF_Buchungsstapel_\d{4}-\d{2}\.csv", path.name):
+            errors.append(f"{path.name}: Nur ein gemeinsamer Buchungsstapel je Monat ist zulässig.")
     return errors
 
 
@@ -629,15 +635,17 @@ def validate_csv(
     if headings != expected:
         errors.append(f"{path.name}: Feldüberschriften/Feldfolge weichen ab")
 
-    requires_beleglink = (
-        category == "21" and not path.name.startswith("EXTF_Abgrenzungen_")
-    )
+    requires_beleglink = category == "21"
     configured_asset_accounts = {
         str(value)
         for value in (manifest or {}).get("run_contract", {})
         .get("account_config", {})
         .get("asset_accounts", [])
     }
+    trace_by_row: dict[int, list[dict]] = {}
+    for item in (manifest or {}).get("booking_trace", []):
+        if item.get("file") == path.name:
+            trace_by_row.setdefault(item.get("csv_row"), []).append(item)
     for row_no, line in enumerate(lines[2:], start=3):
         fields = split_extf(line)
         if len(fields) != len(expected):
@@ -647,22 +655,43 @@ def validate_csv(
             )
             continue
         if category == "21":
-            if not re.fullmatch(r"(?!0{1,10},00)\d{1,10},\d{2}", fields[0]):
+            matching_trace = trace_by_row.get(row_no, [])
+            trace = matching_trace[0] if len(matching_trace) == 1 else {}
+            opened = trace.get("open_fields", {})
+            if not isinstance(opened, dict):
+                opened = {}
+                errors.append(f"{path.name}, Zeile {row_no}: ungültige offene Felder")
+            for key, reason in opened.items():
+                if key not in OPEN_FIELD_INDEXES or not str(reason).strip() or trace.get("traffic_light") != "Rot":
+                    errors.append(f"{path.name}, Zeile {row_no}: offene Felder erfordern Rot und konkrete Begründungen")
+                elif fields[OPEN_FIELD_INDEXES[key]]:
+                    errors.append(f"{path.name}, Zeile {row_no}: offenes Feld {key} ist gefüllt")
+            if "booking_trace" in (manifest or {}):
+                if len(matching_trace) != 1:
+                    errors.append(f"{path.name}, Zeile {row_no}: eindeutiger Exportnachweis fehlt")
+                elif trace.get("export_values") != fields:
+                    errors.append(f"{path.name}, Zeile {row_no}: exportierte Werte weichen vom Exportnachweis ab")
+                if trace.get("traffic_light") not in {"Grün", "Rot"}:
+                    errors.append(f"{path.name}, Zeile {row_no}: ungültige Ampel")
+            def intentionally_blank(key: str) -> bool:
+                return key in opened and not fields[OPEN_FIELD_INDEXES[key]] and trace.get("traffic_light") == "Rot"
+            requires_beleglink = trace.get("kind") != "accrual"
+            if not re.fullmatch(r"(?!0{1,10},00)\d{1,10},\d{2}", fields[0]) and not intentionally_blank("amount"):
                 errors.append(f"{path.name}, Zeile {row_no}: Umsatz ist ungültig")
-            if fields[1] not in {"S", "H"}:
+            if fields[1] not in {"S", "H"} and not intentionally_blank("debit_credit"):
                 errors.append(f"{path.name}, Zeile {row_no}: Soll/Haben ist ungültig")
-            if not re.fullmatch(r"[A-Z]{3}", fields[2]):
+            if not re.fullmatch(r"[A-Z]{3}", fields[2]) and not intentionally_blank("currency"):
                 errors.append(f"{path.name}, Zeile {row_no}: Währung ist ungültig")
-            if fields[2] != header[21]:
-                if not re.fullmatch(r"[1-9]\d{0,3},\d{2,6}", fields[3]):
+            if fields[2] and fields[2] != header[21]:
+                if not re.fullmatch(r"[1-9]\d{0,3},\d{2,6}", fields[3]) and not intentionally_blank("exchange_rate"):
                     errors.append(f"{path.name}, Zeile {row_no}: Fremdwährungskurs fehlt")
-                if not re.fullmatch(r"(?!0{1,10},00)\d{1,10},\d{2}", fields[4]):
+                if not re.fullmatch(r"(?!0{1,10},00)\d{1,10},\d{2}", fields[4]) and not intentionally_blank("base_amount"):
                     errors.append(f"{path.name}, Zeile {row_no}: Basisumsatz fehlt")
                 if fields[5] != header[21]:
                     errors.append(f"{path.name}, Zeile {row_no}: Basiswährung ist falsch")
-            if not re.fullmatch(r"(?!0{1,9}$)\d{1,9}", fields[6]):
+            if not re.fullmatch(r"(?!0{1,9}$)\d{1,9}", fields[6]) and not intentionally_blank("account"):
                 errors.append(f"{path.name}, Zeile {row_no}: Konto ist ungültig")
-            if not re.fullmatch(r"(?!0{1,9}$)\d{1,9}", fields[7]):
+            if not re.fullmatch(r"(?!0{1,9}$)\d{1,9}", fields[7]) and not intentionally_blank("contra_account"):
                 errors.append(f"{path.name}, Zeile {row_no}: Gegenkonto ist ungültig")
             bu_key = fields[8]
             if bu_key and not re.fullmatch(r"\d{4}", bu_key):
@@ -670,29 +699,19 @@ def validate_csv(
                     f"{path.name}, Zeile {row_no}: BU-Schlüssel ist nicht "
                     f"vierstellig DATEV-konform: {bu_key}"
                 )
-            is_red_file = path.name.startswith("EXTF_Klaerungsposten_2_")
             is_asset_line = bool(
                 configured_asset_accounts.intersection({fields[6], fields[7]})
             )
-            if is_asset_line and not is_red_file:
-                errors.append(
-                    f"{path.name}, Zeile {row_no}: Anlagenkonto darf nur im "
-                    "roten Klärungsposten stehen"
-                )
-            if is_asset_line and fields[9]:
-                errors.append(
-                    f"{path.name}, Zeile {row_no}: Anlagenkonto erfordert ein "
-                    "leeres DATEV-Belegdatum"
-                )
-            if is_red_file:
-                if fields[9]:
-                    errors.append(
-                        f"{path.name}, Zeile {row_no}: Rot muss absichtlich "
-                        "ein leeres Belegdatum enthalten"
-                    )
-            elif not re.fullmatch(r"\d{4}", fields[9]):
+            clarification_account = str((manifest or {}).get("run_contract", {}).get("account_config", {}).get("clarification", ""))
+            if is_asset_line or {"1590", clarification_account}.intersection({fields[6], fields[7]} - {""}):
+                errors.append(f"{path.name}, Zeile {row_no}: Anlagen- oder Ersatzkontierung unzulässig")
+            if trace.get("asset_booking"):
+                side = trace.get("asset_account_field")
+                if side not in {"account", "contra_account"} or not intentionally_blank(side):
+                    errors.append(f"{path.name}, Zeile {row_no}: Anlagenkontofeld muss dokumentiert leer bleiben")
+            if not re.fullmatch(r"\d{4}", fields[9]) and not intentionally_blank("recognized_date"):
                 errors.append(f"{path.name}, Zeile {row_no}: Belegdatum fehlt/ist ungültig")
-            elif file_period:
+            elif fields[9] and file_period:
                 if not _valid_date(
                     f"{fields[9][:2]}{fields[9][2:]}{file_period[:4]}",
                     "%d%m%Y",
@@ -700,11 +719,11 @@ def validate_csv(
                     errors.append(
                         f"{path.name}, Zeile {row_no}: Belegdatum passt nicht zur Periode"
                     )
-            if not re.fullmatch(r"[A-Za-z0-9_$&%*+\-/]{1,36}", fields[10]):
+            if not re.fullmatch(r"[A-Za-z0-9_$&%*+\-/]{1,36}", fields[10]) and not intentionally_blank("document_field_1"):
                 errors.append(f"{path.name}, Zeile {row_no}: Belegfeld 1 ist ungültig")
             if any(fields[index] for index in (36, 37, 38)):
                 errors.append(f"{path.name}, Zeile {row_no}: KOST-Felder müssen leer sein")
-            if bool(fields[114]) != bool(fields[115]):
+            if bool(fields[114]) != bool(fields[115]) and not (intentionally_blank("service_date") or intentionally_blank("tax_period_date")):
                 errors.append(
                     f"{path.name}, Zeile {row_no}: Leistungsdatum und "
                     "Steuerperiodendatum müssen gemeinsam gefüllt sein"
@@ -726,7 +745,9 @@ def validate_csv(
                 )
             if re.search(
                 r"\b(?:ACHTUNG|PRÜFUNG\s+ERFORDERLICH|"
-                r"PRUEFUNG\s+ERFORDERLICH|PRÜFEN|PRUEFEN)\b",
+                r"PRUEFUNG\s+ERFORDERLICH|PRÜFEN|PRUEFEN|VORSCHLAG|"
+                r"ANLAGENVORERFASSUNG|KONTIERUNGSVORSCHLAG|"
+                r"BITTE|KLÄREN|KLAEREN|NUTZUNGSDAUER)\b",
                 booking_text,
                 re.IGNORECASE,
             ):
@@ -992,6 +1013,21 @@ def validate_transfer_period_separation(package_root: Path) -> list[str]:
     return errors
 
 
+def validate_test_import(evidence: dict, files: list[Path]) -> list[str]:
+    if not isinstance(evidence, dict) or evidence.get("status") not in {"pending", "confirmed", "rejected"}:
+        return ["DATEV-Testimportstatus ist ungültig."]
+    if evidence["status"] == "pending":
+        return []
+    errors = []
+    for field in ("tested_at", "datev_version", "test_client", "evidence_reference", "result_detail"):
+        if not str(evidence.get(field, "")).strip():
+            errors.append(f"DATEV-Testimport: Nachweisfeld {field} fehlt.")
+    actual = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
+    if evidence.get("tested_files") != actual:
+        errors.append("DATEV-Testimportnachweis gehört nicht zu exakt diesen EXTF-Dateien.")
+    return errors
+
+
 def main() -> int:
     args = parse_args()
     errors: list[str] = []
@@ -1033,7 +1069,7 @@ def main() -> int:
         errors.append("Falsche oder fehlende Skill-Version im Laufmanifest")
     if manifest.get("output_contract") != EXPECTED_OUTPUT_CONTRACT:
         errors.append(
-            "Ausgabevertrag single-datev-import-folder-v2 fehlt im Laufmanifest"
+            "Ausgabevertrag single-monthly-booking-batch-v3 fehlt im Laufmanifest"
         )
     if manifest.get("pruefprotokoll_ruecklauf_status") != "ausstehend":
         errors.append("Fachlicher Prüfprotokoll-Rücklaufstatus fehlt im Laufmanifest")
@@ -1041,7 +1077,7 @@ def main() -> int:
     expected_import_order = [
         "EXTF_Debitoren_Kreditoren.csv (falls vorhanden)",
         "Belegtransfer_*.zip und Belegtransfer_Avise_*.zip",
-        "EXTF Kategorie 21: Buchungs-, Klärungs- und Abgrenzungsstapel",
+        "EXTF Kategorie 21: ein gemeinsamer Buchungsstapel je Monat",
     ]
     if manifest.get("datev_import_order") != expected_import_order:
         errors.append("Verbindliche DATEV-Importreihenfolge fehlt im Laufmanifest")
@@ -1109,6 +1145,20 @@ def main() -> int:
         csv_errors, links = validate_csv(path, manifest)
         errors.extend(csv_errors)
         booking_links.update(links)
+    trace = manifest.get("booking_trace", [])
+    expected_rows = {(item.get("file"), item.get("csv_row")) for item in trace}
+    actual_rows = {(path.name, number) for path in csv_files if path.name.startswith("EXTF_Buchungsstapel_")
+                   for number in range(3, len(path.read_text(encoding="cp1252").splitlines()) + 1)}
+    if expected_rows != actual_rows or len(expected_rows) != len(trace):
+        errors.append("Exportnachweise und CSV-Zeilen sind nicht vollständig und eindeutig verknüpft.")
+    evidence_path = args.package / "03_Technische_Protokolle" / "DATEV_Testimport.json"
+    test_import = manifest.get("datev_test_import", {"status": "pending"})
+    if args.datev_test_import or evidence_path.is_file():
+        test_import = json.loads((args.datev_test_import or evidence_path).read_text(encoding="utf-8"))
+    test_import_errors = validate_test_import(test_import, csv_files)
+    errors.extend(test_import_errors)
+    if args.datev_test_import and not test_import_errors:
+        evidence_path.write_text(json.dumps(test_import, ensure_ascii=False, indent=2), encoding="utf-8")
 
     transfer_dir = args.package / "01_DATEV_Import"
     transfer_errors, document_guids, booking_document_guids, transfer_count, advice_package_count = validate_document_packages(
@@ -1145,6 +1195,13 @@ def main() -> int:
         "checked_booking_links": len(booking_links),
         "xsd": "Document_v060.xsd + Document_types_v060.xsd",
         "valid": not errors,
+        "validation_scope": "interner Exportvertrag; keine Bestätigung vollständiger DATEV-Pflichtfelder",
+        "datev_test_import_status": test_import.get("status", "pending"),
+        "datev_import_compatibility_confirmed": test_import.get("status") == "confirmed" and not test_import_errors and not errors,
+        "intentional_open_fields": [
+            {key: item.get(key) for key in ("transaction_id", "file", "csv_row", "open_fields")}
+            for item in trace if item.get("open_fields")
+        ],
         "errors": errors,
     }
     target = args.package / "03_Technische_Protokolle" / "Validierungsbericht.json"

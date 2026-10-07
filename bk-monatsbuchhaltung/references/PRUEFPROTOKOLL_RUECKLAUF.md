@@ -5,8 +5,8 @@
 Den fachlichen Rücklaufstatus getrennt von der technischen Paketvalidierung führen:
 
 - `Prüfprotokoll-Rücklauf ausstehend`: Noch kein ausgefülltes Prüfprotokoll ausgewertet.
-- `Prüfprotokoll-Rücklauf vollständig`: Alle roten und gelben Vorgänge besitzen einen gültigen Abschlussstatus, Pflichttexte sind vorhanden und die Integrität ist bestätigt.
-- `Prüfprotokoll-Rücklauf unvollständig`: Mindestens ein roter oder gelber Vorgang ist offen, ein Pflichttext fehlt, ein Status ist unzulässig oder eine Integritätsabweichung besteht.
+- `Prüfprotokoll-Rücklauf vollständig`: Alle roten Vorgänge besitzen einen gültigen Abschlussstatus, Pflichttexte sind vorhanden und die Integrität ist bestätigt.
+- `Prüfprotokoll-Rücklauf unvollständig`: Mindestens ein roter Vorgang ist offen, ein Pflichttext fehlt, ein Status ist unzulässig oder eine Integritätsabweichung besteht.
 
 Den technischen Status des bereits erzeugten DATEV-Pakets durch den Rücklauf niemals verändern.
 
@@ -24,7 +24,7 @@ Integritätsabweichungen konkret ausweisen und niemals stillschweigend übernehm
 
 ## Vollständigkeit
 
-Für jeden roten und gelben Vorgang genau einen Abschlussstatus verlangen:
+Für jeden roten Vorgang genau einen Abschlussstatus verlangen:
 
 - `unverändert übernommen`
 - `geändert`
@@ -69,7 +69,7 @@ Profil und Register mitgeben, wenn sie vorhanden sind. Fehlt das Abgrenzungsregi
 
 - Mandant, Periode, Ausgangs- und Rücklaufdatei,
 - Integritätsstatus,
-- Anzahl Rot/Gelb und jeweiliger Abschlussstatus,
+- Anzahl Rot und jeweiliger Abschlussstatus,
 - geänderte und nicht übernommene Vorgänge,
 - fachliche Kategorien,
 - Auswirkungen auf Mandantenprofil, Abgrenzungsregister und Personenkonten,

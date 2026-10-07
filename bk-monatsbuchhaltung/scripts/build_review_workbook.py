@@ -11,18 +11,18 @@ from openpyxl import Workbook
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.worksheet.datavalidation import DataValidation
+from datev_io import accrual_document
 
 
 NAVY = "183B56"
 BLUE = "2F75B5"
 PALE_BLUE = "D9EAF7"
 GREEN = "C6E0B4"
-YELLOW = "FFE699"
 RED = "F4CCCC"
 LIGHT = "F5F7FA"
 WHITE = "FFFFFF"
 THIN = Side(style="thin", color="D6DEE5")
-TRAFFIC_COLORS = {"Grün": GREEN, "Gelb": YELLOW, "Rot": RED}
+TRAFFIC_COLORS = {"Grün": GREEN, "Rot": RED}
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,13 +62,12 @@ def document_field_1(doc: dict[str, Any]) -> str:
     for line in doc.get("bookings", []):
         if clean(line.get("document_field_1")):
             return clean(line["document_field_1"])
-    return clean(doc.get("invoice_number")) or f"ERSATZ-{doc.get('transaction_id', '')}"
+    return clean(doc.get("invoice_number"))
 
 
 BATCH_FILE_STEMS = {
     "Grün": "Buchungsstapel",
-    "Gelb": "Klaerungsposten_1",
-    "Rot": "Klaerungsposten_2",
+    "Rot": "Buchungsstapel",
 }
 
 
@@ -160,7 +159,9 @@ def add_title(ws, title: str, end_column: int) -> None:
 
 def build(data: dict[str, Any], output: Path) -> None:
     run = data["run"]
-    order = {"Rot": 0, "Gelb": 1, "Grün": 2, None: 9, "": 9}
+    order = {"Rot": 0, "Grün": 1, None: 9, "": 9}
+    if any(doc.get("traffic_light") not in {"Grün", "Rot", None, ""} for doc in data.get("documents", [])):
+        raise ValueError("Nur Grün und Rot sind zulässig.")
     docs = sorted(
         data.get("documents", []),
         key=lambda doc: (
@@ -170,6 +171,8 @@ def build(data: dict[str, Any], output: Path) -> None:
             str(doc.get("transaction_id", "")),
         ),
     )
+    posting_docs = docs + [accrual_document(release, run, number)
+                           for number, release in enumerate(data.get("accrual_releases", []), start=1)]
     cases: dict[str, dict[str, Any]] = {}
     for case in data.get("clarification_cases", []):
         for transaction_id in case.get("transaction_ids", []):
@@ -186,15 +189,14 @@ def build(data: dict[str, Any], output: Path) -> None:
 
     guide_rows = [
         ["Schritt / Feld", "Bedeutung"],
-        ["1. Belegprüfung", "Zuerst Rot, dann Gelb bearbeiten. Direkt rechts neben der Ampel steht der vollständige DATEV-Buchungsstapel. Grün ist bereits plausibel kontiert."],
+        ["1. Belegprüfung", "Rote Fälle bearbeiten. Rot und Grün stehen im selben Monatsstapel. Direkt rechts neben der Ampel steht dessen vollständiger Dateiname."],
         ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, BU-Schlüssel, Belegfeld 1, Buchungstext und Periode nachvollziehen."],
-        ["3. Rücklaufstatus", "Für jeden roten und gelben Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
+        ["3. Rücklaufstatus", "Für jeden roten Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
         ["4. Mitarbeiter-Ergebnis", "Bei geändert oder nicht übernommen ist die endgültige Behandlung als Mitarbeiter-Ergebnis Pflicht."],
         ["Grün", "Vollständig und plausibel; keine offene fachliche Frage."],
-        ["Gelb", "Importierbar; eine fachliche Kontrolle bleibt offen."],
-        ["Rot", "Aktive DATEV-Bearbeitung; das Belegdatum ist im Klärungsposten bewusst leer."],
+        ["Rot", "Aktive Bearbeitung erforderlich. Nur konkret ungeklärte Felder bleiben leer; bei Anlagenzugängen bleibt das Anlagenkonto immer offen. Arbeitsanweisungen stehen ausschließlich hier."],
         ["Zahlungsavise", "Nicht buchen. Das gesonderte Belegtransfer_Avise-ZIP in DATEV Unternehmen online hochladen."],
-        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. Buchungs- und Abgrenzungsstapel."],
+        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. gemeinsamer Buchungsstapel je Monat. DATEV-Testimportstatus beachten."],
     ]
     for row in guide_rows:
         guide.append(row)
@@ -203,24 +205,24 @@ def build(data: dict[str, Any], output: Path) -> None:
         guide.cell(row, 1).font = Font(bold=True)
         guide.cell(row, 2).alignment = Alignment(wrap_text=True, vertical="top")
         guide.row_dimensions[row].height = 34
-    for row, color in ((6, GREEN), (7, YELLOW), (8, RED)):
+    for row, color in ((6, GREEN), (7, RED)):
         guide.cell(row, 1).fill = PatternFill("solid", fgColor=color)
     set_widths(guide, [25, 90])
     guide.freeze_panes = "A2"
     add_title(guide, f"Buchungsprüfung {run['mandantennummer']} – {run['buchungsmonat']}", 8)
 
-    summary.append(["Kennzahl", "Gesamt", "Grün", "Gelb", "Rot"])
+    summary.append(["Kennzahl", "Gesamt", "Grün", "Rot"])
     summary.append(["Belege", len(docs)] + [
         sum(1 for doc in docs if doc.get("traffic_light") == value)
-        for value in ("Grün", "Gelb", "Rot")
+        for value in ("Grün", "Rot")
     ])
     summary.append(["Belegsumme", sum(amount(doc.get("total_amount")) or 0 for doc in docs)] + [
         sum((amount(doc.get("total_amount")) or 0) for doc in docs if doc.get("traffic_light") == value)
-        for value in ("Grün", "Gelb", "Rot")
+        for value in ("Grün", "Rot")
     ])
-    summary.append(["Buchungszeilen", sum(len(doc.get("bookings", [])) for doc in docs)] + [
-        sum(len(doc.get("bookings", [])) for doc in docs if doc.get("traffic_light") == value)
-        for value in ("Grün", "Gelb", "Rot")
+    summary.append(["Buchungszeilen", sum(len(doc.get("bookings", [])) for doc in posting_docs)] + [
+        sum(len(doc.get("bookings", [])) for doc in posting_docs if doc.get("traffic_light") == value)
+        for value in ("Grün", "Rot")
     ])
     summary.append([])
     summary.append(["Kontrollpunkt", "Ergebnis"])
@@ -237,14 +239,14 @@ def build(data: dict[str, Any], output: Path) -> None:
     ]
     for item in controls:
         summary.append(list(item))
-    apply_header(summary, 1, 1, 5)
+    apply_header(summary, 1, 1, 4)
     apply_header(summary, 6, 1, 2)
     for row in range(2, 5):
-        for col in range(2, 6):
+        for col in range(2, 5):
             summary.cell(row, col).number_format = '#,##0.00' if row == 3 else '#,##0'
-    set_widths(summary, [34, 20, 16, 16, 16])
+    set_widths(summary, [34, 20, 16, 16])
     summary.freeze_panes = "A2"
-    add_title(summary, f"Übersicht {run['mandantennummer']} – {run['buchungsmonat']}", 5)
+    add_title(summary, f"Übersicht {run['mandantennummer']} – {run['buchungsmonat']}", 4)
 
     review_headers = [
         "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum", "Geschäftspartner",
@@ -258,6 +260,10 @@ def build(data: dict[str, Any], output: Path) -> None:
         next_step = " – ".join(dict.fromkeys(filter(None, [
             clean(case.get("recommendation")), clean(case.get("decision_needed"))
         ])))
+        open_details = "; ".join(dict.fromkeys(
+            f"{field}: {clean(reason)}" for line in doc.get("bookings", [])
+            for field, reason in line.get("open_fields", {}).items()
+        ))
         if not next_step:
             if doc.get("payment_advice"):
                 next_step = "Gesondertes Avis-ZIP in DATEV Unternehmen online hochladen."
@@ -279,9 +285,9 @@ def build(data: dict[str, Any], output: Path) -> None:
             doc.get("period") or "",
             compact_posting(doc),
             clean(doc.get("derivation")),
-            re.sub(r"^(Grün|Gelb|Rot)\s*:\s*", "", clean(doc.get("reason")), flags=re.I),
-            next_step,
-            "offen" if doc.get("traffic_light") in {"Gelb", "Rot"} else "",
+            " – ".join(filter(None, [re.sub(r"^(Grün|Rot)\s*:\s*", "", clean(doc.get("reason")), flags=re.I), clean(case.get("booking_risk"))])),
+            " – ".join(filter(None, [open_details, next_step])),
+            "offen" if doc.get("traffic_light") == "Rot" else "",
             "",
         ])
     apply_header(review, 1, 1, 15)
@@ -317,7 +323,7 @@ def build(data: dict[str, Any], output: Path) -> None:
         "Buchungstext", "Buchungsperiode",
     ]
     bookings.append(booking_headers)
-    for doc in docs:
+    for doc in posting_docs:
         for line in doc.get("bookings", []):
             bookings.append([
                 doc.get("traffic_light") or "", booking_batch_filename(doc, run),

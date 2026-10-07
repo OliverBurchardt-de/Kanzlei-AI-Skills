@@ -21,7 +21,7 @@
 ## Konten
 
 - Privat erkannte Ausgaben:
-- Klärungskonto:
+- Ersatz-/Klärungskonten: nicht verwenden; ungeklärte Felder offen lassen.
 - GWG-Konto:
 - Sämtliche verwendbaren Anlagenkonten (einschließlich GWG):
 - Bewirtung abzugsfähig:

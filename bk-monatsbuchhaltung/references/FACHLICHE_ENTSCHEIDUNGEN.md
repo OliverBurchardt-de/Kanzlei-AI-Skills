@@ -6,11 +6,10 @@ Verarbeitet werden ausschließlich die bereitgestellten Dateien innerhalb des au
 
 ## 2. Ausgabe und Stapel
 
-Alle DATEV-Dateien liegen unmittelbar in `01_DATEV_Import/`. Es gibt keine Unterordner für Ampeln, Perioden, Stammdaten oder Stapel. Die Zahl der Stapel ist variabel. Unterschiedliche Ampeln und Belegperioden bleiben unterschiedliche Dateien.
+Alle DATEV-Dateien liegen unmittelbar in `01_DATEV_Import/`. Es gibt keine Unterordner für Ampeln, Perioden, Stammdaten oder Stapel. Je Buchungsmonat gibt es genau einen Buchungsstapel mit allen grünen und roten Buchungszeilen einschließlich fälliger Abgrenzungsauflösungen. Verschiedene Buchungsmonate bleiben getrennt. Keine Klärungsstapel oder Klärungs-CSV-Dateien.
 
-- Grün: fachlich eindeutig.
-- Gelb: plausibler Vorschlag mit prüfbarer Unsicherheit.
-- Rot: Bearbeitung in DATEV erforderlich; nur das Belegdatum der Zeile bleibt leer.
+- Grün: vollständige, belastbare Buchung ohne offene Entscheidung.
+- Rot: konkrete fachliche oder prozessbedingte Bearbeitung erforderlich; alle sicheren Angaben erhalten, nur konkret ungeklärte Felder dokumentiert leer lassen. Gelb entfällt.
 
 Sichtbare DATEV-Dateinamen und Buchungstexte enthalten keine Ampelfarben oder Warnungen.
 
@@ -37,15 +36,15 @@ Jeder Ausschluss weist Rechtsträger, Dokumentart und konkreten Grund aus. Diese
 
 ## 4. Belegfeld 1
 
-Jede Buchungszeile erhält Belegfeld 1. Vorrang hat die Rechnungs-/Gutschriftsnummer, danach eine andere stabile externe Referenz. Keine gesonderte Begründung nötig.
+Belegfeld 1 enthält eine sicher erkannte externe Referenz. Fehlt eine belastbare Referenz, bleibt es bei Rot mit Begründung in `open_fields` leer; keine erfundene Rechnungsnummer. Vorrang hat die Rechnungs-/Gutschriftsnummer, danach eine andere stabile externe Referenz. Keine gesonderte Begründung nötig.
 
 ## 5. Durchlauf ohne Zwischenfragen
 
-Nach dem technischen Preflight wird nicht unterbrochen. Fachliche Unsicherheit wird provisorisch gebucht und genau einmal als Klärungsfall dokumentiert. Mitarbeitername ist mandantenseitig fest zugeordnet; die Excel-Datei braucht nur Bearbeitungsstatus und Mitarbeiter-Ergebnis.
+Nach dem technischen Preflight wird nicht unterbrochen. Fachliche Unsicherheit wird mit sämtlichen sicheren Angaben und konkret offenen Feldern in denselben Monatsstapel exportiert und genau einmal als Klärungsfall dokumentiert. Mitarbeitername ist mandantenseitig fest zugeordnet; die Excel-Datei braucht nur Bearbeitungsstatus und Mitarbeiter-Ergebnis.
 
 ## 6. Betrieblicher Anlass
 
-Eindeutig private Ausgaben werden brutto, ohne Vorsteuer und ohne Entnahme-/Verrechnungskonto auf das im Mandantenprofil konfigurierte Privatkonto gebucht. Unklarer Anlass ist Gelb oder Rot. Mandantenseitige Hinweise können unabhängig davon erstellt werden.
+Eindeutig private Ausgaben werden brutto, ohne Vorsteuer und ohne Entnahme-/Verrechnungskonto auf das im Mandantenprofil konfigurierte Privatkonto gebucht. Unklarer Anlass ist Rot; ungesicherte Kontierung bleibt offen. Mandantenseitige Hinweise können unabhängig davon erstellt werden.
 
 ## 7. Umsatzsteuer
 
@@ -59,7 +58,7 @@ Details stehen in `UMSATZSTEUER_UND_BEWIRTUNG.md`.
 
 ## 8. Bewirtung
 
-Eine automatisierte 70/30-Aufteilung erfolgt nur bei vollständig prüfbarem Rechnungs- und Bewirtungsnachweis. Trinkgeld folgt der 70/30-Aufteilung, ohne Vorsteuer. Unvollständige oder unklare Bewirtungsnachweise bleiben buchungsrelevant und werden Rot auf das konfigurierte Klärungskonto gebucht. Eindeutig private Bewirtung folgt der Privatregel.
+Eine automatisierte 70/30-Aufteilung erfolgt nur bei vollständig prüfbarem Rechnungs- und Bewirtungsnachweis. Trinkgeld folgt der 70/30-Aufteilung, ohne Vorsteuer. Unvollständige oder unklare Bewirtungsnachweise bleiben buchungsrelevant und werden Rot mit sicheren Angaben und offenen Feldern im gemeinsamen Monatsstapel exportiert; keine Ersatzbuchung auf 1590 oder andere Zwischenkonten. Eindeutig private Bewirtung folgt der Privatregel.
 
 ## 9. Stammdaten
 
@@ -83,7 +82,7 @@ Jeden Nicht-Avis-Vorgang auf drei Ebenen prüfen und Treffergrund sowie Referenz
 2. dasselbe logische Dokument im aktuellen Upload anhand Geschäftspartner, Rechnungsnummer, Datum und Betrag,
 3. bereits vorhandene Buchung in DATEV live.
 
-Sichere Dublette nicht erneut buchen. Mögliche Dublette Rot mit leerem DATEV-Datum buchen. Identische Dateien nur einmal übertragen; weitere Kopien als `duplicate_copy` ausschließen.
+Sichere Dublette nicht erneut buchen. Mögliche Dublette Rot exportieren; ein sicher bekanntes Datum und alle weiteren sicheren Werte bleiben erhalten. Das Dublettenrisiko und die Entscheidung stehen in der Prüfungsdatei. Identische Dateien nur einmal übertragen; weitere Kopien als `duplicate_copy` ausschließen.
 
 ## 11. Zahlungsavise und Zahlungsabstimmung
 
@@ -97,7 +96,7 @@ Nur bei Bilanz, nur geschäftsjahresübergreifend und nur über 800 EUR maßgebl
 
 ## 13. Anlagen/GWG
 
-Wirtschaftlich zusammengehörige Bestandteile werden gemeinsam beurteilt. Bis 800 EUR maßgebliche Anschaffungskosten auf das konfigurierte GWG-Konto, darüber Einzelanlagekonto. Jede Buchungszeile, deren Konto oder Gegenkonto in `account_config.asset_accounts` steht, ist eine Anlagenbuchung: `asset_booking: true`, Ampel Rot und DATEV-Belegdatum zwingend leer. Das gilt auch bei einem vollständig und korrekt ausgelesenen Beleg, damit DATEV die automatische Anlagenerfassung bzw. erforderliche Bearbeitung auslöst. Keine Abschreibung und kein Sammelposten.
+Wirtschaftlich zusammengehörige Bestandteile gemeinsam beurteilen. Anlagevermögen und GWG sind stets Rot mit `asset_booking: true`. Das betroffene Sachkontenfeld bleibt grundsätzlich leer, auch wenn das passende Anlagenkonto eindeutig ist; je Zeile `asset_account_field` und `open_fields` erfassen. Bekannte Personenkonten, Beträge, Daten und Belegverknüpfungen erhalten. Die Prüfungsdatei weist den Mitarbeiter konkret zur Anlage in der Anlagenvorerfassung an, damit Anlagenbuchführung und Finanzbuchhaltung verknüpft entstehen. Vorschläge zu GWG, Anlagenkonto und Nutzungsdauer ausschließlich dort dokumentieren. Keine direkte Anlagenkontenbuchung, Abschreibung oder Sammelposten.
 
 ## 14. Prüfungsdatei und Abschlussnachweis
 

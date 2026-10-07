@@ -328,14 +328,77 @@ def extf_header(run: dict[str, Any], *, category: int, format_name: str,
     ]
 
 
+OPEN_FIELD_INDEXES = {
+    "amount": 0, "debit_credit": 1, "currency": 2,
+    "exchange_rate": 3, "base_amount": 4, "account": 6,
+    "contra_account": 7, "bu_key": 8, "recognized_date": 9,
+    "document_field_1": 10, "service_date": 114, "tax_period_date": 115,
+}
+
+
+def accrual_document(release: dict[str, Any], run: dict[str, Any], number: int) -> dict[str, Any]:
+    period = release["period"]
+    year, month = (int(value) for value in period.split("-"))
+    return {
+        "transaction_id": f"ABGRENZUNG-{release['accrual_id']}-{number}",
+        "period": period, "traffic_light": "Grün",
+        "processing_status": "Buchungszeile erzeugt",
+        "recognized_date": release.get("booking_date") or f"{period}-{calendar.monthrange(year, month)[1]:02d}",
+        "invoice_number": release["document_field_1"],
+        "currency": release.get("currency", run.get("waehrung", "EUR")),
+        "reason": "Fällige Abgrenzungsauflösung", "bookings": [release],
+    }
+
+
+def validate_open_fields(document: dict[str, Any], booking: dict[str, Any],
+                         run: dict[str, Any] | None = None) -> dict[str, str]:
+    """Only documented, genuinely absent fields may remain open in red rows."""
+    light = document.get("traffic_light")
+    if light not in {"Grün", "Rot"}:
+        raise ValueError("Ampel muss Grün oder Rot sein; Gelb ist nicht zulässig.")
+    opened = booking.get("open_fields", {})
+    if not isinstance(opened, dict):
+        raise ValueError("open_fields muss ein Objekt aus Feld und Begründung sein.")
+    if opened and light != "Rot":
+        raise ValueError("Offene Buchungsfelder erfordern Rot.")
+    for field, reason in opened.items():
+        if field not in OPEN_FIELD_INDEXES or not clean_text(reason):
+            raise ValueError(f"Ungültiges offenes Feld oder fehlende Begründung: {field}")
+        value = document.get(field) if field in {"currency", "recognized_date"} else booking.get(field)
+        if field == "document_field_1":
+            value = value or document.get("invoice_number")
+        if value not in (None, ""):
+            raise ValueError(f"Bekannter Wert darf nicht als offen deklariert werden: {field}")
+    configured = (run or {}).get("account_config", {})
+    assets = {clean_text(value) for value in configured.get("asset_accounts", [])}
+    forbidden = assets | {"1590", clean_text(configured.get("clarification"))}
+    for field in ("account", "contra_account"):
+        account = clean_text(booking.get(field))
+        if account and account in forbidden:
+            raise ValueError(f"Direkte Anlagen- oder Ersatzbuchung auf Klärungskonto unzulässig: {account}")
+    if document.get("asset_booking") is True:
+        side = booking.get("asset_account_field")
+        if light != "Rot" or side not in {"account", "contra_account"} or side not in opened:
+            raise ValueError("Anlagenzugang erfordert Rot und ein dokumentiertes leeres Anlagenkontofeld (asset_account_field).")
+    return opened
+
+
 def booking_row(
     document: dict[str, Any],
     booking: dict[str, Any],
     run: dict[str, Any] | None = None,
 ) -> list[Any]:
     row: list[Any] = [None] * 125
-    traffic = document["traffic_light"]
-    if booking.get("debit_credit") not in {"S", "H"}:
+    opened = validate_open_fields(document, booking, run)
+
+    def supplied(field: str, value: Any, formatter):
+        if value in (None, ""):
+            if field in opened:
+                return None
+            raise ValueError(f"{document['transaction_id']}: {field} fehlt ohne dokumentierte Unsicherheit.")
+        return formatter(value)
+
+    if booking.get("debit_credit") not in {"S", "H"} and "debit_credit" not in opened:
         raise ValueError(f"Ungültiges Soll/Haben bei {document['transaction_id']}")
     bu_key = clean_text(booking.get("bu_key", ""))
     if re.fullmatch(r"0\d{3}", bu_key):
@@ -347,67 +410,49 @@ def booking_row(
     extf_bu_key = f"0{bu_key}" if bu_key else ""
     doc_field = normalize_document_field(
         booking.get("document_field_1") or document.get("invoice_number")
-        or f"ERSATZ-{document['transaction_id']}"
     )
-    if not doc_field:
+    if not doc_field and "document_field_1" not in opened:
         raise ValueError(f"Belegfeld 1 fehlt: {document['transaction_id']}")
-    row[0] = decimal_raw(booking["amount"])
-    row[1] = booking["debit_credit"]
-    currency = clean_text(document.get("currency", "EUR")).upper()
+    row[0] = supplied("amount", booking.get("amount"), decimal_raw)
+    row[1] = booking.get("debit_credit") or None
+    currency = clean_text(document.get("currency")).upper()
     base_currency = clean_text(
         (run or {}).get("waehrung", document.get("base_currency", currency))
     ).upper()
-    if not re.fullmatch(r"[A-Z]{3}", currency):
+    if not re.fullmatch(r"[A-Z]{3}", currency) and "currency" not in opened:
         raise ValueError(f"Ungültiges Währungskennzeichen: {currency}")
     if not re.fullmatch(r"[A-Z]{3}", base_currency):
         raise ValueError(f"Ungültige Basiswährung: {base_currency}")
     row[2] = currency
-    if currency != base_currency:
+    if currency and currency != base_currency:
         missing_currency_fields = [
             key for key in ("exchange_rate", "base_amount")
-            if booking.get(key) in (None, "")
+            if booking.get(key) in (None, "") and key not in opened
         ]
         if missing_currency_fields:
             raise ValueError(
                 f"Fremdwährungsbuchung {document['transaction_id']} ohne "
                 f"{', '.join(missing_currency_fields)}"
             )
-        row[3] = exchange_rate_raw(booking["exchange_rate"])
-        row[4] = decimal_raw(booking["base_amount"])
+        row[3] = supplied("exchange_rate", booking.get("exchange_rate"), exchange_rate_raw)
+        row[4] = supplied("base_amount", booking.get("base_amount"), decimal_raw)
         row[5] = base_currency
-    row[6] = digits_raw(booking["account"], "Konto")
-    row[7] = digits_raw(booking["contra_account"], "Gegenkonto")
+    row[6] = supplied("account", booking.get("account"), lambda value: digits_raw(value, "Konto"))
+    row[7] = supplied("contra_account", booking.get("contra_account"), lambda value: digits_raw(value, "Gegenkonto"))
     row[8] = extf_bu_key
-    configured_asset_accounts = {
-        clean_text(value)
-        for value in (run or {}).get("account_config", {}).get("asset_accounts", [])
-    }
-    booking_accounts = {
-        clean_text(booking.get("account", "")),
-        clean_text(booking.get("contra_account", "")),
-    }
-    is_asset_booking = (
-        document.get("asset_booking") is True
-        or bool(configured_asset_accounts.intersection(booking_accounts))
-    )
-    if is_asset_booking and traffic != "Rot":
-        raise ValueError(
-            f"Anlagenbuchung {document['transaction_id']} muss Rot sein; "
-            "das DATEV-Belegdatum muss leer bleiben."
-        )
-    row[9] = (
-        None
-        if traffic == "Rot" or is_asset_booking
-        else ddmm_raw(document.get("recognized_date"))
-    )
+    row[9] = supplied("recognized_date", document.get("recognized_date"), ddmm_raw)
     row[10] = doc_field
     text = clean_text(booking.get("booking_text", ""), 60)
     warning_pattern = re.compile(
         r"\b(?:ACHTUNG|PRÜFUNG\s+ERFORDERLICH|"
-        r"PRUEFUNG\s+ERFORDERLICH|PRÜFEN|PRUEFEN)\b",
+        r"PRUEFUNG\s+ERFORDERLICH|PRÜFEN|PRUEFEN|VORSCHLAG|"
+        r"ANLAGENVORERFASSUNG|KONTIERUNGSVORSCHLAG|"
+        r"BITTE|KLÄREN|KLAEREN|NUTZUNGSDAUER)\b",
         re.IGNORECASE,
     )
-    if not text or warning_pattern.search(text):
+    if warning_pattern.search(text):
+        raise ValueError("Arbeitsanweisung oder Kontierungsvorschlag im Buchungstext; ausschließlich in der Prüfungsdatei dokumentieren.")
+    if not text:
         partner = clean_text(document.get("partner", ""), 25)
         subject = clean_text(
             booking.get("account_name") or document.get("document_type") or "Beleg",
@@ -427,7 +472,9 @@ def booking_row(
         row[19] = f'BEDI "{str(parsed_guid).upper()}"'
     service_date = booking.get("service_date")
     tax_period_date = booking.get("tax_period_date")
-    if service_date and not tax_period_date:
+    if bool(service_date) != bool(tax_period_date) and not (
+        "service_date" in opened or "tax_period_date" in opened
+    ):
         raise ValueError(
             f"Leistungsdatum bei {document['transaction_id']} erfordert "
             "Datum Zuord. Steuerperiode."
