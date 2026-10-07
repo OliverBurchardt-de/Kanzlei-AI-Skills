@@ -91,7 +91,7 @@ Vor jeder Abgrenzungsprüfung den betrieblichen Anlass beurteilen. Eindeutig pri
 
 Vor einer Neuaufnahme die einheitliche Kleinbetragsregel prüfen. Bei einem maßgeblichen Betrag bis einschließlich 800 EUR den vollständigen Aufwand oder Ertrag im Buchungsmonat erfassen und keinen Vorschlag, Registereintrag oder Abgrenzungsstapel erzeugen. Der ursprüngliche Gesamtbetrag ist maßgeblich, nicht Monatsanteil oder Restbetrag.
 
-Klare neue Abgrenzungen über 800 EUR automatisch in den Übernahmebestand des vollständigen `Abgrenzungsregister_Vorschlag.md` aufnehmen. Fällige klare Auflösungen automatisch in den gemeinsamen Buchungsstapel der jeweiligen Buchungsperiode übernehmen, Restbetrag fortschreiben und vollständig aufgelöste Einträge aus dem Vorschlag entfernen.
+Klare neue Abgrenzungen über 800 EUR automatisch in den Übernahmebestand des vollständigen `Abgrenzungsregister_Vorschlag.md` aufnehmen. Fällige klare Auflösungen automatisch in den Buchungsstapel der jeweiligen Buchungsperiode übernehmen (niemals in den Klärungsstapel), Restbetrag fortschreiben und vollständig aufgelöste Einträge aus dem Vorschlag entfernen.
 
 Mehrdeutige neue Abgrenzungen oder zweifelhafte Auflösungen nicht erfragen und den Lauf nicht anhalten. Eine konkrete Empfehlung bilden, den Fall in `Klaerungsfaelle.md` aufnehmen und im Registervorschlag getrennt unter `Klärung offen – noch nicht übernehmen` ausweisen. Diese Kandidaten noch nicht in den Übernahmebestand einrechnen.
 

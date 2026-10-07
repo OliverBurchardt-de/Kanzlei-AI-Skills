@@ -430,22 +430,28 @@ def main() -> None:
         row = validate_package.split_extf(booking_lines[2])
         assert row[8] == "0401"
 
-        # Ein gemeinsamer Monatsstapel; bekanntes Datum bleibt auch bei Rot erhalten.
+        # v1.4: Grün im Buchungsstapel, Rot im Klärungsstapel; dort bleibt das
+        # DATEV-Belegdatum immer leer (Pflichtleerung), das erkannte Datum steht im Nachweis.
         datev_dir = temp / "01_DATEV_Import"
         datev_dir.mkdir()
         red_doc = booking_document(source, "Rot")
         red_doc["transaction_id"] = "V0002"
         red_doc["document_guid"] = document["document_guid"]
         trace = build_package.write_booking_batches(temp, {"run": run, "documents": [document, red_doc]})
-        generated = list(datev_dir.glob("EXTF_*.csv"))
-        assert len(generated) == 1
+        generated = sorted(path.name for path in datev_dir.glob("EXTF_*.csv"))
+        assert generated == ["EXTF_Buchungsstapel_2025-12.csv", "EXTF_Klaerungsposten_2025-12.csv"], generated
         local_manifest = copy.deepcopy(manifest)
         local_manifest["booking_trace"] = trace
-        batch_errors, _ = validate_package.validate_csv(generated[0], local_manifest)
-        assert batch_errors == [], batch_errors
-        rows = generated[0].read_text(encoding="cp1252").splitlines()[2:]
-        assert len(rows) == 2
-        assert all(validate_package.split_extf(row)[9] == "1512" for row in rows)
+        for name in generated:
+            batch_errors, _ = validate_package.validate_csv(datev_dir / name, local_manifest)
+            assert batch_errors == [], batch_errors
+            rows = (datev_dir / name).read_text(encoding="cp1252").splitlines()[2:]
+            assert len(rows) == 1
+            expected_date = "" if name.startswith("EXTF_Klaerungsposten_") else "1512"
+            assert validate_package.split_extf(rows[0])[9] == expected_date
+        red_trace = next(item for item in trace if item["transaction_id"] == "V0002")
+        assert red_trace["file"] == "EXTF_Klaerungsposten_2025-12.csv"
+        assert red_trace["recognized_date"] == "2025-12-15" and red_trace["batch_kind"] == "klaerung"
         assert not any(path.is_dir() for path in datev_dir.iterdir())
 
         foreign_document = copy.deepcopy(document)

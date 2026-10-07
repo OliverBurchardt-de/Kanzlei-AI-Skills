@@ -40,8 +40,24 @@
 
 - Besondere Kontierungsregeln:
 - Bekannte wiederkehrende Geschäftspartner:
-- Pflichtige Kostenstellenverarbeitung: nein
-- Kostenstellenregeln, falls verpflichtend:
+
+## Kostenstellen
+
+- Kostenstellenpflicht (KOST1 auf jeder Buchungszeile): ja | nein
+- Kostenrechnungssystem (KOST-System): 1 | 2
+- Erlaubte KOST1 (Nummer: Bezeichnung):
+- Erlaubte KOST2 (Nummer: Bezeichnung), falls genutzt:
+- KOST2-Pflicht: ja | nein
+- Ableitungsregeln (zum Beispiel Kundennummer, Lieferant, Leistungsart je Kostenstelle):
+- Zuordnung Kostenstelle zu Vorsteuerbehandlung und Erlös-/Aufwandskonten:
+
+## Getrennte Buchungsvorläufe
+
+- Stapeltyp (Schlüssel, Kleinbuchstaben): 
+- Stapelbezeichnung (höchstens 30 Zeichen):
+- Pflicht-KOST1:
+- Pflicht-Gegenkonto:
+- Welche Vorgänge gehören in diesen Vorlauf:
 
 ## SharePoint
 

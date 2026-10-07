@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -73,8 +73,8 @@ def test_structural_yaml_and_version_mismatch() -> None:
         temp = Path(temp_name)
         quoted = temp / "quoted.yaml"
         unquoted = temp / "unquoted.yaml"
-        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.3.0"\n', encoding="utf-8")
-        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.3.0\n', encoding="utf-8")
+        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.4.0"\n', encoding="utf-8")
+        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.4.0\n', encoding="utf-8")
         assert parse_simple_yaml(quoted) == parse_simple_yaml(unquoted)
         mismatch = temp / "mismatch.py"
         mismatch.write_text('SKILL_VERSION = "9.9.9"\n', encoding="utf-8")
@@ -103,6 +103,10 @@ def main() -> None:
     require(skill, "eine unabhängige Kontrolle, nicht Laufzeit oder eine feste Agentenzahl", "Qualitätsziel Mehragentenmodus")
     require(skill, "doppelte GUIDs technisch abweisen", "GUID-Integritätskontrolle")
     require(skill, "niemals Kassenbuchungen", "Ausschluss Kassenbuchung")
+    require(skill, "getrennte Stapel Buchungsstapel/Klärungsposten", "Startnachweis Output-Vertrag v1.4")
+    require(skill, "Kostenstellen nach Profil", "Startnachweis Kostenstellen")
+    require(skill, "EXTF_Klaerungsposten_<JJJJ-MM>.csv", "Klärungsstapel-Dateiname")
+    require(skill, "unkonfigurierter Pflichtkostenstelle", "verbleibender Kostenstellen-Stopp")
 
     interface = ui.get("interface", {})
     policy = ui.get("policy", {})

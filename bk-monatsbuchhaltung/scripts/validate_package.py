@@ -15,7 +15,25 @@ from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from pathlib import Path, PurePosixPath
 
-from datev_io import BOOKING_FIELDS, MASTER_FIELDS, OPEN_FIELD_INDEXES, fiscal_year_start, month_bounds
+from datev_io import (
+    BATCH_KIND_BOOKING,
+    BATCH_KIND_CLARIFICATION,
+    BOOKING_FIELDS,
+    CARRY_FIELDS,
+    CARRY_RESULTS,
+    DATEV_IMPORT_ORDER,
+    MASTER_FIELDS,
+    OPEN_FIELD_INDEXES,
+    STANDARD_BATCH_TYPE,
+    batch_label,
+    batch_type_suffix,
+    carry_order_violations,
+    carry_sort_key,
+    clean_text,
+    fiscal_year_start,
+    month_bounds,
+    parse_batch_file_name,
+)
 from sharepoint_target import build_targets
 
 
@@ -36,7 +54,7 @@ XLSX_DOC_REL_NS = "http://schemas.openxmlformats.org/officeDocument/2006/relatio
 XLSX_PKG_REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 EXPECTED_REVIEW_HEADERS = {
     "Belegprüfung": [
-        "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum",
+        "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum laut Beleg",
         "Geschäftspartner", "Belegfeld 1", "Betrag", "Währung",
         "Buchungsperiode", "Kontierung", "Ableitung",
         "Prüfergebnis / Ampelbegründung",
@@ -72,8 +90,36 @@ FORBIDDEN_DATEV_FOLDERS = {
 }
 
 
-EXPECTED_SKILL_VERSION = "1.3.0"
-EXPECTED_OUTPUT_CONTRACT = "single-monthly-booking-batch-v3"
+EXPECTED_SKILL_VERSION = "1.4.0"
+EXPECTED_OUTPUT_CONTRACT = "monthly-booking-and-clarification-batches-v4"
+
+
+def manifest_cost_center_config(manifest: dict | None) -> dict | None:
+    config = (manifest or {}).get("run_contract", {}).get("cost_center_config")
+    return config if isinstance(config, dict) else None
+
+
+def manifest_separate_batches(manifest: dict | None) -> dict:
+    batch_config = (manifest or {}).get("run_contract", {}).get("batch_config")
+    if not isinstance(batch_config, dict):
+        return {}
+    separate = batch_config.get("separate_batches")
+    return separate if isinstance(separate, dict) else {}
+
+
+def expected_review_headers(manifest: dict | None) -> dict[str, list[str]]:
+    """Review columns; KOST columns exist only for clients with a cost center profile."""
+    headers = {name: list(values) for name, values in EXPECTED_REVIEW_HEADERS.items()}
+    config = manifest_cost_center_config(manifest)
+    if config:
+        review = headers["Belegprüfung"]
+        review.insert(review.index("Kontierung") + 1, "KOST1")
+        bookings = headers["Buchungszeilen"]
+        position = bookings.index("BU-Schlüssel") + 1
+        bookings.insert(position, "KOST1")
+        if config.get("kost2_required") is True or config.get("kost2_allowed"):
+            bookings.insert(position + 1, "KOST2")
+    return headers
 
 
 def normalized_person_account_name(value: object) -> str:
@@ -150,8 +196,9 @@ def xlsx_cell_text(cell: ET.Element, shared_strings: list[str]) -> str:
     return value
 
 
-def validate_review_workbook(path: Path) -> list[str]:
+def validate_review_workbook(path: Path, manifest: dict | None = None) -> list[str]:
     errors: list[str] = []
+    headers_by_sheet = expected_review_headers(manifest)
     try:
         with zipfile.ZipFile(path) as archive:
             shared_strings: list[str] = []
@@ -211,7 +258,7 @@ def validate_review_workbook(path: Path) -> list[str]:
                     details.append("unerwartet: " + ", ".join(unexpected))
                 errors.append(f"{path.name}: Tabellenblätter weichen ab ({'; '.join(details)}).")
 
-            for sheet_name, expected in EXPECTED_REVIEW_HEADERS.items():
+            for sheet_name, expected in headers_by_sheet.items():
                 target = sheet_targets.get(sheet_name)
                 if not target:
                     errors.append(
@@ -264,7 +311,7 @@ def validate_review_workbook(path: Path) -> list[str]:
                             continue
                         value = xlsx_cell_text(cell, shared_strings)
                         if value == "Gelb":
-                            errors.append(f"{path.name}: Gelb ist in Version 1.3 nicht zulässig.")
+                            errors.append(f"{path.name}: Gelb ist seit Version 1.3 nicht zulässig.")
                         expected_color = expected_colors.get(value)
                         if not expected_color:
                             continue
@@ -287,8 +334,9 @@ def validate_review_workbook(path: Path) -> list[str]:
     return errors
 
 
-def validate_datev_import_layout(package_root: Path) -> list[str]:
+def validate_datev_import_layout(package_root: Path, manifest: dict | None = None) -> list[str]:
     errors: list[str] = []
+    allowed_suffixes = {batch_type_suffix(key) for key in manifest_separate_batches(manifest)}
     datev_dir = package_root / "01_DATEV_Import"
     if not datev_dir.is_dir():
         return ["Gemeinsamer DATEV-Importordner 01_DATEV_Import fehlt."]
@@ -331,8 +379,72 @@ def validate_datev_import_layout(package_root: Path) -> list[str]:
             + ", ".join(sorted(misplaced))
         )
     for path in datev_dir.glob("EXTF_*.csv"):
-        if path.name != "EXTF_Debitoren_Kreditoren.csv" and not re.fullmatch(r"EXTF_Buchungsstapel_\d{4}-\d{2}\.csv", path.name):
-            errors.append(f"{path.name}: Nur ein gemeinsamer Buchungsstapel je Monat ist zulässig.")
+        if path.name == "EXTF_Debitoren_Kreditoren.csv":
+            continue
+        parsed = parse_batch_file_name(path.name)
+        if parsed is None:
+            errors.append(
+                f"{path.name}: Je Monat nur ein Buchungsstapel und ein Klärungsstapel "
+                "(mit Teilungsdateien) zulässig."
+            )
+            continue
+        if parsed["kind"] == BATCH_KIND_BOOKING and parsed["part"] > 1:
+            errors.append(f"{path.name}: Je Monat nur ein Buchungsstapel je Stapeltyp; nur der Klärungsstapel darf geteilt werden.")
+        if parsed["suffix"] and parsed["suffix"] not in allowed_suffixes:
+            errors.append(f"{path.name}: Stapelsuffix {parsed['suffix']} stammt nicht aus batch_config.")
+    return errors
+
+
+def _row_values(path: Path) -> list[list[str]]:
+    return [split_extf(line) for line in path.read_text(encoding="cp1252").splitlines()[2:]]
+
+
+def validate_batch_files(package_root: Path, manifest: dict | None = None) -> list[str]:
+    """Per period and batch type: one booking batch, gapless clarification parts, justified splits."""
+    errors: list[str] = []
+    datev_dir = package_root / "01_DATEV_Import"
+    if not datev_dir.is_dir():
+        return errors
+    grouped: dict[tuple[str, str, str], dict[int, Path]] = {}
+    for path in sorted(datev_dir.glob("EXTF_*.csv")):
+        parsed = parse_batch_file_name(path.name)
+        if parsed is None:
+            continue
+        key = (parsed["period"], parsed["batch_type"], parsed["kind"])
+        grouped.setdefault(key, {})
+        if parsed["part"] in grouped[key]:
+            errors.append(f"{path.name}: Teilungsnummer ist doppelt.")
+        grouped[key][parsed["part"]] = path
+        try:
+            if not _row_values(path):
+                errors.append(f"{path.name}: leere EXTF-Datei ist unzulässig; eine Datei ohne Zeilen wird nicht erzeugt.")
+        except (OSError, UnicodeDecodeError):
+            pass
+    for (period, batch_type, kind), parts in sorted(grouped.items()):
+        numbers = sorted(parts)
+        if numbers != list(range(1, len(numbers) + 1)):
+            errors.append(
+                f"{kind}/{period}/{batch_type}: Teilungsdateien müssen lückenlos ab _02 folgen; vorhanden: "
+                + ", ".join(str(number) for number in numbers)
+            )
+        if kind == BATCH_KIND_CLARIFICATION and len(numbers) > 1:
+            try:
+                all_rows = [row for number in numbers for row in _row_values(parts[number])]
+            except (OSError, UnicodeDecodeError):
+                continue
+            all_rows.sort(key=lambda row: carry_sort_key(row))
+            if not carry_order_violations(all_rows):
+                errors.append(
+                    f"{kind}/{period}/{batch_type}: Teilung in {len(numbers)} Dateien ist unzulässig; "
+                    "die Sortierregel wäre ohne Teilung erfüllbar."
+                )
+    if manifest and "booking_trace" in manifest:
+        trace_files = {str(item.get("file")) for item in manifest.get("booking_trace", [])}
+        actual_files = {path.name for parts in grouped.values() for path in parts.values()}
+        for name in sorted(actual_files - trace_files):
+            errors.append(f"{name}: EXTF-Datei ohne Exportnachweis im Laufmanifest.")
+        for name in sorted(trace_files - actual_files):
+            errors.append(f"{name}: Exportnachweis ohne EXTF-Datei.")
     return errors
 
 
@@ -430,8 +542,34 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
         check_accrual_register(evidence.get("abgrenzungsregister"))
     if contract.get("accounting_method") not in {"Bilanz", "EÜR"}:
         errors.append("Rechnungslegungsart im Laufmanifest ist ungültig.")
-    if contract.get("kostenstellenpflicht") is not False:
-        errors.append("Kostenstellenprüfung ist nicht ausdrücklich mit false bestätigt.")
+    required = contract.get("kostenstellenpflicht")
+    if not isinstance(required, bool):
+        errors.append("kostenstellenpflicht muss im Laufvertrag true oder false sein.")
+    cost_config = contract.get("cost_center_config")
+    if required is True and not isinstance(cost_config, dict):
+        errors.append("Unkonfigurierte Pflichtkostenstelle: kostenstellenpflicht=true ohne cost_center_config.")
+    if cost_config is not None:
+        if not isinstance(cost_config, dict):
+            errors.append("cost_center_config im Laufvertrag ist kein Objekt.")
+        else:
+            for key in ("kost_system", "kost1_required", "kost2_required", "kost1_allowed", "kost2_allowed", "rules_source"):
+                if key not in cost_config:
+                    errors.append(f"cost_center_config.{key} fehlt im Laufvertrag.")
+            if not isinstance(cost_config.get("kost1_allowed"), dict) or not cost_config.get("kost1_allowed"):
+                errors.append("cost_center_config.kost1_allowed fehlt oder ist leer.")
+            if required is True and cost_config.get("kost1_required") is not True:
+                errors.append("kostenstellenpflicht=true erfordert cost_center_config.kost1_required=true.")
+    batch_config = contract.get("batch_config")
+    if batch_config is not None:
+        separate = batch_config.get("separate_batches") if isinstance(batch_config, dict) else None
+        if not isinstance(separate, dict):
+            errors.append("batch_config.separate_batches im Laufvertrag ist ungültig.")
+        else:
+            for key, item in separate.items():
+                if not re.fullmatch(r"[a-z][a-z0-9]*", str(key)) or str(key) == STANDARD_BATCH_TYPE:
+                    errors.append(f"batch_config: ungültiger Stapeltyp {key!r}.")
+                if not isinstance(item, dict) or not clean_text(item.get("label", "")):
+                    errors.append(f"batch_config.{key}: label fehlt.")
     for key in ("vat_config", "account_config", "person_account_ranges"):
         if not isinstance(contract.get(key), dict):
             errors.append(f"{key} fehlt im Laufvertrag.")
@@ -481,6 +619,11 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
         for key in ("highest_creditor_account", "highest_debtor_account"):
             if not str(datev.get(key, "")).isdigit():
                 errors.append(f"DATEV-Livenachweis enthält kein gültiges {key}.")
+        if isinstance(cost_config, dict):
+            if datev.get("cost_system_active") is not True:
+                errors.append("DATEV-Livenachweis bestätigt kein aktives Kostenrechnungssystem.")
+            if not isinstance(datev.get("validated_cost_centers"), list):
+                errors.append("DATEV-Livenachweis enthält keine Liste validierter Kostenstellen.")
         expected_core = {
             "beraternummer": manifest.get("beraternummer"),
             "mandantennummer": manifest.get("mandant"),
@@ -566,12 +709,12 @@ def validate_csv(
         errors.append(f"{path.name}: Version {version} statt {expected_version}")
     if category == "21":
         visible_batch_text = f"{path.name} {header[16] if len(header) > 16 else ''}"
-        period_match = re.search(r"_([0-9]{4}-[0-9]{2})[.]csv$", path.name)
-        if not period_match:
+        parsed_name = parse_batch_file_name(path.name)
+        if not parsed_name:
             errors.append(f"{path.name}: Buchungsperiode fehlt im Dateinamen")
             file_period = ""
         else:
-            file_period = period_match.group(1)
+            file_period = parsed_name["period"]
             try:
                 expected_from, expected_to = month_bounds(file_period)
             except ValueError:
@@ -601,13 +744,15 @@ def validate_csv(
             errors.append(f"{path.name}: Header-Währung ist ungültig")
         if not re.fullmatch(r"(?:[A-Z]{2}){1,2}", header[17]):
             errors.append(f"{path.name}: Diktatkürzel ist ungültig")
-        expected_label = (
-            "Buchungsstapel"
-            if path.name.startswith("EXTF_Buchungsstapel_")
-            else "Klärungsposten"
-            if path.name.startswith("EXTF_Klaerungsposten_")
-            else None
-        )
+        expected_label = None
+        if parsed_name:
+            try:
+                expected_label = batch_label(
+                    parsed_name["kind"], parsed_name["batch_type"],
+                    {"batch_config": (manifest or {}).get("run_contract", {}).get("batch_config")},
+                )
+            except ValueError as exc:
+                errors.append(f"{path.name}: {exc}")
         if expected_label and header[16] != expected_label:
             errors.append(f"{path.name}: Stapelbezeichnung ist nicht {expected_label}")
         if re.search(r"\b(?:GRÜN|GRUEN|GELB|ROT)\b", visible_batch_text, re.IGNORECASE):
@@ -636,6 +781,14 @@ def validate_csv(
         errors.append(f"{path.name}: Feldüberschriften/Feldfolge weichen ab")
 
     requires_beleglink = category == "21"
+    file_kind = parsed_name["kind"] if category == "21" and parsed_name else None
+    file_batch_type = parsed_name["batch_type"] if category == "21" and parsed_name else STANDARD_BATCH_TYPE
+    cost_config = manifest_cost_center_config(manifest)
+    cost_required = (manifest or {}).get("run_contract", {}).get("kostenstellenpflicht") is True
+    kost1_allowed = {clean_text(key) for key in (cost_config or {}).get("kost1_allowed", {})}
+    kost2_allowed = {clean_text(key) for key in (cost_config or {}).get("kost2_allowed", {})}
+    batch_rule = manifest_separate_batches(manifest).get(file_batch_type) or {}
+    data_rows: list[list[str]] = []
     configured_asset_accounts = {
         str(value)
         for value in (manifest or {}).get("run_contract", {})
@@ -673,6 +826,16 @@ def validate_csv(
                     errors.append(f"{path.name}, Zeile {row_no}: exportierte Werte weichen vom Exportnachweis ab")
                 if trace.get("traffic_light") not in {"Grün", "Rot"}:
                     errors.append(f"{path.name}, Zeile {row_no}: ungültige Ampel")
+                if trace:
+                    if file_kind == BATCH_KIND_BOOKING and trace.get("traffic_light") == "Rot":
+                        errors.append(f"{path.name}, Zeile {row_no}: rote Zeile im Buchungsstapel; gehört in den Klärungsstapel")
+                    if file_kind == BATCH_KIND_CLARIFICATION and trace.get("traffic_light") == "Grün":
+                        errors.append(f"{path.name}, Zeile {row_no}: grüne Zeile im Klärungsstapel; gehört in den Buchungsstapel")
+                    if file_kind == BATCH_KIND_CLARIFICATION and trace.get("kind") == "accrual":
+                        errors.append(f"{path.name}, Zeile {row_no}: Abgrenzungsauflösung gehört in den Buchungsstapel")
+                    if str(trace.get("batch_type", STANDARD_BATCH_TYPE)) != file_batch_type:
+                        errors.append(f"{path.name}, Zeile {row_no}: Stapeltyp im Exportnachweis passt nicht zum Dateinamen")
+            data_rows.append(fields)
             def intentionally_blank(key: str) -> bool:
                 return key in opened and not fields[OPEN_FIELD_INDEXES[key]] and trace.get("traffic_light") == "Rot"
             requires_beleglink = trace.get("kind") != "accrual"
@@ -709,9 +872,12 @@ def validate_csv(
                 side = trace.get("asset_account_field")
                 if side not in {"account", "contra_account"} or not intentionally_blank(side):
                     errors.append(f"{path.name}, Zeile {row_no}: Anlagenkontofeld muss dokumentiert leer bleiben")
-            if not re.fullmatch(r"\d{4}", fields[9]) and not intentionally_blank("recognized_date"):
+            if file_kind == BATCH_KIND_CLARIFICATION:
+                if fields[9]:
+                    errors.append(f"{path.name}, Zeile {row_no}: Belegdatum muss im Klärungsstapel leer sein (Pflichtleerung)")
+            elif not re.fullmatch(r"\d{4}", fields[9]):
                 errors.append(f"{path.name}, Zeile {row_no}: Belegdatum fehlt/ist ungültig")
-            elif fields[9] and file_period:
+            if fields[9] and file_period:
                 if not _valid_date(
                     f"{fields[9][:2]}{fields[9][2:]}{file_period[:4]}",
                     "%d%m%Y",
@@ -721,8 +887,26 @@ def validate_csv(
                     )
             if not re.fullmatch(r"[A-Za-z0-9_$&%*+\-/]{1,36}", fields[10]) and not intentionally_blank("document_field_1"):
                 errors.append(f"{path.name}, Zeile {row_no}: Belegfeld 1 ist ungültig")
-            if any(fields[index] for index in (36, 37, 38)):
-                errors.append(f"{path.name}, Zeile {row_no}: KOST-Felder müssen leer sein")
+            if fields[38]:
+                errors.append(f"{path.name}, Zeile {row_no}: Kost-Menge (Feld 39) muss leer sein")
+            if cost_config is None:
+                if fields[36] or fields[37]:
+                    errors.append(f"{path.name}, Zeile {row_no}: KOST-Felder müssen ohne cost_center_config leer sein")
+            else:
+                if fields[36] and fields[36] not in kost1_allowed:
+                    errors.append(f"{path.name}, Zeile {row_no}: KOST1 {fields[36]} ist nicht erlaubt")
+                if fields[37] and fields[37] not in kost2_allowed:
+                    errors.append(f"{path.name}, Zeile {row_no}: KOST2 {fields[37]} ist nicht erlaubt")
+                if cost_required and not fields[36] and not intentionally_blank("kost1"):
+                    errors.append(f"{path.name}, Zeile {row_no}: KOST1 fehlt bei Kostenstellenpflicht ohne dokumentiert offenes kost1")
+                if cost_required and cost_config.get("kost2_required") is True and not fields[37] and not intentionally_blank("kost2"):
+                    errors.append(f"{path.name}, Zeile {row_no}: KOST2 fehlt bei Pflicht-KOST2 ohne dokumentiert offenes kost2")
+                required_kost1 = clean_text(batch_rule.get("required_kost1", ""))
+                if required_kost1 and fields[36] != required_kost1:
+                    errors.append(f"{path.name}, Zeile {row_no}: Stapeltyp {file_batch_type} verlangt KOST1 {required_kost1}")
+            required_contra = clean_text(batch_rule.get("required_contra_account", ""))
+            if required_contra and fields[7] != required_contra:
+                errors.append(f"{path.name}, Zeile {row_no}: Stapeltyp {file_batch_type} verlangt Gegenkonto {required_contra}")
             if bool(fields[114]) != bool(fields[115]) and not (intentionally_blank("service_date") or intentionally_blank("tax_period_date")):
                 errors.append(
                     f"{path.name}, Zeile {row_no}: Leistungsdatum und "
@@ -819,6 +1003,9 @@ def validate_csv(
                 )
                 continue
             beleglinks.add(str(parsed).upper())
+    if category == "21":
+        for violation in carry_order_violations(data_rows):
+            errors.append(f"{path.name}: Schleppschutz verletzt; {violation}")
     return errors, beleglinks
 
 
@@ -1002,9 +1189,9 @@ def validate_transfer_period_separation(package_root: Path) -> list[str]:
     booking_periods: set[str] = set()
     for pattern_name in ("EXTF_Buchungsstapel_*.csv", "EXTF_Klaerungsposten_*.csv"):
         for file in transfer_dir.glob(pattern_name):
-            match = re.search(r"_([0-9]{4}-[0-9]{2})[.]csv$", file.name)
-            if match:
-                booking_periods.add(match.group(1))
+            parsed = parse_batch_file_name(file.name)
+            if parsed:
+                booking_periods.add(parsed["period"])
     for (kind, period_value), numbers in sorted(sequences.items()):
         if numbers != set(range(1, max(numbers) + 1)):
             errors.append(f"{kind}/{period_value}: Paketnummern müssen lückenlos bei 001 beginnen.")
@@ -1024,7 +1211,14 @@ def validate_test_import(evidence: dict, files: list[Path]) -> list[str]:
             errors.append(f"DATEV-Testimport: Nachweisfeld {field} fehlt.")
     actual = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in files}
     if evidence.get("tested_files") != actual:
-        errors.append("DATEV-Testimportnachweis gehört nicht zu exakt diesen EXTF-Dateien.")
+        errors.append("DATEV-Testimportnachweis gehört nicht zu exakt diesen EXTF-Dateien (alle erzeugten Buchungs- und Klärungsstapel).")
+    carry = evidence.get("carry_over_result")
+    if not isinstance(carry, dict):
+        errors.append("DATEV-Testimport: carry_over_result je gefährdetem Feld fehlt.")
+    else:
+        for field in sorted(CARRY_FIELDS):
+            if carry.get(field) not in CARRY_RESULTS:
+                errors.append(f"DATEV-Testimport: carry_over_result.{field} muss carried, not_carried oder not_tested sein.")
     return errors
 
 
@@ -1069,17 +1263,12 @@ def main() -> int:
         errors.append("Falsche oder fehlende Skill-Version im Laufmanifest")
     if manifest.get("output_contract") != EXPECTED_OUTPUT_CONTRACT:
         errors.append(
-            "Ausgabevertrag single-monthly-booking-batch-v3 fehlt im Laufmanifest"
+            f"Ausgabevertrag {EXPECTED_OUTPUT_CONTRACT} fehlt im Laufmanifest"
         )
     if manifest.get("pruefprotokoll_ruecklauf_status") != "ausstehend":
         errors.append("Fachlicher Prüfprotokoll-Rücklaufstatus fehlt im Laufmanifest")
 
-    expected_import_order = [
-        "EXTF_Debitoren_Kreditoren.csv (falls vorhanden)",
-        "Belegtransfer_*.zip und Belegtransfer_Avise_*.zip",
-        "EXTF Kategorie 21: ein gemeinsamer Buchungsstapel je Monat",
-    ]
-    if manifest.get("datev_import_order") != expected_import_order:
+    if manifest.get("datev_import_order") != list(DATEV_IMPORT_ORDER):
         errors.append("Verbindliche DATEV-Importreihenfolge fehlt im Laufmanifest")
     errors.extend(_validate_preflight_manifest(manifest))
     expected_master_records = int(manifest.get("master_records", 0))
@@ -1123,7 +1312,8 @@ def main() -> int:
         if not path.is_file():
             errors.append(f"Arbeitsdatei fehlt: {path.name}")
 
-    errors.extend(validate_datev_import_layout(args.package))
+    errors.extend(validate_datev_import_layout(args.package, manifest))
+    errors.extend(validate_batch_files(args.package, manifest))
     workbooks = sorted(
         (args.package / "02_Buchungspruefung").glob(
             "Buchungspruefung_*.xlsx"
@@ -1135,7 +1325,7 @@ def main() -> int:
             f"{len(workbooks)}"
         )
     else:
-        errors.extend(validate_review_workbook(workbooks[0]))
+        errors.extend(validate_review_workbook(workbooks[0], manifest))
 
     csv_files = sorted(args.package.rglob("EXTF_*.csv"))
     if not csv_files:
@@ -1147,7 +1337,7 @@ def main() -> int:
         booking_links.update(links)
     trace = manifest.get("booking_trace", [])
     expected_rows = {(item.get("file"), item.get("csv_row")) for item in trace}
-    actual_rows = {(path.name, number) for path in csv_files if path.name.startswith("EXTF_Buchungsstapel_")
+    actual_rows = {(path.name, number) for path in csv_files if parse_batch_file_name(path.name)
                    for number in range(3, len(path.read_text(encoding="cp1252").splitlines()) + 1)}
     if expected_rows != actual_rows or len(expected_rows) != len(trace):
         errors.append("Exportnachweise und CSV-Zeilen sind nicht vollständig und eindeutig verknüpft.")
@@ -1202,6 +1392,8 @@ def main() -> int:
             {key: item.get(key) for key in ("transaction_id", "file", "csv_row", "open_fields")}
             for item in trace if item.get("open_fields")
         ],
+        "booking_batches": manifest.get("booking_batches", []),
+        "batch_split_reasons": manifest.get("batch_split_reasons", []),
         "errors": errors,
     }
     target = args.package / "03_Technische_Protokolle" / "Validierungsbericht.json"

@@ -23,7 +23,7 @@ Der EXTF-Header enthält 31 Felder. Pflichtwerte aus Live-DATEV-Daten übernehme
 
 ## Buchungsstapel
 
-Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat genau `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel`; darin Grün, Rot und fällige Abgrenzungsauflösungen gemeinsam. Keine Klärungs- oder Abgrenzungs-CSV-Dateien.
+Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel` (Grün und fällige Abgrenzungsauflösungen) und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>.csv` mit Stapelbezeichnung `Klärungsposten`; der Header ist ansonsten identisch (Kategorie 21, Version 13, Datum von/bis des Monats, Festschreibung 0). Konfigurierte Stapeltypen erhalten den Suffix `_<Stapeltyp>` und die Bezeichnung aus `batch_config`; geteilte Klärungsstapel den Suffix `_02` ff. Keine Abgrenzungs-CSV-Dateien.
 
 Vollständige 125-Feld-Folge ausgeben. Wesentliche Felder:
 
@@ -33,11 +33,15 @@ Vollständige 125-Feld-Folge ausgeben. Wesentliche Felder:
 7. Konto
 8. Gegenkonto ohne BU-Schlüssel
 9. BU-Schlüssel: technisch leer oder exakt vier Ziffern. Der fachlich dreistellige Schlüssel wird im EXTF-Export mit genau einer führenden Null ausgegeben, z. B. `401` → `0401`.
-10. Sicher erkanntes Belegdatum `TTMM`, auch bei Rot; nur bei konkret unbekanntem Datum dokumentiert leer
+10. Sicher erkanntes Belegdatum `TTMM` im Buchungsstapel; im Klärungsstapel immer leer (Pflichtleerung, siehe `VALIDIERUNG.md`)
 11. Bekannte Belegreferenz in Belegfeld 1, maximal 36 Zeichen; bei Rot nur bei unbekannter Referenz dokumentiert leer
 14. Buchungstext, maximal 60 Zeichen; ausschließlich normaler fachlicher Text ohne interne Warn- oder Prüfhinweise
-37–39. KOST-Felder in der allgemeinen Version leer
+37–39. KOST1/KOST2 nur bei konfigurierten Kostenstellen (`cost_center_config`) nach Profil; Feld 39 (Kost-Menge) immer leer
 115. Leistungsdatum, soweit technisch/fachlich erforderlich
+
+### Feldübernahme beim Import
+
+Befund vom 07.10.2026 (Mandant 12191, Stapel 08-2026/0004): DATEV hat jedes leere Kontofeld (Feld 7) mit dem Konto der vorhergehenden Zeile gefüllt; fünf rote Zeilen erschienen als vollständige, unauffällige Buchungen. Deshalb gilt die Sortierregel gegen das Schleppen leerer Felder und die Pflichtleerung des Belegdatums im Klärungsstapel (`VALIDIERUNG.md`). Ob DATEV auch Gegenkonto, BU-Schlüssel, Belegdatum oder Belegfeld 1 übernimmt, ist nicht geprüft; das Ergebnis des DATEV-Tests wird als `carry_over_result` im Testimportnachweis festgehalten.
 
 ## Debitoren/Kreditoren
 

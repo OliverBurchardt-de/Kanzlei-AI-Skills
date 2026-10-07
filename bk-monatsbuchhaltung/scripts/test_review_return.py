@@ -21,7 +21,7 @@ def build_workbook(path: Path, rows: list[tuple[str, str, str]]) -> None:
         review.append(
             [
                 light,
-                "EXTF_Buchungsstapel_2026-07.csv",
+                "EXTF_Klaerungsposten_2026-07.csv" if light == "Rot" else "EXTF_Buchungsstapel_2026-07.csv",
                 transaction_id,
                 datetime(2026, 7, min(position, 28)),
                 partner,

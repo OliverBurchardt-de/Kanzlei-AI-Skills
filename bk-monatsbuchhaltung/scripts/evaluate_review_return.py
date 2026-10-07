@@ -17,7 +17,7 @@ REQUIRED_HEADERS = [
     "Ampel-Einstufung",
     "Buchungsstapel",
     "Vorgangs-ID",
-    "Belegdatum",
+    "Belegdatum laut Beleg",
     "Geschäftspartner",
     "Belegfeld 1",
     "Betrag",
@@ -30,6 +30,8 @@ REQUIRED_HEADERS = [
     "Bearbeitungsstatus",
     "Mitarbeiter-Ergebnis",
 ]
+# Ältere Prüfungsdateien (bis v1.3) tragen die Spalte noch als "Belegdatum".
+HEADER_ALIASES = {"Belegdatum laut Beleg": {"Belegdatum"}}
 CLOSING_STATUSES = {
     "unverändert übernommen": "unverändert übernommen",
     "geändert": "geändert",
@@ -70,10 +72,18 @@ def status_value(value: Any) -> str:
     return clean(value).casefold()
 
 
+def canonical_header(value: Any) -> str:
+    text = clean(value)
+    for header, aliases in HEADER_ALIASES.items():
+        if text in aliases:
+            return header
+    return text
+
+
 def find_header_row(ws, headers: list[str]) -> int:
     expected = set(headers)
     for row_number in range(1, min(ws.max_row, 25) + 1):
-        values = {clean(cell.value) for cell in ws[row_number] if clean(cell.value)}
+        values = {canonical_header(cell.value) for cell in ws[row_number] if clean(cell.value)}
         if expected.issubset(values):
             return row_number
     raise ValueError(f"{ws.title}: Kopfzeile nicht gefunden")
@@ -82,9 +92,9 @@ def find_header_row(ws, headers: list[str]) -> int:
 def table_rows(ws, headers: list[str]) -> tuple[list[dict[str, Any]], int]:
     header_row = find_header_row(ws, headers)
     positions = {
-        clean(cell.value): cell.column
+        canonical_header(cell.value): cell.column
         for cell in ws[header_row]
-        if clean(cell.value) in headers
+        if canonical_header(cell.value) in headers
     }
     rows: list[dict[str, Any]] = []
     for row_number in range(header_row + 1, ws.max_row + 1):

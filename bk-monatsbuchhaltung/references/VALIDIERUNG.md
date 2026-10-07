@@ -2,9 +2,9 @@
 
 ## Strukturell blockierend
 
-Kein importfreigegebenes Paket bei fehlender bestätigter DATEV-Verbindung, fehlendem oder nicht verifiziertem vorhandenen/vorläufigen Mandantenprofil, verpflichtender Kostenstelle, fehlenden Header-Kerndaten, falscher EXTF-Kategorie/-Version, falscher Feldanzahl, verschobenen Spalten, nicht positiver Buchungssumme, ungültigem Soll/Haben, ungültigem Konto/Gegenkonto, fehlendem Belegfeld 1, mehr als zehn Banken oder Teiländerung eines vorhandenen Stammdatensatzes.
+Kein importfreigegebenes Paket bei fehlender bestätigter DATEV-Verbindung, fehlendem oder nicht verifiziertem vorhandenen/vorläufigen Mandantenprofil, unkonfigurierter Pflichtkostenstelle, fehlenden Header-Kerndaten, falscher EXTF-Kategorie/-Version, falscher Feldanzahl, verschobenen Spalten, nicht positiver Buchungssumme, ungültigem Soll/Haben, ungültigem Konto/Gegenkonto, fehlendem Belegfeld 1, mehr als zehn Banken oder Teiländerung eines vorhandenen Stammdatensatzes.
 
-Nur fehlende DATEV-Verbindung, technischer SharePoint-Abruf-/Lesefehler, ein nach erfolgreicher direkter Ordnerauflistung tatsächlich fehlendes Mandantenprofil oder verpflichtende Kostenstellenverarbeitung beenden den Lauf im Preflight. Ein nachweislich nicht vorhandenes Abgrenzungsregister beendet den Lauf ausdrücklich nicht. Eine erfolglose Volltext- oder Stichwortsuche darf niemals als fehlendes Mandantenprofil gewertet werden. Später erkannte strukturelle Fehler werden protokolliert und kennzeichnen das Paket als nicht importfreigegeben; sie lösen keine fachliche Zwischenfrage aus.
+Nur fehlende DATEV-Verbindung, technischer SharePoint-Abruf-/Lesefehler, ein nach erfolgreicher direkter Ordnerauflistung tatsächlich fehlendes Mandantenprofil oder eine unkonfigurierte Pflichtkostenstelle (`kostenstellenpflicht: true` ohne vollständige `cost_center_config`) beenden den Lauf im Preflight. Eine konfigurierte Kostenstellenpflicht wird vollständig verarbeitet. Ein nachweislich nicht vorhandenes Abgrenzungsregister beendet den Lauf ausdrücklich nicht. Eine erfolglose Volltext- oder Stichwortsuche darf niemals als fehlendes Mandantenprofil gewertet werden. Später erkannte strukturelle Fehler werden protokolliert und kennzeichnen das Paket als nicht importfreigegeben; sie lösen keine fachliche Zwischenfrage aus.
 
 Neue Kreditoren und Debitoren, ihre automatisch fortlaufenden Kontonummern sowie provisorische Kreditorennamen sind niemals ein Stop- oder Freigabegrund. Prüfen, dass keine Freigabeeigenschaft erwartet wird, jede technisch mögliche Neuanlage in `EXTF_Debitoren_Kreditoren.csv` enthalten ist und bei unklarer Geschäftspartneridentität kein Name oder Personenkonto erfunden wird; das betroffene Personenkontofeld bleibt bei Rot dokumentiert offen. Meldet das Laufmanifest mindestens einen `master_records`-Datensatz, muss `01_DATEV_Import/EXTF_Debitoren_Kreditoren.csv` vorhanden sein, Kategorie 16 und Formatversion 5 tragen und exakt dieselbe Zahl an Datenzeilen enthalten. Eine separate Anlage zählt nicht als Stammdatenimport.
 
@@ -35,15 +35,48 @@ Ein Wahrheitsfeld allein ist kein Quellenbeleg. Vor dem Paketbau müssen für ei
 - Einen 404-Fehler beim drive-unspezifischen Browsen von `folder_path="Mandantenprofile"` nicht als fehlendes Profil werten; dieser Aufruf kann die Standardbibliothek treffen.
 - Nicht auflösbare Site, Bibliothek, Drive-URL, exakte Datei-URL oder Rohdatei als technischen Abruf-/Lesefehler klassifizieren; keine Profilneuanlage vorschlagen.
 
-## Beabsichtigte rote Zeilenfehler
+## Klärungsstapel und Schutz gegen Feldübernahme
 
-Rot bleibt im gemeinsamen Monatsstapel. Nur konkret dokumentierte offene Felder dürfen leer sein; bekannte Werte bleiben erhalten. Header, Kategorie 21, Formatversion 13 und 125-Feld-Struktur bleiben verbindlich. Jede rote Zeile über Vorgangs-ID, Datei, CSV-Zeilennummer, `open_fields` und exportierte Werte im Manifest nachweisen. Die Prüfung bestätigt den internen Exportvertrag, nicht die DATEV-Importfähigkeit unvollständiger Pflichtfelder.
+Je Buchungsmonat entstehen bis zu zwei Kategorie-21-Stapel, beide flach in `01_DATEV_Import/`:
+
+| Datei | Stapelbezeichnung (Header Feld 17) | Inhalt |
+|---|---|---|
+| `EXTF_Buchungsstapel_<JJJJ-MM>.csv` | `Buchungsstapel` | alle grünen Buchungszeilen und alle fälligen Abgrenzungsauflösungen |
+| `EXTF_Klaerungsposten_<JJJJ-MM>.csv` | `Klärungsposten` | ausschließlich rote Buchungszeilen |
+
+Regeln:
+
+1. Eine Datei, die keine Zeilen hätte, wird nicht erzeugt. Ein Monat ohne roten Vorgang hat keinen Klärungsstapel; ein Monat nur mit roten Vorgängen hat nur einen Klärungsstapel.
+2. Alle Zeilen eines Vorgangs gehören in denselben Stapel (belegweit schlechteste Ampel).
+3. Rote Zeilen: alle sicheren Angaben gefüllt, die konkret ungeklärten Felder leer und je Zeile in `open_fields` begründet. Keine Ersatzkonten (1590 oder andere Zwischenkonten).
+4. **Belegdatum bei Rot immer leer (Pflichtleerung).** Jede Zeile des Klärungsstapels wird ohne EXTF-Feld 10 exportiert, auch bei sicher bekanntem Datum. Das Belegdatum ist DATEV-Pflichtfeld; jede rote Zeile wird dadurch beim Import zwingend als fehlerhaft gekennzeichnet. Das erkannte Datum bleibt in `recognized_date`, im Laufmanifest (`booking_trace.recognized_date`), in der Prüfungsdatei (Spalte „Belegdatum laut Beleg“) und im übertragenen Beleg erhalten; der Mitarbeiter trägt es in DATEV nach.
+5. Abgrenzungsauflösungen stehen immer im Buchungsstapel. Eine zweifelhafte Auflösung bleibt Registervorschlag ohne Buchungszeile.
+6. Der Belegtransfer bleibt gemeinsam. Die BEDI-GUIDs vergibt nur `build_package.py`; sie verknüpfen Zeilen aus beiden Stapeln.
+7. Dateiname und Stapelbezeichnung enthalten keine Ampelfarbe.
+8. Ein im Profil konfigurierter Stapeltyp (`batch_config`) erhält `EXTF_Buchungsstapel_<JJJJ-MM>_<Stapeltyp>.csv` und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>_<Stapeltyp>.csv`; der Suffix darf nur aus `batch_config` stammen.
+
+**Befund (Mandant 12191, Stapel 08-2026/0004):** DATEV füllt ein leeres Kontofeld beim Import mit dem Konto der vorhergehenden Zeile („geschleppt“). Nachgewiesen ist das nur für Konto (Feld 7). Gegenkonto (Feld 8), BU-Schlüssel (Feld 9), Belegdatum (Feld 10) und Belegfeld 1 (Feld 11) gelten vorsorglich als gefährdet; die Liste steht als `CARRY_FIELDS` in `datev_io.py` und wird nach dem DATEV-Test auf die tatsächlich geschleppten Felder reduziert.
+
+**Sortierregel:** In jedem Stapel muss für jedes gefährdete Feld gelten: Zeilen, in denen das Feld leer ist, stehen vor allen Zeilen, in denen es gefüllt ist. Umsetzung: Zeilen nach der Anzahl leerer gefährdeter Felder absteigend sortieren, danach nach Vorgangs-ID und Zeilennummer. Ist die Regel nicht erfüllbar (Beispiel: Zeile A hat leeres Konto und gefülltes Belegfeld 1, Zeile B hat gefülltes Konto und leeres Belegfeld 1), wird ausschließlich der Klärungsstapel geteilt: `EXTF_Klaerungsposten_<JJJJ-MM>_02.csv` usw., lückenlos ab `_02`; die erste Datei behält den Namen ohne Suffix. Der Teilungsgrund steht im Laufprotokoll, im Tätigkeitsnachweis und im Manifest (`batch_split_reasons`). Im Buchungsstapel ist nur der BU-Schlüssel fachlich leer; dort ordnet die Regel Zeilen ohne BU nach vorn, eine Teilung ist nie zulässig. Die gemeinsame Hilfsfunktion `carry_order_violations` in `datev_io.py` wird von Generator und Validator genutzt.
+
+Der Validator prüft zusätzlich: je Monat und Stapeltyp höchstens ein Buchungsstapel; Buchungsstapel ohne rote Zeile und Klärungsstapel ohne grüne Zeile oder Abgrenzungsauflösung laut `booking_trace`; leeres Belegdatum in jeder Klärungszeile; `carry_order_violations` je Datei leer; Teilungsdateien lückenlos und nur, wenn die Sortierregel ohne Teilung nicht erfüllbar war; keine leere EXTF-Datei. Header, Kategorie 21, Formatversion 13 und 125-Feld-Struktur bleiben verbindlich. Jede Zeile über Vorgangs-ID, Datei, CSV-Zeilennummer, `batch_kind`, `carry_order_ok`, `open_fields` und exportierte Werte im Manifest nachweisen. Die Prüfung bestätigt den internen Exportvertrag, nicht die DATEV-Importfähigkeit unvollständiger Pflichtfelder.
+
+Offene Frage für den DATEV-Test: ob DATEV eine Vorzeile auch über Dateigrenzen hinweg schleppt, wenn beide Stapel in einem Importvorgang eingelesen werden. Bis zur Klärung gilt der getrennte Import je Datei.
+
+## Kostenstellen
+
+- `kostenstellenpflicht` muss `true` oder `false` sein; bei `true` ist eine vollständige `cost_center_config` Pflicht.
+- Ohne `cost_center_config`: EXTF-Felder 37–39 leer.
+- Mit `cost_center_config` und `kostenstellenpflicht: false`: Feld 37 leer oder ein erlaubter Wert.
+- `kostenstellenpflicht: true`: Feld 37 gefüllt und erlaubt, außer die Zeile ist im Nachweis als Rot mit offenem `kost1` dokumentiert. Feld 38 nur bei `kost2_required` Pflicht. Feld 39 immer leer.
+- Jede gefüllte KOST1 muss in `validated_cost_centers` des DATEV-Livenachweises stehen; bei konfigurierten Kostenstellen sind `cost_system_active: true` und `validated_cost_centers` Pflicht.
+- Konfigurierte Stapeltypen: jede Zeile trägt `required_kost1` und `required_contra_account`; Abweichungen blockieren.
 
 ## Fachliche Prüfungen
 
 - Echte Kalenderdaten prüfen.
 - Buchungsperiode aus erkanntem Belegdatum ableiten.
-- Jede Buchungsperiode als genau eine gemeinsame CSV-Datei unmittelbar in dem einzigen Ordner `01_DATEV_Import/` ausgeben. Alle Stammdaten-, Buchungs-, Abgrenzungs- und Belegtransferdateien liegen dort gemeinsam; Unterordner und getrennte DATEV-/Ampelordner sind blockierend. Den gemeinsamen Monatsstapel vollständig durch die strukturelle EXTF-Prüfung laufen lassen. DATEV-Dateiname und Stapelbezeichnung dürfen keine Ampelfarbe enthalten. DATEV-Stapel und Dateiname heißen `Buchungsstapel`; getrennte Klärungs-/Abgrenzungsdateien sind unzulässig. Nur ausdrücklich über `scope` freigegebene Vorjahresperioden verarbeiten und niemals mit dem laufenden Buchungsmonat mischen.
+- Jede Buchungsperiode als genau einen Buchungsstapel je Stapeltyp und höchstens einen Klärungsstapel (mit zulässigen Teilungsdateien `_02` ff.) unmittelbar in dem einzigen Ordner `01_DATEV_Import/` ausgeben. Alle Stammdaten-, Buchungs-, Klärungs- und Belegtransferdateien liegen dort gemeinsam; Unterordner und getrennte DATEV-/Ampelordner sind blockierend. Jeden Stapel vollständig durch die strukturelle EXTF-Prüfung laufen lassen. DATEV-Dateiname und Stapelbezeichnung dürfen keine Ampelfarbe enthalten. Stapelbezeichnungen heißen `Buchungsstapel`, `Klärungsposten` oder das konfigurierte `label`; getrennte Abgrenzungsdateien sind unzulässig. Nur ausdrücklich über `scope` freigegebene Vorjahresperioden verarbeiten und niemals mit dem laufenden Buchungsmonat mischen.
 - Belegweit schlechteste Farbe durchsetzen.
 - Bei Rot alle sicher bekannten Angaben erhalten; ausschließlich begründete `open_fields` offen lassen.
 - Bekannte Belegreferenz in Belegfeld 1 setzen; unbekannte Referenz bei Rot dokumentiert leer lassen und auf 36 zulässige Zeichen normalisieren.
@@ -52,7 +85,7 @@ Rot bleibt im gemeinsamen Monatsstapel. Nur konkret dokumentierte offene Felder 
 - Nur live bestätigte Konten und Steuerschlüssel verwenden.
 - Vollständigkeitsgleichung auf Dateiebene und Exportebene prüfen. Jeder Beleg mit Status `Buchungszeile erzeugt` muss mindestens eine tatsächlich exportierte DATEV-Buchungszeile besitzen.
 - Neu erkannte Abgrenzungen über `transaction_ids` mit ihren Ursprungsrechnungen verknüpfen. Ursprungsrechnung zwingend gegen Kreditor/Debitor auf ARAP/PRAP buchen; Registereintrag und Auflösungsstapel ersetzen diese Rechnungsbuchung nicht.
-- Für jede neue Abgrenzung die erste Auflösungsbuchung im gemeinsamen Monatsstapel nachweisen.
+- Für jede neue Abgrenzung die erste Auflösungsbuchung im Buchungsstapel des Monats nachweisen.
 - Sichere Dublette nicht erneut buchen oder übertragen.
 - Zahlungsavis nicht buchen; als eigenes DUO-Belegtransfer-ZIP mit `document.xml` vollständig aussteuern und zusätzlich als Arbeitskopie ablegen.
 - Betrieblichen Anlass vor Kontierung, Anlagenprüfung und Abgrenzungsprüfung dokumentieren.
@@ -61,7 +94,7 @@ Rot bleibt im gemeinsamen Monatsstapel. Nur konkret dokumentierte offene Felder 
 - Sport- und Freizeitdauerkarten als privat und nicht abzugrenzen behandeln.
 - Bei unklarem betrieblichen Anlass Rot und eine konkrete Begründung setzen.
 - Konto und Gegenkonto gegen `account_config.asset_accounts` prüfen. Jede direkte Anlagenkontenbuchung blockiert das Paket. Anlagen/GWG stattdessen Rot mit `asset_booking: true`, `asset_account_field` und dokumentiert leerem Anlagenkontofeld exportieren; sicheres Datum erhalten.
-- Fällige Abgrenzungsauflösung im gemeinsamen Monatsstapel.
+- Fällige Abgrenzungsauflösung im Buchungsstapel des Monats.
 - Die einheitliche 800-Euro-Regel vor jeder Abgrenzung prüfen: `threshold_amount` muss für neue ARAP-/PRAP-Fälle über 800 EUR liegen.
 - Bei einem maßgeblichen Betrag bis einschließlich 800 EUR vollständigen Aufwand oder Ertrag im Buchungsmonat erfassen und keinen Abgrenzungsvorschlag, Registereintrag oder Abgrenzungsstapel zulassen.
 - Für die Grenze die gesamte Ausgabe oder Einnahme prüfen, nicht Monatsanteil oder Restbetrag; bei vollem Vorsteuerabzug netto, sonst einschließlich nicht abziehbarer Umsatzsteuer.
@@ -106,9 +139,21 @@ Die technische Validierung ersetzt keinen DATEV-Pilot.## DATEV-Testimport und Gr
 
 Vor einem produktiven Import das Paket in einem dafür freigegebenen DATEV-Testbestand testen. Prüfen, ob unvollständige rote Zeilen als bearbeitungsbedürftig übernommen werden oder ob DATEV Zeilen beziehungsweise den gesamten Stapel zurückweist. Den tatsächlich getesteten Dateistand über SHA-256 nachweisen; Ergebnis, DATEV-Version, Testbestand und genaue Meldungen dokumentieren. Bei fehlendem Zugang Status `pending` und `DATEV-Testimport ausstehend` ausweisen; keinen Erfolg behaupten. Die Paketübergabe mit internem `valid=true` bleibt zulässig, ohne damit DATEV-Importfähigkeit zu bestätigen.
 
-Optionales Lauf-JSON-Feld `datev_test_import`: `status` ist `pending`, `confirmed` oder `rejected`. Bei ausgeführtem Test sind `tested_at`, `datev_version`, `test_client`, `evidence_reference`, `result_detail` und `tested_files` Pflicht. `tested_files` ordnet jedem tatsächlich erzeugten EXTF-Dateinamen den SHA-256 des getesteten Inhalts zu. `confirmed` bedeutet: Alle Zeilen wurden übernommen und rote Zeilen sind bearbeitungsbedürftig; `rejected` protokolliert insbesondere eine Zurückweisung des gesamten Stapels. Ein Nachweis für andere Dateiinhalte bestätigt das aktuelle Paket nicht. Ein ergebnisloser oder nicht ausgeführter Test bleibt `pending`.
+Optionales Lauf-JSON-Feld `datev_test_import`: `status` ist `pending`, `confirmed` oder `rejected`. Bei ausgeführtem Test sind `tested_at`, `datev_version`, `test_client`, `evidence_reference`, `result_detail`, `tested_files` und `carry_over_result` Pflicht. `tested_files` ordnet jeder tatsächlich erzeugten EXTF-Datei (Buchungsstapel, Klärungsstapel, Teilungsdateien) den SHA-256 des getesteten Inhalts zu; `carry_over_result` hält je gefährdetem Feld `carried`, `not_carried` oder `not_tested` fest. `confirmed` ist nur zulässig, wenn alle erzeugten EXTF-Dateien getestet sind und `carry_over_result` vorliegt. `confirmed` bedeutet: Alle Zeilen wurden übernommen und rote Zeilen sind bearbeitungsbedürftig; `rejected` protokolliert insbesondere eine Zurückweisung des gesamten Stapels. Ein Nachweis für andere Dateiinhalte bestätigt das aktuelle Paket nicht. Ein ergebnisloser oder nicht ausgeführter Test bleibt `pending`.
 
-Weist DATEV den gesamten Stapel zurück, Fehler und betroffene Felder offen melden; keine Ersatzbuchung, kein Entfernen roter Fälle und kein eigenmächtiges Aufteilen des Monatsstapels. Einen lokalen Strukturtest niemals als DATEV-Testimport ausgeben.
+Weist DATEV den gesamten Stapel zurück, Fehler und betroffene Felder offen melden; keine Ersatzbuchung, kein Entfernen roter Fälle und keine Teilung über die Sortierregel hinaus. Einen lokalen Strukturtest niemals als DATEV-Testimport ausgeben.
+
+DATEV-Testplan vor Freigabe der Version 1.4.0 (freigegebener Testmandant, Dokumentation über `--datev-test-import`):
+
+1. Klärungsstapel mit drei Zeilen: (a) Konto leer, (b) Konto leer, (c) Konto gefüllt. Erwartung: (a) und (b) erscheinen als fehlerhafte Buchungen, (c) korrekt.
+2. Gleiche Datei in der Reihenfolge (c, a, b). Erwartung nach Befund: (a) und (b) erhalten das Konto aus (c); damit ist das Schleppen reproduziert.
+3. Je eine Zeile mit leerem Gegenkonto, leerem Belegdatum, leerem Belegfeld 1 hinter einer vollständigen Zeile. Ergebnis je Feld als `carried`/`not_carried` festhalten und `CARRY_FIELDS` entsprechend reduzieren.
+4. Buchungsstapel: Zeile mit BU 9 gefolgt von Zeile ohne BU. Prüfen, ob DATEV den BU-Schlüssel übernimmt.
+5. Buchungsstapel und Klärungsstapel in einem gemeinsamen Importvorgang: Prüfen, ob die letzte Zeile des ersten Stapels in die erste Zeile des zweiten geschleppt wird.
+6. Prüfen, ob DATEV den Klärungsstapel mit fehlerhaften Zeilen vollständig übernimmt oder ganz zurückweist. Bei vollständiger Zurückweisung Fehlermeldung protokollieren und die Lösung neu bewerten.
+7. Bei Kostenstellen: Prüfen, ob DATEV KOST1-Werte und den zweiten Vorlauf übernimmt und ob eine rote Zeile mit offener KOST1 bei aktivierter Pflicht-KOST importierbar ist.
+
+Freigabe der Version 1.4.0 erst nach Test 1, 2, 3 und 6.
 
 Quelle: [DATEV-Schnittstellenvorgaben und Testimport](https://developer.datev.de/de/product-detail/accounting-extf-files/2.0/documentation/interface-requirements-file).
 
