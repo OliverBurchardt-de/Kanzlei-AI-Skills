@@ -66,7 +66,7 @@ def booking_document(source: Path, light: str = "Grün") -> dict:
             }
         ],
     }
-    if light in {"Gelb", "Rot"}:
+    if light == "Rot":
         result["requires_clarification"] = True
     return result
 
@@ -430,49 +430,22 @@ def main() -> None:
         row = validate_package.split_extf(booking_lines[2])
         assert row[8] == "0401"
 
-        # Alle drei internen Ampelkategorien werden als getrennte, formal
-        # einlesbare EXTF-Dateien im selben DATEV-Importordner erzeugt.
-        # Nur im roten Stapel bleibt das Belegdatum absichtlich leer.
+        # Ein gemeinsamer Monatsstapel; bekanntes Datum bleibt auch bei Rot erhalten.
         datev_dir = temp / "01_DATEV_Import"
         datev_dir.mkdir()
-        batch_specs = {
-            "Grün": ("EXTF_Buchungsstapel_2025-12.csv", "Buchungsstapel"),
-            "Gelb": ("EXTF_Klaerungsposten_1_2025-12.csv", "Klärungsposten"),
-            "Rot": ("EXTF_Klaerungsposten_2_2025-12.csv", "Klärungsposten"),
-        }
-        for light, (filename, label) in batch_specs.items():
-            batch_document = booking_document(source, light)
-            batch_document["document_guid"] = (
-                "01234567-89AB-CDEF-0123-456789ABCDEF"
-            )
-            batch_path = datev_dir / filename
-            datev_io.write_extf(
-                batch_path,
-                datev_io.extf_header(
-                    run,
-                    category=21,
-                    format_name="Buchungsstapel",
-                    version=13,
-                    label=label,
-                    period="2025-12",
-                ),
-                datev_io.BOOKING_FIELDS,
-                [
-                    datev_io.booking_row(
-                        batch_document,
-                        batch_document["bookings"][0],
-                        run,
-                    )
-                ],
-            )
-            batch_errors, _ = validate_package.validate_csv(
-                batch_path, manifest
-            )
-            assert batch_errors == [], (light, batch_errors)
-            batch_row = validate_package.split_extf(
-                batch_path.read_text(encoding="cp1252").splitlines()[2]
-            )
-            assert (batch_row[9] == "") is (light == "Rot")
+        red_doc = booking_document(source, "Rot")
+        red_doc["transaction_id"] = "V0002"
+        red_doc["document_guid"] = document["document_guid"]
+        trace = build_package.write_booking_batches(temp, {"run": run, "documents": [document, red_doc]})
+        generated = list(datev_dir.glob("EXTF_*.csv"))
+        assert len(generated) == 1
+        local_manifest = copy.deepcopy(manifest)
+        local_manifest["booking_trace"] = trace
+        batch_errors, _ = validate_package.validate_csv(generated[0], local_manifest)
+        assert batch_errors == [], batch_errors
+        rows = generated[0].read_text(encoding="cp1252").splitlines()[2:]
+        assert len(rows) == 2
+        assert all(validate_package.split_extf(row)[9] == "1512" for row in rows)
         assert not any(path.is_dir() for path in datev_dir.iterdir())
 
         foreign_document = copy.deepcopy(document)

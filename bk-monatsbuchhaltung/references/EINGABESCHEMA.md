@@ -1,4 +1,4 @@
-# Eingabeschema für `build_package.py` (v1.2)
+# Eingabeschema für `build_package.py` (v1.3)
 
 Der Agent erstellt eine UTF-8-JSON-Datei. Technische GUIDs, Paketnamen und Dateinamen erzeugt ausschließlich der Generator. Neue Läufe verwenden das normalisierte Modell `source_files` → `transaction_sources` → `transactions`. Das v1.0-Modell `input_inventory`/`documents` bleibt ausschließlich zur Rückwärtskompatibilität lesbar.
 
@@ -110,7 +110,7 @@ Zulässige Status:
 - `nicht buchungsrelevant`
 - `außerhalb Auftragszeitraum`
 
-Ampel `Grün`, `Gelb` oder `Rot` nur bei `Buchungszeile erzeugt`; sonst `null`.
+Ampel `Grün` oder `Rot` nur bei `Buchungszeile erzeugt`; sonst `null`.
 
 ## Rechtsträger, Dokumentart und Ausschluss
 
@@ -138,7 +138,7 @@ Globale Ausschlüsse: Lohn-/Sozialversicherungsunterlagen, private Bescheide ode
 }
 ```
 
-Ergebnisse: `no_hit`, `possible_duplicate`, `secure_duplicate`. Treffer enthalten eine Referenz. Sichere Dublette wird nicht erneut gebucht; mögliche Dublette wird Rot mit leerem DATEV-Belegdatum behandelt. `prior_booking_check` bleibt als DATEV-Kompatibilitätsfeld bestehen.
+Ergebnisse: `no_hit`, `possible_duplicate`, `secure_duplicate`. Treffer enthalten eine Referenz. Sichere Dublette wird nicht erneut gebucht; mögliche Dublette wird Rot mit allen bekannten Angaben behandelt. `prior_booking_check` bleibt als DATEV-Kompatibilitätsfeld bestehen.
 
 ## Belegampel und Zahlungsabstimmung
 
@@ -159,7 +159,19 @@ Ein Lauf wird abgelehnt, wenn Rot ausschließlich mit fehlender Zahlungs- oder K
 
 ## Buchungszeilen
 
-Eine Buchungszeile enthält `amount`, `debit_credit`, `account`, `account_name`, `contra_account`, `contra_account_name`, `bu_key`, `document_field_1`, `booking_text`. `bu_key` ist intern leer oder dreistellig, zum Beispiel `511`; eine führende Null entsteht erst beim Export. Belegfeld 1 ist immer gefüllt. Anlagenkonten erfordern `asset_booking: true`, Ampel Rot und leeres DATEV-Belegdatum.
+Eine Buchungszeile enthält `amount`, `debit_credit`, `account`, `account_name`, `contra_account`, `contra_account_name`, `bu_key`, `document_field_1`, `booking_text`. `bu_key` ist intern leer oder dreistellig, zum Beispiel `511`; eine führende Null entsteht erst beim Export. Bekannte Referenzen für Belegfeld 1 erhalten; unbekannte Referenzen bei Rot dokumentiert leer lassen. Anlagen/GWG erfordern `asset_booking: true`, Rot und ein grundsätzlich leeres Anlagenkontofeld. Je betroffener Zeile `asset_account_field: "account"` oder `"contra_account"` setzen. Der Generator weist direkte Anlagenkonten und Ersatzbuchungen zurück.
+
+Bei Rot enthält jede Buchungszeile `open_fields` als Objekt aus exakt offenem Feld und konkreter Begründung, zum Beispiel:
+
+```json
+"account": null,
+"asset_account_field": "account",
+"open_fields": {"account": "Anlagenzugang zuerst in der Anlagenvorerfassung anlegen; fachlicher Vorschlag 0480 GWG."}
+```
+
+Erlaubte Feldnamen: `amount`, `debit_credit`, `currency`, `exchange_rate`, `base_amount`, `account`, `contra_account`, `bu_key`, `recognized_date`, `document_field_1`, `service_date`, `tax_period_date`. `currency` und `recognized_date` stehen am Vorgang, die übrigen Werte an der Buchungszeile. Ein offenes Feld ist `null` oder leer; ein bekannt ausgefüllter Wert darf nicht zugleich als offen deklariert werden. Grün hat keine offenen Felder. Ein fachlich korrekt leeres BU-Feld benötigt keine Unsicherheitsbegründung. Rote Fälle mit vollständig bekannten Feldern benötigen weiterhin einen konkreten Klärungsfall, aber keine künstliche Leerstelle.
+
+Jeder rote Vorgang benötigt `requires_clarification: true` und genau einen Klärungsfall mit `booking_risk`. Die Prüfungsdatei zeigt die konkreten offenen Felder, das Risiko und die Mitarbeiterentscheidung. Buchungstexte bleiben sachliche Beleg-/Leistungsbeschreibungen.
 
 Bei Zahlungsavis: `payment_advice: true`, Status `nicht buchungsrelevant`, keine Ampel, keine Buchungen. Es entsteht ein separates Avis-Belegtransfer-ZIP.
 
@@ -202,8 +214,20 @@ Typische Ziele: Bank-/Kreditkartenprozess, Lohnbuchhaltung, DUO-Avispaket, Rück
 
 `master_records[]`: `action`, `account`, `account_type`, `name`, `full_current_record_available`, `banks`; bei Kreditoren soweit vorhanden `vat_id`. Keine Sammel-/CPD-Konten.
 
-`clarification_cases[]`: `case_id`, `transaction_ids`, `topic`, `facts`, `provisional_treatment`, `recommendation`, `decision_needed`, `traffic_light`, `target`, `proposed_change`, `employee_result`.
+`clarification_cases[]`: `case_id`, `transaction_ids`, `topic`, `facts`, `booking_risk`, `provisional_treatment`, `recommendation`, `decision_needed`, `traffic_light`, `target`, `proposed_change`, `employee_result`.
 
 `profile_suggestions[]` enthält ausschließlich dauerhaft wiederverwendbare mandantenspezifische Regeln. Allgemeine Ausschluss-, DATEV- und Dokumentregeln bleiben global.
 
 `accrual_register`, `accrual_candidates` und `accrual_releases` folgen der Registerlogik. `threshold_amount` liegt über 800 EUR. Bei neuen Abgrenzungen bleiben Ursprungsrechnung und erste Auflösung vollständig nachgewiesen.
+
+## DATEV-Testimport und Grenzen der internen Prüfung
+
+Vor einem produktiven Import das Paket in einem dafür freigegebenen DATEV-Testbestand testen. Prüfen, ob unvollständige rote Zeilen als bearbeitungsbedürftig übernommen werden oder ob DATEV Zeilen beziehungsweise den gesamten Stapel zurückweist. Den tatsächlich getesteten Dateistand über SHA-256 nachweisen; Ergebnis, DATEV-Version, Testbestand und genaue Meldungen dokumentieren. Bei fehlendem Zugang Status `pending` und `DATEV-Testimport ausstehend` ausweisen; keinen Erfolg behaupten. Die Paketübergabe mit internem `valid=true` bleibt zulässig, ohne damit DATEV-Importfähigkeit zu bestätigen.
+
+Optionales Lauf-JSON-Feld `datev_test_import`: `status` ist `pending`, `confirmed` oder `rejected`. Bei ausgeführtem Test sind `tested_at`, `datev_version`, `test_client`, `evidence_reference`, `result_detail` und `tested_files` Pflicht. `tested_files` ordnet jedem tatsächlich erzeugten EXTF-Dateinamen den SHA-256 des getesteten Inhalts zu. `confirmed` bedeutet: Alle Zeilen wurden übernommen und rote Zeilen sind bearbeitungsbedürftig; `rejected` protokolliert insbesondere eine Zurückweisung des gesamten Stapels. Ein Nachweis für andere Dateiinhalte bestätigt das aktuelle Paket nicht. Ein ergebnisloser oder nicht ausgeführter Test bleibt `pending`.
+
+Weist DATEV den gesamten Stapel zurück, Fehler und betroffene Felder offen melden; keine Ersatzbuchung, kein Entfernen roter Fälle und kein eigenmächtiges Aufteilen des Monatsstapels. Einen lokalen Strukturtest niemals als DATEV-Testimport ausgeben.
+
+Quelle: [DATEV-Schnittstellenvorgaben und Testimport](https://developer.datev.de/de/product-detail/accounting-extf-files/2.0/documentation/interface-requirements-file).
+
+Einen tatsächlichen Testimportnachweis nach dem Test mit `python scripts/validate_package.py --package <Paketordner> --datev-test-import <Nachweis.json>` prüfen. Bei passendem Dateistand wird er unter `03_Technische_Protokolle/DATEV_Testimport.json` gespeichert und bei Folgeprüfungen berücksichtigt.

@@ -21,7 +21,7 @@ def build_workbook(path: Path, rows: list[tuple[str, str, str]]) -> None:
         review.append(
             [
                 light,
-                "EXTF_Klaerungsposten_2026-07.csv",
+                "EXTF_Buchungsstapel_2026-07.csv",
                 transaction_id,
                 datetime(2026, 7, min(position, 28)),
                 partner,
@@ -86,7 +86,7 @@ def main() -> None:
         result, _, _ = run_case(
             root,
             "complete",
-            [("V0001", "Rot", "A GmbH"), ("V0002", "Gelb", "B GmbH")],
+            [("V0001", "Rot", "A GmbH"), ("V0002", "Rot", "B GmbH")],
             {
                 "V0001": ("geändert", "Als Aufwand gebucht"),
                 "V0002": ("unverändert übernommen", ""),
@@ -98,7 +98,7 @@ def main() -> None:
         result, _, _ = run_case(
             root,
             "open",
-            [("V0001", "Rot", "A GmbH"), ("V0002", "Gelb", "B GmbH")],
+            [("V0001", "Rot", "A GmbH"), ("V0002", "Rot", "B GmbH")],
             {"V0001": ("unverändert übernommen", "")},
         )
         assert result["status"] == "unvollständig"
@@ -159,7 +159,7 @@ def main() -> None:
         product_rows = [
             ("V0023", "Rot", "BOBE Tiefbau"),
             ("V0060", "Rot", "AXA Versicherung"),
-            *[(f"V01{number:02d}", "Gelb", f"Lieferant {number}") for number in range(1, 10)],
+            *[(f"V01{number:02d}", "Rot", f"Lieferant {number}") for number in range(1, 10)],
         ]
         product_values = {
             "V0023": ("geändert", "Geprüft, als Instandhaltung gebucht"),
@@ -183,8 +183,7 @@ def main() -> None:
             register,
         )
         assert result["status"] == "vollständig"
-        assert result["counts"]["Rot"] == {"gesamt": 2, "abgeschlossen": 2}
-        assert result["counts"]["Gelb"] == {"gesamt": 9, "abgeschlossen": 9}
+        assert result["counts"]["Rot"] == {"gesamt": 11, "abgeschlossen": 11}
         assert not result["profile_suggestions"]
         assert not result["register_suggestions"]
 

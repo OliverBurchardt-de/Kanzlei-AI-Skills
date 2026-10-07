@@ -217,6 +217,9 @@ def evaluate(
         raise ValueError(f"Blatt {REVIEW_SHEET!r} fehlt")
     source_rows, _ = table_rows(original[REVIEW_SHEET], REQUIRED_HEADERS)
     return_rows, _ = table_rows(returned[REVIEW_SHEET], REQUIRED_HEADERS)
+    for source_row in source_rows:
+        if clean(source_row.get("Ampel-Einstufung")) not in {"Rot", "Grün", ""}:
+            validation.append(f"{source_row.get('Vorgangs-ID')}: Ampelstatus ist in Version 1.3 unzulässig.")
 
     def index_rows(rows: list[dict[str, Any]], label: str) -> dict[str, dict[str, Any]]:
         index: dict[str, dict[str, Any]] = {}
@@ -258,14 +261,13 @@ def evaluate(
     required_rows = [
         return_by_id[transaction_id]
         for transaction_id, source_row in source_by_id.items()
-        if clean(source_row.get("Ampel-Einstufung")) in {"Rot", "Gelb"}
+        if clean(source_row.get("Ampel-Einstufung")) == "Rot"
         and transaction_id in return_by_id
     ]
     results: list[dict[str, Any]] = []
     open_ids: list[str] = []
     counts = {
         "Rot": {"gesamt": 0, "abgeschlossen": 0},
-        "Gelb": {"gesamt": 0, "abgeschlossen": 0},
     }
     for source_row in source_rows:
         light = clean(source_row.get("Ampel-Einstufung"))
@@ -354,10 +356,9 @@ def evaluate(
         f"- Integrität: {'bestätigt' if not integrity else 'abweichend'}",
         f"- Gesamtstatus: {overall}",
         "",
-        "## Abschlussstatus Rot/Gelb",
+        "## Abschlussstatus Rot",
         "",
         f"- Rot: {counts['Rot']['abgeschlossen']} von {counts['Rot']['gesamt']} abgeschlossen",
-        f"- Gelb: {counts['Gelb']['abgeschlossen']} von {counts['Gelb']['gesamt']} abgeschlossen",
         "",
         "## Geänderte Vorgänge",
         "",
