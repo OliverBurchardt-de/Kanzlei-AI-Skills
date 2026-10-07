@@ -26,6 +26,8 @@ from datev_io import (
     master_row,
     month_bounds,
     write_extf,
+    validate_open_fields,
+    accrual_document,
 )
 
 
@@ -36,8 +38,8 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "1.2.0"
-OUTPUT_CONTRACT = "single-datev-import-folder-v2"
+SKILL_VERSION = "1.3.0"
+OUTPUT_CONTRACT = "single-monthly-booking-batch-v3"
 
 VALID_STATUSES = {
     "Buchungszeile erzeugt",
@@ -45,7 +47,7 @@ VALID_STATUSES = {
     "nicht buchungsrelevant",
     "außerhalb Auftragszeitraum",
 }
-VALID_LIGHTS = {"Grün", "Gelb", "Rot"}
+VALID_LIGHTS = {"Grün", "Rot"}
 SOURCE_ROLES = {
     "primary_invoice",
     "supporting_document",
@@ -54,11 +56,6 @@ SOURCE_ROLES = {
     "duplicate_copy",
 }
 JOB_MODE = "belegbuchhaltung"
-DATEV_BATCH_NAMES = {
-    "Grün": ("Buchungsstapel", "Buchungsstapel"),
-    "Gelb": ("Klaerungsposten_1", "Klärungsposten"),
-    "Rot": ("Klaerungsposten_2", "Klärungsposten"),
-}
 ACCRUAL_THRESHOLD = Decimal("800")
 
 DOCUMENT_NAMESPACE = "http://xml.datev.de/bedi/tps/document/v06.0"
@@ -423,7 +420,7 @@ def validate_run_values(run: dict[str, Any]) -> None:
     accounts = run.get("account_config")
     if not isinstance(accounts, dict):
         raise ValueError("Mandantenspezifische account_config fehlt.")
-    for key in ("private_expense", "gwg", "clarification"):
+    for key in ("private_expense", "gwg"):
         value = str(accounts.get(key, ""))
         if not value.isdigit() or len(value) != account_length:
             raise ValueError(f"account_config.{key} muss ein gültiges Sachkonto sein.")
@@ -545,7 +542,9 @@ def validate_live_datev_usage(data: dict[str, Any]) -> list[str]:
         tid = str(doc.get("transaction_id", ""))
         for booking in doc.get("bookings", []):
             for field in ("account", "contra_account"):
-                account = str(booking.get(field, ""))
+                account = str(booking.get(field) or "")
+                if not account and field in booking.get("open_fields", {}) and doc.get("traffic_light") == "Rot":
+                    continue
                 if account not in allowed_accounts:
                     errors.append(
                         f"{tid}: {field} {account} ist weder live bestätigt "
@@ -1226,11 +1225,11 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
             errors.append(f"{tid}: Status und vorhandene Buchungen widersprechen sich")
 
         if doc.get("processing_status") == "Buchungszeile erzeugt":
-            if doc.get("traffic_light") in {"Gelb", "Rot"}:
+            if doc.get("traffic_light") == "Rot":
                 if doc.get("requires_clarification") is not True:
-                    errors.append(f"{tid}: Gelb/Rot erfordert requires_clarification=true")
+                    errors.append(f"{tid}: Rot erfordert requires_clarification=true")
                 if clarification_counts.get(tid, 0) != 1:
-                    errors.append(f"{tid}: Gelb/Rot muss genau einem Klärungsfall zugeordnet sein")
+                    errors.append(f"{tid}: Rot muss genau einem Klärungsfall zugeordnet sein")
             if doc.get("traffic_light") == "Grün" and (
                 doc.get("requires_clarification") is True or clarification_counts.get(tid, 0)
             ):
@@ -1288,23 +1287,28 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
                 elif status == "klaerung":
                     if doc.get("traffic_light") != "Rot":
                         errors.append(f"{tid}: unvollständiger Bewirtungsbeleg muss Rot sein")
-                    clarification_account = str(accounts["clarification"])
-                    if not any(
-                        clarification_account in {
-                            str(item.get("account", "")), str(item.get("contra_account", ""))
-                        }
-                        for item in doc.get("bookings", [])
-                    ):
-                        errors.append(f"{tid}: unvollständige Bewirtung muss auf das Klärungskonto")
+                    if not any(item.get("open_fields") for item in doc.get("bookings", [])):
+                        errors.append(f"{tid}: unvollständige Bewirtung erfordert konkret dokumentierte offene Buchungsfelder")
 
-            try:
-                total = parse_decimal_amount(doc.get("total_amount"))
-                booking_total = sum(parse_decimal_amount(item.get("amount")) for item in doc.get("bookings", []))
-            except (ValueError, TypeError):
-                errors.append(f"{tid}: Gesamt- oder Buchungsbetrag ist ungültig")
-            else:
-                if total <= 0 or booking_total != total:
-                    errors.append(f"{tid}: Summe der Buchungszeilen stimmt nicht mit Gesamtbetrag überein")
+            for booking in doc.get("bookings", []):
+                try:
+                    validate_open_fields(doc, booking, run)
+                    booking_row(doc, booking, run)
+                except ValueError as exc:
+                    errors.append(f"{tid}: {exc}")
+            all_amounts_known = all(item.get("amount") not in (None, "") for item in doc.get("bookings", []))
+            if doc.get("total_amount") not in (None, "") and all_amounts_known:
+                try:
+                    total = parse_decimal_amount(doc["total_amount"])
+                    booking_total = sum(parse_decimal_amount(item["amount"]) for item in doc.get("bookings", []))
+                    if total <= 0 or booking_total != total:
+                        errors.append(f"{tid}: Summe der Buchungszeilen stimmt nicht mit Gesamtbetrag überein")
+                except (ValueError, TypeError):
+                    errors.append(f"{tid}: Gesamt- oder Buchungsbetrag ist ungültig")
+            elif doc.get("traffic_light") != "Rot":
+                errors.append(f"{tid}: fehlender Gesamt- oder Buchungsbetrag erfordert Rot")
+            elif doc.get("total_amount") in (None, "") and all_amounts_known:
+                errors.append(f"{tid}: fehlender Gesamtbetrag bei vollständig gefüllten Buchungsbeträgen ist widersprüchlich")
 
         used_asset_accounts = {
             account
@@ -1315,32 +1319,8 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
             )
             if account in configured_asset_accounts
         }
-        is_asset_booking = doc.get("asset_booking") is True or bool(used_asset_accounts)
-        if used_asset_accounts and doc.get("asset_booking") is not True:
-            errors.append(
-                f"{tid}: Buchung auf Anlagenkonto muss asset_booking=true tragen"
-            )
-        if doc.get("asset_booking") is True and not used_asset_accounts:
-            errors.append(
-                f"{tid}: Anlagenbuchung verwendet kein in account_config.asset_accounts "
-                "hinterlegtes Anlagenkonto"
-            )
-        if is_asset_booking:
-            if doc.get("traffic_light") != "Rot":
-                errors.append(
-                    f"{tid}: Buchung auf Anlagenkonto muss Rot sein, damit das "
-                    "DATEV-Belegdatum leer exportiert wird"
-                )
-            try:
-                amount_value = parse_decimal_amount(doc.get("total_amount"))
-            except ValueError:
-                pass
-            else:
-                if amount_value <= Decimal("800") and str(accounts["gwg"]) not in used_asset_accounts:
-                    errors.append(
-                        f"{tid}: Anlage bis 800 EUR ist nicht auf das konfigurierte "
-                        "GWG-Konto gebucht"
-                    )
+        if used_asset_accounts:
+            errors.append(f"{tid}: Anlagenkonto darf nicht unmittelbar exportiert werden; Anlagenvorerfassung erforderlich")
     return errors
 
 
@@ -1461,6 +1441,10 @@ def validate_clarifications(data: dict[str, Any]) -> list[str]:
         missing = [key for key in required if key not in case]
         if missing:
             errors.append(f"{case_id}: fehlende Klärungsfelder: {', '.join(missing)}")
+        if case.get("traffic_light") != "Rot":
+            errors.append(f"{case_id}: Klärungsfall muss Rot sein")
+        if not str(case.get("booking_risk", "")).strip():
+            errors.append(f"{case_id}: konkretes Buchungsrisiko (booking_risk) fehlt")
         transaction_ids = case.get("transaction_ids", [])
         if not isinstance(transaction_ids, list) or not transaction_ids:
             errors.append(f"{case_id}: transaction_ids muss eine nicht leere Liste sein")
@@ -1498,75 +1482,48 @@ def prepare_output(base: Path, run: dict[str, Any]) -> Path:
 
 def write_booking_batches(root: Path, data: dict[str, Any]) -> list[dict[str, Any]]:
     run = data["run"]
-    groups: dict[tuple[str, str], list[list[Any]]] = defaultdict(list)
+    groups: dict[str, list[list[Any]]] = defaultdict(list)
     trace: list[dict[str, Any]] = []
+
+    def add_row(doc: dict[str, Any], booking: dict[str, Any], line_no: int,
+                kind: str = "document") -> None:
+        period = doc.get("period") or run["buchungsmonat"]
+        row = booking_row(doc, booking, run)
+        groups[period].append(row)
+        trace.append({
+            "transaction_id": doc["transaction_id"], "line": line_no,
+            "traffic_light": doc["traffic_light"], "period": period,
+            "file": f"EXTF_Buchungsstapel_{period}.csv",
+            "csv_row": len(groups[period]) + 2, "kind": kind,
+            "open_fields": booking.get("open_fields", {}),
+            "asset_booking": doc.get("asset_booking") is True,
+            "asset_account_field": booking.get("asset_account_field"),
+            "export_values": ["" if value is None else str(value) for value in row],
+            "reason": doc.get("reason", ""),
+        })
+
     for doc in data.get("documents", []):
         if doc.get("processing_status") != "Buchungszeile erzeugt":
             continue
-        light = doc["traffic_light"]
-        period = doc.get("period") or run["buchungsmonat"]
         for line_no, booking in enumerate(doc.get("bookings", []), start=1):
-            groups[(light, period)].append(booking_row(doc, booking, run))
-            trace.append({
-                "transaction_id": doc["transaction_id"],
-                "line": line_no,
-                "traffic_light": light,
-                "period": period,
-                "intentional_blank_date": light == "Rot",
-                "reason": doc.get("reason", ""),
-            })
-    for (light, period), rows in groups.items():
+            add_row(doc, booking, line_no)
+    for number, release in enumerate(data.get("accrual_releases", []), start=1):
+        synthetic_doc = accrual_document(release, run, number)
+        add_row(synthetic_doc, release, number, "accrual")
+    for period, rows in groups.items():
         if len(rows) > 99999:
-            raise ValueError(
-                f"{light}/{period}: DATEV-Grenze von 99.999 Buchungen überschritten"
-            )
-        file_stem, label = DATEV_BATCH_NAMES[light]
-        target = root / FOLDERS["datev"] / (
-            f"EXTF_{file_stem}_{period}.csv"
-        )
+            raise ValueError(f"{period}: DATEV-Grenze von 99.999 Buchungen überschritten; nicht eigenmächtig teilen")
+        target = root / FOLDERS["datev"] / f"EXTF_Buchungsstapel_{period}.csv"
         write_extf(
             target,
             extf_header(
-                run, category=21, format_name="Buchungsstapel",
-                version=13, label=label, period=period
+                run, category=21, format_name="Buchungsstapel", version=13,
+                label="Buchungsstapel", period=period
             ),
             BOOKING_FIELDS,
             rows,
         )
     return trace
-
-
-def write_accrual_batches(root: Path, data: dict[str, Any]) -> None:
-    run = data["run"]
-    groups: dict[str, list[list[Any]]] = defaultdict(list)
-    for release in data.get("accrual_releases", []):
-        period = release["period"]
-        synthetic_doc = {
-            "transaction_id": release["accrual_id"],
-            "traffic_light": "Grün",
-            "recognized_date": release.get("booking_date"),
-            "invoice_number": release["document_field_1"],
-            "currency": release.get("currency", run.get("waehrung", "EUR")),
-            "reason": "",
-        }
-        if not synthetic_doc["recognized_date"]:
-            year, month = (int(x) for x in period.split("-"))
-            import calendar
-            synthetic_doc["recognized_date"] = (
-                f"{year:04d}-{month:02d}-{calendar.monthrange(year, month)[1]:02d}"
-            )
-        groups[period].append(booking_row(synthetic_doc, release, run))
-    for period, rows in groups.items():
-        target = root / FOLDERS["datev"] / f"EXTF_Abgrenzungen_{period}.csv"
-        write_extf(
-            target,
-            extf_header(
-                run, category=21, format_name="Buchungsstapel", version=13,
-                label=f"Abgrenzungen {period}", period=period
-            ),
-            BOOKING_FIELDS,
-            rows,
-        )
 
 
 def write_master_data(root: Path, data: dict[str, Any]) -> None:
@@ -2050,7 +2007,7 @@ def write_clarification_files(root: Path, data: dict[str, Any]) -> None:
     for case in cases:
         values = [
             case.get("case_id", ""), case.get("transaction_ids", []),
-            case.get("topic", ""), case.get("facts", ""),
+            case.get("topic", ""), " – ".join(filter(None, [case.get("facts", ""), case.get("booking_risk", "")])),
             case.get("provisional_treatment", ""), case.get("recommendation", ""),
             case.get("decision_needed", ""), case.get("traffic_light", ""),
             case.get("target", ""), case.get("proposed_change", ""),
@@ -2106,7 +2063,7 @@ def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
     report = data.get("activity_report", {})
     status_counts = Counter(item.get("processing_status") for item in documents)
     light_counts = Counter(item.get("traffic_light") for item in documents)
-    booking_lines = sum(len(item.get("bookings", [])) for item in documents)
+    booking_lines = sum(len(item.get("bookings", [])) for item in documents) + len(data.get("accrual_releases", []))
     actual_periods = sorted({
         str(item.get("period", ""))
         for item in documents
@@ -2128,7 +2085,7 @@ def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
         f"- Logische Vorgänge: {len(documents)}",
         f"- Buchungszeilen: {booking_lines}",
         f"- Gebuchte Vorgänge: {status_counts.get('Buchungszeile erzeugt', 0)}",
-        f"- Grün/Gelb/Rot: {light_counts.get('Grün', 0)} / {light_counts.get('Gelb', 0)} / {light_counts.get('Rot', 0)}",
+        f"- Grün/Rot: {light_counts.get('Grün', 0)} / {light_counts.get('Rot', 0)}",
         f"- Ausgeschlossen: {sum(1 for item in documents if item.get('processing_status') in {'nicht buchungsrelevant', 'außerhalb Auftragszeitraum'})}",
         f"- Sichere Dubletten: {status_counts.get('sichere Dublette – nicht erneut gebucht', 0)}",
         f"- Bearbeitungsstatus: {report.get('datev_import_status', 'Importpaket erstellt – noch nicht in DATEV importiert')}",
@@ -2247,7 +2204,7 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "hochgeladene_dateien": len(data.get("source_files", [])),
         "quelldateien": len(data.get("source_files", [])),
         "logische_vorgaenge": len(docs),
-        "buchungszeilen": sum(len(doc.get("bookings", [])) for doc in docs),
+        "buchungszeilen": len(trace),
         "input_inventory_count": len(data.get("input_inventory", [])),
         "input_inventory": data.get("input_inventory", []),
         "ampel": dict(light_counts),
@@ -2269,6 +2226,7 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "handoffs": data.get("handoffs", []),
         "payment_reconciliation": data.get("payment_reconciliation", []),
         "booking_trace": trace,
+        "datev_test_import": data.get("datev_test_import", {"status": "pending"}),
         "document_index": document_index,
         "belegtransfer_status": (
             "DATEV Document-Package v6.0; Buchungsbelege und Avis getrennt, jeweils ZIP mit document.xml"
@@ -2277,7 +2235,7 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "datev_import_order": [
             "EXTF_Debitoren_Kreditoren.csv (falls vorhanden)",
             "Belegtransfer_*.zip und Belegtransfer_Avise_*.zip",
-            "EXTF Kategorie 21: Buchungs-, Klärungs- und Abgrenzungsstapel",
+            "EXTF Kategorie 21: ein gemeinsamer Buchungsstapel je Monat",
         ],
         "preflight_evidence": data["run"].get("_preflight_summary", {}),
     }
@@ -2292,14 +2250,14 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         f"- Vollständigkeit: {'VOLLSTÄNDIG' if complete else 'UNVOLLSTÄNDIG'}",
         f"- Quelldateien: {len(data.get('source_files', []))}",
         f"- Logische Vorgänge: {len(docs)}",
-        f"- Buchungszeilen: {sum(len(doc.get('bookings', [])) for doc in docs)}",
+        f"- Buchungszeilen: {len(trace)}",
         f"- Zielperioden: {', '.join(data.get('scope', {}).get('target_periods', []))}",
         f"- Bearbeitungsstatus: {data.get('activity_report', {}).get('datev_import_status', 'Importpaket erstellt – noch nicht in DATEV importiert')}",
         "- Fachstatus: fachlicher Prüfprotokoll-Rücklauf ausstehend",
         f"- Buchungsbelege: {status_counts.get('Buchungszeile erzeugt', 0)}",
         f"- Sichere Dubletten: {status_counts.get('sichere Dublette – nicht erneut gebucht', 0)}",
         f"- Nicht buchungsrelevant: {status_counts.get('nicht buchungsrelevant', 0)}",
-        f"- Rote Belege mit absichtlich leerem DATEV-Datum: {light_counts.get('Rot', 0)}",
+        f"- Rote Belege mit konkret dokumentiertem Bearbeitungsbedarf: {light_counts.get('Rot', 0)}",
         "",
         "Belegtransfer wurde als DATEV Document-Package mit document.xml erzeugt.",
     ]
@@ -2330,7 +2288,6 @@ def main() -> int:
         transfer_packages, document_index = prepare_document_transfer(data)
         root = prepare_output(args.output, data["run"])
         trace = write_booking_batches(root, data)
-        write_accrual_batches(root, data)
         write_master_data(root, data)
         write_belegtransfer_packages(
             root, data, transfer_packages, document_index

@@ -43,6 +43,6 @@ Bei vollständigem Nachweis:
 Bei fehlendem oder unklarem Nachweis:
 
 - nicht weglassen und nicht als „nicht buchungsrelevant“ behandeln;
-- Rot buchen, DATEV-Belegdatum leer;
-- vollständigen Betrag auf das konfigurierte Klärungskonto;
+- Rot im gemeinsamen Monatsstapel exportieren, sicheres Datum und Betrag erhalten;
+- nur konkret ungesicherte Buchungsfelder mit `open_fields` offen lassen, keine Ersatzkontierung;
 - genau einen Klärungsfall mit den fehlenden Nachweisen.

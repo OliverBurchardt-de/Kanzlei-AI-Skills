@@ -23,7 +23,7 @@ Der EXTF-Header enthält 31 Felder. Pflichtwerte aus Live-DATEV-Daten übernehme
 
 ## Buchungsstapel
 
-Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Der reguläre Stapel heißt `Buchungsstapel`; die beiden technisch getrennten Klärungsdateien heißen `Klaerungsposten_1` und `Klaerungsposten_2`; ihre DATEV-Stapelbezeichnung lautet jeweils ausschließlich `Klärungsposten`.
+Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat genau `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel`; darin Grün, Rot und fällige Abgrenzungsauflösungen gemeinsam. Keine Klärungs- oder Abgrenzungs-CSV-Dateien.
 
 Vollständige 125-Feld-Folge ausgeben. Wesentliche Felder:
 
@@ -33,8 +33,8 @@ Vollständige 125-Feld-Folge ausgeben. Wesentliche Felder:
 7. Konto
 8. Gegenkonto ohne BU-Schlüssel
 9. BU-Schlüssel: technisch leer oder exakt vier Ziffern. Der fachlich dreistellige Schlüssel wird im EXTF-Export mit genau einer führenden Null ausgegeben, z. B. `401` → `0401`.
-10. Belegdatum `TTMM`; bei Rot und bei jeder Buchungszeile auf einem konfigurierten Anlagenkonto absichtlich leer
-11. Belegfeld 1, maximal 36 Zeichen
+10. Sicher erkanntes Belegdatum `TTMM`, auch bei Rot; nur bei konkret unbekanntem Datum dokumentiert leer
+11. Bekannte Belegreferenz in Belegfeld 1, maximal 36 Zeichen; bei Rot nur bei unbekannter Referenz dokumentiert leer
 14. Buchungstext, maximal 60 Zeichen; ausschließlich normaler fachlicher Text ohne interne Warn- oder Prüfhinweise
 37–39. KOST-Felder in der allgemeinen Version leer
 115. Leistungsdatum, soweit technisch/fachlich erforderlich

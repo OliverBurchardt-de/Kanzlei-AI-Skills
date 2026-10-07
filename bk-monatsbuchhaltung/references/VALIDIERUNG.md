@@ -6,7 +6,7 @@ Kein importfreigegebenes Paket bei fehlender bestätigter DATEV-Verbindung, fehl
 
 Nur fehlende DATEV-Verbindung, technischer SharePoint-Abruf-/Lesefehler, ein nach erfolgreicher direkter Ordnerauflistung tatsächlich fehlendes Mandantenprofil oder verpflichtende Kostenstellenverarbeitung beenden den Lauf im Preflight. Ein nachweislich nicht vorhandenes Abgrenzungsregister beendet den Lauf ausdrücklich nicht. Eine erfolglose Volltext- oder Stichwortsuche darf niemals als fehlendes Mandantenprofil gewertet werden. Später erkannte strukturelle Fehler werden protokolliert und kennzeichnen das Paket als nicht importfreigegeben; sie lösen keine fachliche Zwischenfrage aus.
 
-Neue Kreditoren und Debitoren, ihre automatisch fortlaufenden Kontonummern sowie provisorische Kreditorennamen sind niemals ein Stop- oder Freigabegrund. Prüfen, dass keine Freigabeeigenschaft erwartet wird, jede technisch mögliche Neuanlage in `EXTF_Debitoren_Kreditoren.csv` enthalten ist und ein fehlender offizieller Kreditorenname durch `Lieferant <Belegart> <Belegfeld 1>` ersetzt sowie als roter Klärungsfall dokumentiert wurde. Meldet das Laufmanifest mindestens einen `master_records`-Datensatz, muss `01_DATEV_Import/EXTF_Debitoren_Kreditoren.csv` vorhanden sein, Kategorie 16 und Formatversion 5 tragen und exakt dieselbe Zahl an Datenzeilen enthalten. Eine separate Anlage zählt nicht als Stammdatenimport.
+Neue Kreditoren und Debitoren, ihre automatisch fortlaufenden Kontonummern sowie provisorische Kreditorennamen sind niemals ein Stop- oder Freigabegrund. Prüfen, dass keine Freigabeeigenschaft erwartet wird, jede technisch mögliche Neuanlage in `EXTF_Debitoren_Kreditoren.csv` enthalten ist und bei unklarer Geschäftspartneridentität kein Name oder Personenkonto erfunden wird; das betroffene Personenkontofeld bleibt bei Rot dokumentiert offen. Meldet das Laufmanifest mindestens einen `master_records`-Datensatz, muss `01_DATEV_Import/EXTF_Debitoren_Kreditoren.csv` vorhanden sein, Kategorie 16 und Formatversion 5 tragen und exakt dieselbe Zahl an Datenzeilen enthalten. Eine separate Anlage zählt nicht als Stammdatenimport.
 
 Für jedes verwendete bestehende Personenkonto muss `datev_live_evidence.used_person_accounts` Kontonummer, Typ und live gelesenen Namen enthalten. Generatorisch sperren:
 
@@ -37,31 +37,31 @@ Ein Wahrheitsfeld allein ist kein Quellenbeleg. Vor dem Paketbau müssen für ei
 
 ## Beabsichtigte rote Zeilenfehler
 
-Ein leeres DATEV-Belegdatum ist bei Rot erwartet und blockiert das Paket nicht. Der rote Klärungsposten muss ungeachtet dessen die vollständige EXTF-Struktur, Kategorie 21, Formatversion 13, 125 Felder und alle übrigen technisch erforderlichen Werte erfüllen. Er darf keinen Parser-, Schema- oder Dateiformatfehler des gesamten Imports auslösen; nur die einzelne Buchungszeile soll wegen des leeren Datums in DATEV bearbeitungsbedürftig sein. Im technischen Protokoll jede dieser Zeilen mit Vorgangs-ID, Datei und Grund auflisten.
+Rot bleibt im gemeinsamen Monatsstapel. Nur konkret dokumentierte offene Felder dürfen leer sein; bekannte Werte bleiben erhalten. Header, Kategorie 21, Formatversion 13 und 125-Feld-Struktur bleiben verbindlich. Jede rote Zeile über Vorgangs-ID, Datei, CSV-Zeilennummer, `open_fields` und exportierte Werte im Manifest nachweisen. Die Prüfung bestätigt den internen Exportvertrag, nicht die DATEV-Importfähigkeit unvollständiger Pflichtfelder.
 
 ## Fachliche Prüfungen
 
 - Echte Kalenderdaten prüfen.
 - Buchungsperiode aus erkanntem Belegdatum ableiten.
-- Jede Buchungsperiode und interne Ampelkategorie als eigene CSV-Datei unmittelbar in dem einzigen Ordner `01_DATEV_Import/` ausgeben. Alle Stammdaten-, Buchungs-, Abgrenzungs- und Belegtransferdateien liegen dort gemeinsam; Unterordner und getrennte DATEV-/Ampelordner sind blockierend. Jeden grünen, gelben und roten Stapel vollständig durch die strukturelle EXTF-Prüfung laufen lassen. DATEV-Dateiname und Stapelbezeichnung dürfen keine Ampelfarbe enthalten. Der reguläre DATEV-Stapel heißt `Buchungsstapel`; die beiden Klärungsdateien tragen in DATEV jeweils ausschließlich die Stapelbezeichnung `Klärungsposten`. Nur ausdrücklich über `scope` freigegebene Vorjahresperioden verarbeiten und niemals mit dem laufenden Buchungsmonat mischen.
+- Jede Buchungsperiode als genau eine gemeinsame CSV-Datei unmittelbar in dem einzigen Ordner `01_DATEV_Import/` ausgeben. Alle Stammdaten-, Buchungs-, Abgrenzungs- und Belegtransferdateien liegen dort gemeinsam; Unterordner und getrennte DATEV-/Ampelordner sind blockierend. Den gemeinsamen Monatsstapel vollständig durch die strukturelle EXTF-Prüfung laufen lassen. DATEV-Dateiname und Stapelbezeichnung dürfen keine Ampelfarbe enthalten. DATEV-Stapel und Dateiname heißen `Buchungsstapel`; getrennte Klärungs-/Abgrenzungsdateien sind unzulässig. Nur ausdrücklich über `scope` freigegebene Vorjahresperioden verarbeiten und niemals mit dem laufenden Buchungsmonat mischen.
 - Belegweit schlechteste Farbe durchsetzen.
-- Bei Rot in allen Teilbuchungen DATEV-Datum leeren.
-- Belegfeld 1 in jeder Zeile setzen und auf 36 zulässige Zeichen normalisieren.
-- Buchungstext auf 60 Zeichen normalisieren und interne Warn- oder Prüfhinweise vollständig ausschließen. Das gilt für Grün, Gelb und Rot.
+- Bei Rot alle sicher bekannten Angaben erhalten; ausschließlich begründete `open_fields` offen lassen.
+- Bekannte Belegreferenz in Belegfeld 1 setzen; unbekannte Referenz bei Rot dokumentiert leer lassen und auf 36 zulässige Zeichen normalisieren.
+- Buchungstext auf 60 Zeichen normalisieren und interne Warn- oder Prüfhinweise vollständig ausschließen. Das gilt für Grün und Rot.
 - BU-Schlüssel im Lauf-JSON und in Excel fachlich leer oder genau dreistellig führen. Vierstellige Eingaben mit genau einer führenden Null intern auf drei Stellen normalisieren; zweistellige und sonstige Formate zurückweisen. Im technischen EXTF-Feld 9 den Schlüssel exakt vierstellig mit führender Null ausgeben und validieren.
 - Nur live bestätigte Konten und Steuerschlüssel verwenden.
 - Vollständigkeitsgleichung auf Dateiebene und Exportebene prüfen. Jeder Beleg mit Status `Buchungszeile erzeugt` muss mindestens eine tatsächlich exportierte DATEV-Buchungszeile besitzen.
 - Neu erkannte Abgrenzungen über `transaction_ids` mit ihren Ursprungsrechnungen verknüpfen. Ursprungsrechnung zwingend gegen Kreditor/Debitor auf ARAP/PRAP buchen; Registereintrag und Auflösungsstapel ersetzen diese Rechnungsbuchung nicht.
-- Für jede neue Abgrenzung die erste Auflösungsbuchung im aktuellen Abgrenzungsstapel nachweisen.
+- Für jede neue Abgrenzung die erste Auflösungsbuchung im gemeinsamen Monatsstapel nachweisen.
 - Sichere Dublette nicht erneut buchen oder übertragen.
 - Zahlungsavis nicht buchen; als eigenes DUO-Belegtransfer-ZIP mit `document.xml` vollständig aussteuern und zusätzlich als Arbeitskopie ablegen.
 - Betrieblichen Anlass vor Kontierung, Anlagenprüfung und Abgrenzungsprüfung dokumentieren.
 - Bei eindeutig privater Ausgabe Bruttobetrag auf Konto `4655` gegen den Kreditor buchen, BU-Schlüssel leer lassen und keinen Vorsteuerabzug oder Abgrenzung erzeugen.
 - Für private Ausgaben keine Entnahme-, Gesellschafter- oder Verrechnungskonten verwenden.
 - Sport- und Freizeitdauerkarten als privat und nicht abzugrenzen behandeln.
-- Bei unklarem betrieblichen Anlass mindestens Gelb und eine konkrete Begründung setzen.
-- Konto und Gegenkonto gegen `account_config.asset_accounts` prüfen. Jede Trefferzeile muss `asset_booking: true`, Ampel Rot und ein leeres DATEV-Belegdatum haben; eine grüne oder gelbe Anlagenzeile blockiert das Paket.
-- Abgrenzungsauflösung nur im separaten Stapel.
+- Bei unklarem betrieblichen Anlass Rot und eine konkrete Begründung setzen.
+- Konto und Gegenkonto gegen `account_config.asset_accounts` prüfen. Jede direkte Anlagenkontenbuchung blockiert das Paket. Anlagen/GWG stattdessen Rot mit `asset_booking: true`, `asset_account_field` und dokumentiert leerem Anlagenkontofeld exportieren; sicheres Datum erhalten.
+- Fällige Abgrenzungsauflösung im gemeinsamen Monatsstapel.
 - Die einheitliche 800-Euro-Regel vor jeder Abgrenzung prüfen: `threshold_amount` muss für neue ARAP-/PRAP-Fälle über 800 EUR liegen.
 - Bei einem maßgeblichen Betrag bis einschließlich 800 EUR vollständigen Aufwand oder Ertrag im Buchungsmonat erfassen und keinen Abgrenzungsvorschlag, Registereintrag oder Abgrenzungsstapel zulassen.
 - Für die Grenze die gesamte Ausgabe oder Einnahme prüfen, nicht Monatsanteil oder Restbetrag; bei vollem Vorsteuerabzug netto, sonst einschließlich nicht abziehbarer Umsatzsteuer.
@@ -73,9 +73,9 @@ Ein leeres DATEV-Belegdatum ist bei Rot erwartet und blockiert das Paket nicht. 
 - Sämtliche Dateien vollständig analysieren und alle fachlichen Entscheidungen in den Klärungsunterlagen dokumentieren; keine Freigabe- oder Abschlussfrage für Klärungsfälle stellen.
 - `02_Buchungspruefung/Klaerungsfaelle.md` immer erzeugen, auch wenn keine Klärungsfälle bestehen.
 - Jeden Beleg mit `requires_clarification: true` genau einem Klärfall zuordnen; mehrere Zeilen desselben Belegs nicht doppelt aufführen.
-- Jeder Klärfall muss Tatsachen, provisorische Behandlung, konkrete Empfehlung, Entscheidungspunkt, Ampel, Ziel, vorgeschlagene Änderung und ein editierbares Mitarbeiterfeld enthalten.
+- Jeder Klärfall muss Tatsachen, sichere Angaben, konkrete offene Felder, `booking_risk`, konkrete Empfehlung, Entscheidungspunkt, Ampel Rot, Ziel, vorgeschlagene Änderung und ein editierbares Mitarbeiterfeld enthalten.
 - Jeder Beleg muss eine knappe fachliche Ableitung seiner Buchung oder sonstigen Behandlung enthalten. Strukturierte Werte werden in der kompakten Kontierung gezeigt und nicht in langen Standardtexten wiederholt.
-- In `Belegprüfung` und `Buchungszeilen` muss `Ampel-Einstufung` jeweils die erste, fixierte und farblich formatierte Spalte sein. `Buchungsstapel` muss jeweils als zweite, ebenfalls fixierte Spalte den vollständigen tatsächlich erzeugten EXTF-Dateinamen enthalten. Rot erhält rote, Gelb gelbe und Grün grüne Füllung. Sichtbare Spalten `Belegdatei`, `Quelldatei`, `Originaldateiname`, Pfad oder `Importfähig` sind unzulässig; technische Quelldateiangaben verbleiben ausschließlich im Lauf-JSON und Belegindex.
+- In `Belegprüfung` und `Buchungszeilen` muss `Ampel-Einstufung` jeweils die erste, fixierte und farblich formatierte Spalte sein. `Buchungsstapel` muss jeweils als zweite, ebenfalls fixierte Spalte den vollständigen tatsächlich erzeugten EXTF-Dateinamen enthalten. Rot erhält rote und Grün grüne Füllung; Gelb ist unzulässig. Sichtbare Spalten `Belegdatei`, `Quelldatei`, `Originaldateiname`, Pfad oder `Importfähig` sind unzulässig; technische Quelldateiangaben verbleiben ausschließlich im Lauf-JSON und Belegindex.
 - Jeder gebuchte Beleg muss eine konkrete Ampelbegründung besitzen; auch Grün darf nicht leer sein. Kontierung, Ableitung, Ampelbegründung und nächster Schritt sind in `Belegprüfung` sichtbar.
 - Offene Klärfälle dürfen Prüfliste, Buchungsstapel, Belegtransfer oder Gesamtpaket nicht blockieren.
 - `02_Buchungspruefung/Abgrenzungsregister_Vorschlag.md` immer vollständig erzeugen. Ungeklärte Kandidaten getrennt unter `Klärung offen – noch nicht übernehmen` ausweisen und nicht in den Übernahmebestand einrechnen. War im Preflight kein Register vorhanden, bei einem nicht leeren Übernahmebestand klar `Neuanlage erforderlich` ausweisen; bei leerem Übernahmebestand `keine Neuanlage erforderlich` ausweisen.
@@ -102,4 +102,14 @@ Ein leeres DATEV-Belegdatum ist bei Rot erwartet und blockiert das Paket nicht. 
 - Größenlimits prüfen: Einzeldatei höchstens 20 MB, Paket höchstens 465 MB; bei ungefähr 100 MB teilen.
 - Belegtransfer erst nach erfolgreicher ZIP-, XSD- und GUID-Konsistenzprüfung als DATEV-importbereit kennzeichnen.
 
-Die technische Validierung ersetzt keinen DATEV-Pilot.
+Die technische Validierung ersetzt keinen DATEV-Pilot.## DATEV-Testimport und Grenzen der internen Prüfung
+
+Vor einem produktiven Import das Paket in einem dafür freigegebenen DATEV-Testbestand testen. Prüfen, ob unvollständige rote Zeilen als bearbeitungsbedürftig übernommen werden oder ob DATEV Zeilen beziehungsweise den gesamten Stapel zurückweist. Den tatsächlich getesteten Dateistand über SHA-256 nachweisen; Ergebnis, DATEV-Version, Testbestand und genaue Meldungen dokumentieren. Bei fehlendem Zugang Status `pending` und `DATEV-Testimport ausstehend` ausweisen; keinen Erfolg behaupten. Die Paketübergabe mit internem `valid=true` bleibt zulässig, ohne damit DATEV-Importfähigkeit zu bestätigen.
+
+Optionales Lauf-JSON-Feld `datev_test_import`: `status` ist `pending`, `confirmed` oder `rejected`. Bei ausgeführtem Test sind `tested_at`, `datev_version`, `test_client`, `evidence_reference`, `result_detail` und `tested_files` Pflicht. `tested_files` ordnet jedem tatsächlich erzeugten EXTF-Dateinamen den SHA-256 des getesteten Inhalts zu. `confirmed` bedeutet: Alle Zeilen wurden übernommen und rote Zeilen sind bearbeitungsbedürftig; `rejected` protokolliert insbesondere eine Zurückweisung des gesamten Stapels. Ein Nachweis für andere Dateiinhalte bestätigt das aktuelle Paket nicht. Ein ergebnisloser oder nicht ausgeführter Test bleibt `pending`.
+
+Weist DATEV den gesamten Stapel zurück, Fehler und betroffene Felder offen melden; keine Ersatzbuchung, kein Entfernen roter Fälle und kein eigenmächtiges Aufteilen des Monatsstapels. Einen lokalen Strukturtest niemals als DATEV-Testimport ausgeben.
+
+Quelle: [DATEV-Schnittstellenvorgaben und Testimport](https://developer.datev.de/de/product-detail/accounting-extf-files/2.0/documentation/interface-requirements-file).
+
+Einen tatsächlichen Testimportnachweis nach dem Test mit `python scripts/validate_package.py --package <Paketordner> --datev-test-import <Nachweis.json>` prüfen. Bei passendem Dateistand wird er unter `03_Technische_Protokolle/DATEV_Testimport.json` gespeichert und bei Folgeprüfungen berücksichtigt.

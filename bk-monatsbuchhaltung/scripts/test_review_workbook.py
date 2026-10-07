@@ -72,7 +72,6 @@ def main() -> None:
         "run": {"mandantennummer": "12345", "buchungsmonat": "2026-07"},
         "documents": [
             document("Grün", 1),
-            document("Gelb", 2),
             document("Rot", 3),
         ],
     }
