@@ -80,7 +80,7 @@ Jeden Nicht-Avis-Vorgang auf drei Ebenen prüfen und Treffergrund sowie Referenz
 
 1. identischer Datei-SHA-256 im aktuellen Upload,
 2. dasselbe logische Dokument im aktuellen Upload anhand Geschäftspartner, Rechnungsnummer, Datum und Betrag,
-3. bereits vorhandene Buchung in DATEV live.
+3. bereits vorhandene Buchung in DATEV live, abgerufen über den Riecken-DATEV-Connector (`datev_get_account_postings`).
 
 Sichere Dublette nicht erneut buchen. Mögliche Dublette Rot exportieren; ein sicher bekanntes Datum und alle weiteren sicheren Werte bleiben erhalten. Das Dublettenrisiko und die Entscheidung stehen in der Prüfungsdatei. Identische Dateien nur einmal übertragen; weitere Kopien als `duplicate_copy` ausschließen.
 
@@ -112,7 +112,7 @@ Stichprobe geeigneter inländischer Rechnungen auf Pflichtangaben. Ausländische
 
 ## 16. Kostenstellen
 
-- Kostenstellen kommen ausschließlich aus dem Mandantenprofil (`cost_center_config`) und werden live gegen DATEV validiert (`validated_cost_centers`). Eine Kostenstelle wird immer bebucht, wenn sie eingerichtet ist und sich aus Beleg oder Profil ableiten lässt; die Ableitung steht je Vorgang in `derivation`.
+- Kostenstellen kommen ausschließlich aus dem Mandantenprofil (`cost_center_config`) und werden live gegen DATEV validiert (`validated_cost_centers`, über den Riecken-Connector aus Vorbuchungen und Anlagenverzeichnis). Eine Kostenstelle wird immer bebucht, wenn sie eingerichtet ist und sich aus Beleg oder Profil ableiten lässt; die Ableitung steht je Vorgang in `derivation`.
 - Die Kostenstellenpflicht (`kostenstellenpflicht`) entscheidet nur, was bei fehlender Ableitung geschieht: Pflicht bedeutet Rot mit offenem `kost1`; ohne Pflicht bleibt das Feld leer ohne Ampelwirkung und die Prüfungsdatei weist die Zeile als „ohne Kostenstelle“ aus.
 - Gemischte Rechnungen werden in getrennte Buchungszeilen je Kostenstelle aufgeteilt.
 - Die Kostenstelle steuert keine Umsatzsteuer automatisch. Vorsteuerbehandlung und KOST1 werden gemeinsam aus Beleginhalt und Profil abgeleitet und müssen zueinander passen. Ein Widerspruch (zum Beispiel eine Kostenstelle ohne Vorsteuerabzug mit vollem Vorsteuerabzug) ist Rot.

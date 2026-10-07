@@ -372,6 +372,8 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
         "abgrenzungsregister": accrual_summary,
         "datev": {
             "source": "DATEV live",
+            "connector": live.get("connector"),
+            "retrieved_via": live.get("retrieved_via"),
             "retrieved_at": str(live["retrieved_at"]),
             "validated_accounts": sorted(account_set),
             "validated_accounts_count": len(account_set),

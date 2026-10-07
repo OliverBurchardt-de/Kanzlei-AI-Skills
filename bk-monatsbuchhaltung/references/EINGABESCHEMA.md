@@ -21,7 +21,47 @@ Pflichtfelder:
 
 Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stelle mehr. `account_config.asset_accounts` ist vollständig, duplikatfrei und enthält das GWG-Konto.
 
-`datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys`, höchste Debitoren-/Kreditorennummer, Abrufzeitpunkt und `used_person_accounts`. Sammel-/CPD-Konten sind unzulässig. Bei vorhandener `cost_center_config` zusätzlich `cost_system_active: true` und `validated_cost_centers` (Liste der live in DATEV vorhandenen KOST1-Nummern des genutzten Kostenrechnungssystems; Quelle über Klardaten `datev://accounting/cost_systems` und `datev://accounting/cost_centers`).
+`datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys`, höchste Debitoren-/Kreditorennummer, Abrufzeitpunkt, `used_person_accounts` sowie `connector: "Riecken"` und je Prüfung das verwendete Werkzeug (`retrieved_via`). Sammel-/CPD-Konten sind unzulässig. Bei vorhandener `cost_center_config` zusätzlich `cost_system_active: true` und `validated_cost_centers` (Liste der live in DATEV nachgewiesenen KOST1-Nummern, siehe Abschnitt DATEV-Anbindung).
+
+## DATEV-Anbindung (Riecken-Connector)
+
+Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
+
+| Prüfung | Riecken-Werkzeug | Nachweisfeld |
+|---|---|---|
+| Erreichbarkeit | `datev_health_check` (`master-data` und `accounting`) | `datev_connection_verified: true`, `retrieved_via.health` |
+| Mandant und Kerndaten (Berater-/Mandantennummer, Wirtschaftsjahr, Kontenrahmen, Sachkontenlänge) | `datev_search_clients` (Mandantennummer), `datev_get_client_dossier`; Wirtschaftsjahr zusätzlich über `datev_suggest_posting` mit Belegdatum | `beraternummer`, `mandantennummer`, `wirtschaftsjahr_beginn`, `sachkontenrahmen`, `sachkontenlaenge`, `retrieved_via.core` |
+| Personenkonten, Stammdaten, höchste Nummer je Bereich | `datev_search_business_partners` (`role` debitor/creditor), `datev_suggest_posting` (nächste freie Kontonummer) | `used_person_accounts`, `highest_creditor_account`, `highest_debtor_account`, `master_data_checked`, `master_data_records_found`, `retrieved_via.master_data` |
+| Vorbuchungen und DATEV-Dublettenprüfung | `datev_get_account_postings` (Personenkonto und Aufwands-/Erlöskonto, Belegzeitraum), `datev_get_accounting_statistics` | `prior_bookings_checked`, `prior_booking_records_found`, `duplicate_checks.datev_live`, `retrieved_via.prior_bookings` |
+| Sachkonten | `datev_get_account_balances` (`account_number` oder Bereich), `datev_suggest_posting` (Kontenplan-Kandidaten) | `validated_accounts`, `retrieved_via.accounts` |
+| BU-Schlüssel | `datev_suggest_posting` (Steuerschlüssel zum Konto) | `validated_bu_keys`, `retrieved_via.bu_keys` |
+| Kostenstellen | KOST1/KOST2 aus `datev_get_account_postings` (Vorbuchungen) und `datev_get_asset_inventory`; der Connector bietet keinen eigenen Kostenstellenkatalog | `cost_system_active`, `validated_cost_centers`, `retrieved_via.cost_centers` |
+
+Beispiel:
+
+```json
+"datev_live_evidence": {
+  "source": "DATEV live",
+  "connector": "Riecken",
+  "retrieved_at": "2026-10-07T10:00:00+02:00",
+  "retrieved_via": {
+    "health": "datev_health_check",
+    "core": "datev_get_client_dossier",
+    "master_data": "datev_search_business_partners",
+    "prior_bookings": "datev_get_account_postings",
+    "accounts": "datev_get_account_balances",
+    "bu_keys": "datev_suggest_posting",
+    "cost_centers": "datev_get_account_postings"
+  }
+}
+```
+
+Regeln:
+
+- Jeder Wert in `datev_live_evidence` stammt aus einem Riecken-Abruf dieses Laufs. Werte aus Erinnerung, früheren Läufen oder anderen DATEV-Zugängen sind unzulässig.
+- Liefert der Connector einen Kernwert nicht, ist das ein technischer Preflight-Blocker; das Mandantenprofil ersetzt den Live-Abruf nicht.
+- Eine im Profil genannte Kostenstelle, die über den Connector in keiner Vorbuchung und keinem Anlagegut nachweisbar ist, gilt nicht als live validiert. Der Vorgang wird Rot mit offenem `kost1` und Klärungsfall „Kostenstelle in DATEV anlegen/bestätigen“ (Abschnitt Kostenstellen, Regel 6).
+- `datev_get_account_balances` nur mit `account_number` oder einem Kontenbereich aufrufen; `confirmed_full_list` bleibt in diesem Skill ungenutzt.
 
 ## Kostenstellen
 

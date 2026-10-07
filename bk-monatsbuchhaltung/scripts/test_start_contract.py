@@ -107,6 +107,8 @@ def main() -> None:
     require(skill, "Kostenstellen nach Profil", "Startnachweis Kostenstellen")
     require(skill, "EXTF_Klaerungsposten_<JJJJ-MM>.csv", "Klärungsstapel-Dateiname")
     require(skill, "unkonfigurierter Pflichtkostenstelle", "verbleibender Kostenstellen-Stopp")
+    require(skill, "Riecken-DATEV-Connector", "DATEV-Anbindung über Riecken")
+    require(skill, "`datev_health_check`", "Riecken-Erreichbarkeitsprüfung")
 
     interface = ui.get("interface", {})
     policy = ui.get("policy", {})
