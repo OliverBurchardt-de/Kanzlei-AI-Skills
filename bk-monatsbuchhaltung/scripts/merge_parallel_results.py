@@ -21,6 +21,7 @@ MERGED_LIST_FIELDS = (
     "handoffs",
     "profile_suggestions",
     "accrual_candidates",
+    "technical_incidents",
 )
 FORBIDDEN_RESULT_FIELDS = {"source_files", "master_records", "run", "scope"}
 SOURCE_ROLES = {
@@ -29,6 +30,8 @@ SOURCE_ROLES = {
     "payment_notice",
     "cover_sheet",
     "duplicate_copy",
+    "bundle_original",
+    "converted_original",
 }
 
 
@@ -287,6 +290,8 @@ def merge(inventory_path: Path, base_run_path: Path, results_dir: Path) -> dict[
     if inventory.get("schema_version") != SCHEMA_VERSION:
         raise ValueError(f"Inventur schema_version muss {SCHEMA_VERSION} sein")
     for field in (*MERGED_LIST_FIELDS, "source_files", "master_records"):
+        if field == "technical_incidents":
+            continue  # Preflight-Fehler des Hauptagenten dürfen im base-run stehen
         if field in base_run and base_run[field]:
             raise ValueError(f"base-run darf keine vorbefüllte Liste {field} enthalten")
     batches = inventory.get("batches")
@@ -371,6 +376,7 @@ def merge(inventory_path: Path, base_run_path: Path, results_dir: Path) -> dict[
     merged = dict(base_run)
     merged["source_files"] = sources
     merged.update(merged_lists)
+    merged["technical_incidents"] = list(base_run.get("technical_incidents", []) or []) + merged_lists["technical_incidents"]
     merged["person_account_proposals"] = consolidated_proposals
     merged["_parallel_review"] = {
         "schema_version": SCHEMA_VERSION,

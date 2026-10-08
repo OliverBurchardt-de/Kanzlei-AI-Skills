@@ -23,8 +23,23 @@ from datev_io import (
     BOOKING_FIELDS,
     CARRY_FIELDS,
     DATEV_IMPORT_ORDER,
+    DERIVATION_METHODS,
+    DOCUMENT_FILE_RULE,
+    EVALUATION_METHODS,
+    FINAL_STATUSES,
+    IMAGE_REVIEW_METHOD,
     MASTER_FIELDS,
+    ORIGINAL_ROLES,
+    PARTNER_CHECK_RESULTS_RED,
+    PARTNER_CHECK_RESULT_NEW,
+    PARTNER_CHECK_TOOLS,
+    READABILITY_VALUES,
+    RED_REASON_CODES,
+    REQUIRED_CONNECTOR,
+    REQUIRED_RETRIEVAL_STEPS,
     STANDARD_BATCH_TYPE,
+    STATUS_BOOKED,
+    STATUS_UNREADABLE,
     ascii_filename,
     batch_file_name,
     batch_label,
@@ -41,6 +56,7 @@ from datev_io import (
     validate_open_fields,
     accrual_document,
 )
+from clarification_rate import compute_clarification_rate, render_markdown
 
 
 FOLDERS = {
@@ -50,15 +66,13 @@ FOLDERS = {
     "advice": "04_Zahlungsavise",
 }
 
-SKILL_VERSION = "1.4.0"
+SKILL_VERSION = "1.4.1"
 OUTPUT_CONTRACT = "monthly-booking-and-clarification-batches-v4"
 
-VALID_STATUSES = {
-    "Buchungszeile erzeugt",
-    "sichere Dublette – nicht erneut gebucht",
-    "nicht buchungsrelevant",
-    "außerhalb Auftragszeitraum",
-}
+# Jede Eingabedatei und jeder logische Vorgang erhält genau einen nachgewiesenen
+# Endstatus (SKILL.md, Durchführungspflicht); "technisch nicht auswertbar" nur
+# nach dokumentiertem Auswertungsversuch einschließlich Belegbildprüfung.
+VALID_STATUSES = set(FINAL_STATUSES)
 VALID_LIGHTS = {"Grün", "Rot"}
 SOURCE_ROLES = {
     "primary_invoice",
@@ -66,7 +80,12 @@ SOURCE_ROLES = {
     "payment_notice",
     "cover_sheet",
     "duplicate_copy",
+    # Originale, deren Belegbild als abgeleitete PDF übertragen wird
+    # (Sammel-PDF aufgeteilt bzw. Bild/Teildateien in eine PDF überführt).
+    "bundle_original",
+    "converted_original",
 }
+TECHNICAL_INCIDENT_SYSTEMS = {"DATEV", "SharePoint", "OCR", "Belegbild", "Register", "sonstige"}
 JOB_MODE = "belegbuchhaltung"
 ACCRUAL_THRESHOLD = Decimal("800")
 
@@ -169,6 +188,7 @@ def _validate_sharepoint_evidence(
     expected_url: str,
     expected_name: str,
     label: str,
+    allow_empty: bool = False,
 ) -> dict[str, str]:
     if not isinstance(evidence, dict):
         raise ValueError(f"Abbruch: {label}-Abrufnachweis fehlt.")
@@ -202,7 +222,7 @@ def _validate_sharepoint_evidence(
         raise ValueError(f"Abbruch: {label}-Abrufnachweis enthält weder raw_file_path noch content_utf8.")
     if hashlib.sha256(raw_bytes).hexdigest() != digest:
         raise ValueError(f"Abbruch: {label}-SHA-256 stimmt nicht mit dem Inhalt überein.")
-    if not raw_bytes.strip():
+    if not raw_bytes.strip() and not allow_empty:
         raise ValueError(f"Abbruch: {label}-Datei ist leer.")
     return {
         "source_url": expected_url,
@@ -215,27 +235,124 @@ def _validate_sharepoint_evidence(
     }
 
 
+def _validate_access_error_evidence(
+    evidence: dict[str, Any], *, expected_url: str, expected_name: str, label: str
+) -> dict[str, Any]:
+    """Abrufproblem (z. B. HTTP 403) gesondert vermerken; kein Nachweis für einen leeren Bestand."""
+    required = {"source_url", "file_name", "retrieved_via", "checked_at", "direct_lookup_attempts"}
+    missing = sorted(key for key in required if evidence.get(key) in (None, ""))
+    if missing:
+        raise ValueError(f"{label}-Abrufproblem unvollständig dokumentiert: " + ", ".join(missing))
+    if evidence["source_url"] != expected_url or evidence["file_name"] != expected_name:
+        raise ValueError(f"{label}-Abrufproblem verwendet nicht das verbindliche SharePoint-Ziel.")
+    http_status = evidence.get("http_status")
+    error_code = str(evidence.get("error_code", "")).strip()
+    if http_status in (None, "") and not error_code:
+        raise ValueError(f"{label}-Abrufproblem ohne HTTP-Status oder Fehlercode.")
+    if str(http_status) == "404" or error_code.lower() in {"itemnotfound", "not_found"}:
+        raise ValueError(
+            f"{label}: itemNotFound ist kein Abrufproblem; bei bestätigtem Nichtvorhandensein status not_found verwenden."
+        )
+    attempts = evidence["direct_lookup_attempts"]
+    if not isinstance(attempts, int) or attempts < 2:
+        raise ValueError(f"{label}-Abrufproblem muss nach zulässiger Wiederholung (mindestens zwei Direktabrufe) dokumentiert sein.")
+    try:
+        datetime.fromisoformat(str(evidence["checked_at"]).replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"Abrufzeitpunkt für {label} ist ungültig.") from exc
+    return {
+        "status": "access_error",
+        "source_url": expected_url,
+        "file_name": expected_name,
+        "retrieved_via": str(evidence["retrieved_via"]),
+        "checked_at": str(evidence["checked_at"]),
+        "http_status": http_status,
+        "error_code": error_code,
+        "direct_lookup_attempts": attempts,
+        "register_state": "unbekannt – kein Nullstand angenommen",
+        "deferred": "Auflösung bestehender Registereinträge und Abgleich neuer Abgrenzungen mit dem Register zurückgestellt",
+    }
+
+
+REGISTER_ABSENT_STATES = {"not_found", "empty"}
+ACCESS_DENIED_CODES = {"accessdenied", "forbidden", "unauthorized", "unauthenticated"}
+
+
 def _validate_accrual_register_evidence(
     evidence: Any,
     *,
     expected_url: str,
     expected_name: str,
 ) -> dict[str, Any]:
-    if not isinstance(evidence, dict) or evidence.get("status") != "not_found":
-        return _validate_sharepoint_evidence(
+    """Das Abgrenzungsregister wird nur geprüft. Leer oder nicht vorhanden ist ein normaler Zustand.
+
+    Pflicht ist allein der dokumentierte Abruf am exakten SharePoint-Ziel; ein formaler
+    Nichtvorhanden-Nachweis wie beim Mandantenprofil ist nicht erforderlich.
+    """
+    if not isinstance(evidence, dict):
+        raise ValueError(
+            "Abgrenzungsregister wurde nicht geprüft: abgrenzungsregister_evidence fehlt (Bilanz). "
+            "Ein leeres oder nicht vorhandenes Register ist zulässig; nur der Abruf am exakten "
+            "SharePoint-Ziel ist zu dokumentieren (status found/empty/not_found/access_error)."
+        )
+    status = str(evidence.get("status", "")).strip().lower()
+    if status == "access_error":
+        return _validate_access_error_evidence(
             evidence,
             expected_url=expected_url,
             expected_name=expected_name,
             label="Abgrenzungsregister",
         )
-    summary = _confirmed_not_found_evidence(
+    if status in REGISTER_ABSENT_STATES:
+        required = {"source_url", "file_name", "retrieved_via", "checked_at"}
+        missing = sorted(key for key in required if evidence.get(key) in (None, ""))
+        if missing:
+            raise ValueError("Abgrenzungsregister-Abruf unvollständig dokumentiert: " + ", ".join(missing))
+        if evidence["source_url"] != expected_url or evidence["file_name"] != expected_name:
+            raise ValueError("Abgrenzungsregister-Abruf verwendet nicht das verbindliche SharePoint-Ziel.")
+        error_code = str(evidence.get("error_code", "")).strip().lower()
+        if str(evidence.get("http_status", "")) in {"401", "403"} or error_code in ACCESS_DENIED_CODES:
+            raise ValueError(
+                "Abgrenzungsregister: HTTP 401/403 bzw. accessDenied ist ein Abrufproblem (status access_error), "
+                "kein leeres Register."
+            )
+        try:
+            datetime.fromisoformat(str(evidence["checked_at"]).replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("Abrufzeitpunkt für Abgrenzungsregister ist ungültig.") from exc
+        return {
+            "status": "not_found",
+            "source_url": expected_url,
+            "file_name": expected_name,
+            "retrieved_via": str(evidence["retrieved_via"]),
+            "checked_at": str(evidence["checked_at"]),
+            "first_run_without_register": True,
+            "register_state": "nicht vorhanden oder leer – zulässiger Anfangszustand, keine Registerdatei erforderlich",
+        }
+    summary = _validate_sharepoint_evidence(
         evidence,
         expected_url=expected_url,
         expected_name=expected_name,
         label="Abgrenzungsregister",
+        allow_empty=True,
     )
-    summary["first_run_without_register"] = True
+    summary["status"] = "found"
+    summary["register_state"] = "vorhanden (Inhalt kann leer sein)"
     return summary
+
+
+def validate_accounting_method_accruals(data: dict[str, Any]) -> list[str]:
+    """EÜR: kein Abgrenzungsregister und keine Abgrenzungen; Bilanz: Register nur geprüft."""
+    if str(data.get("run", {}).get("accounting_method", "")).strip() != "EÜR":
+        return []
+    errors: list[str] = []
+    for field in ("accrual_register", "accrual_candidates", "accrual_releases"):
+        if data.get(field):
+            errors.append(
+                f"{field}: bei Einnahmenüberschussrechnung (EÜR) sind Rechnungsabgrenzungen unzulässig; "
+                "Aufwand und Ertrag werden im Zahlungs-/Buchungsmonat vollständig erfasst"
+            )
+    return errors
 
 
 def validate_preflight_evidence(data: dict[str, Any]) -> None:
@@ -262,18 +379,39 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
     accounting_method = str(run.get("accounting_method", "")).strip()
     if accounting_method not in {"Bilanz", "EÜR"}:
         raise ValueError("Abbruch: accounting_method muss Bilanz oder EÜR sein.")
-    accrual_summary = None
+    accrual_summary: dict[str, Any] | None
     if accounting_method == "Bilanz":
         accrual_summary = _validate_accrual_register_evidence(
             run.get("abgrenzungsregister_evidence"),
             expected_url=str(targets["accrual_url"]),
             expected_name=f"{client_number}.md",
         )
+    else:
+        accrual_summary = {
+            "status": "not_applicable",
+            "register_state": "EÜR: kein Abgrenzungsregister; Abgrenzungen sind unzulässig",
+        }
     live = run.get("datev_live_evidence")
     if not isinstance(live, dict):
         raise ValueError("Abbruch: technischer DATEV-Livenachweis fehlt.")
     if live.get("source") != "DATEV live":
         raise ValueError("Abbruch: DATEV-Livenachweis hat eine unzulässige Quelle.")
+    if str(live.get("connector", "")).strip() != REQUIRED_CONNECTOR:
+        raise ValueError(
+            f"Abbruch: DATEV-Anbindung muss über den {REQUIRED_CONNECTOR}-Connector erfolgen "
+            f"(datev_live_evidence.connector = \"{REQUIRED_CONNECTOR}\"); ein anderer DATEV-Zugang ist unzulässig."
+        )
+    retrieved_via = live.get("retrieved_via")
+    if not isinstance(retrieved_via, dict):
+        raise ValueError("Abbruch: datev_live_evidence.retrieved_via (Riecken-Werkzeug je Prüfung) fehlt.")
+    missing_steps = sorted(
+        step for step in REQUIRED_RETRIEVAL_STEPS
+        if not str(retrieved_via.get(step, "")).strip().startswith("datev_")
+    )
+    if missing_steps:
+        raise ValueError(
+            "Abbruch: retrieved_via nennt kein Riecken-Werkzeug (datev_*) für: " + ", ".join(missing_steps)
+        )
     for key in (
         "beraternummer", "mandantennummer", "wirtschaftsjahr_beginn",
         "sachkontenlaenge", "sachkontenrahmen",
@@ -1133,6 +1271,9 @@ def load_input(path: Path) -> dict[str, Any]:
     if live_errors:
         raise ValueError("\n".join(live_errors))
     validate_accrual_thresholds(data)
+    accrual_errors = validate_accounting_method_accruals(data)
+    if accrual_errors:
+        raise ValueError("\n".join(accrual_errors))
     return data
 
 
@@ -1173,9 +1314,7 @@ def validate_input_inventory(data: dict[str, Any]) -> list[str]:
             errors.append(f"source_files: Datei mehrfach enthalten: {raw_path}")
             continue
         inventory_paths[normalized] = raw_path
-        if item.get("readability") not in {
-            "readable", "partially_readable", "unreadable", "not_checked"
-        }:
+        if item.get("readability") not in READABILITY_VALUES:
             errors.append(f"source_files {source_id}: readability ist ungültig")
         if not source.is_file():
             errors.append(f"source_files: Datei fehlt: {raw_path}")
@@ -1213,6 +1352,7 @@ def validate_input_inventory(data: dict[str, Any]) -> list[str]:
 
     if canonical:
         mappings = data.get("transaction_sources", [])
+        errors.extend(_validate_derived_sources(inventory, mappings))
         for digest, source_ids in hash_sources.items():
             if len(source_ids) < 2:
                 continue
@@ -1228,6 +1368,369 @@ def validate_input_inventory(data: dict[str, Any]) -> list[str]:
                     )
     return errors
 
+
+
+def _validate_derived_sources(
+    inventory: list[dict[str, Any]], mappings: list[dict[str, Any]]
+) -> list[str]:
+    """Abgeleitete PDFs (split/merge/convert) müssen ihr Original nennen; Originale werden nicht übertragen."""
+    errors: list[str] = []
+    by_id = {str(item.get("source_id", "")): item for item in inventory if isinstance(item, dict)}
+    roles_by_source: dict[str, set[str]] = defaultdict(set)
+    for mapping in mappings:
+        roles_by_source[str(mapping.get("source_id", ""))].add(str(mapping.get("role", "")))
+    originals_with_derivatives: set[str] = set()
+    for item in inventory:
+        if not isinstance(item, dict):
+            continue
+        source_id = str(item.get("source_id", ""))
+        derived = item.get("derived_from")
+        if derived in (None, ""):
+            continue
+        if not isinstance(derived, dict):
+            errors.append(f"source_files {source_id}: derived_from muss ein Objekt sein")
+            continue
+        method = str(derived.get("method", ""))
+        originals = derived.get("source_ids")
+        if method not in DERIVATION_METHODS:
+            errors.append(f"source_files {source_id}: derived_from.method muss split, merge oder convert sein")
+        if not isinstance(originals, list) or not originals:
+            errors.append(f"source_files {source_id}: derived_from.source_ids fehlt")
+            continue
+        if method == "split" and not str(derived.get("pages", "")).strip():
+            errors.append(f"source_files {source_id}: derived_from.pages (Seitenbereich der Sammel-PDF) fehlt")
+        if method == "merge" and len(originals) < 2:
+            errors.append(f"source_files {source_id}: merge erfordert mindestens zwei Originale")
+        if Path(str(item.get("source_path", ""))).suffix.lower() != ".pdf":
+            errors.append(f"source_files {source_id}: abgeleitete Belegdatei muss eine PDF sein")
+        expected_role = "bundle_original" if method == "split" else "converted_original"
+        for original_id in originals:
+            original = by_id.get(str(original_id))
+            if original is None:
+                errors.append(f"source_files {source_id}: Original {original_id} ist nicht inventarisiert")
+                continue
+            if original.get("derived_from"):
+                errors.append(f"source_files {source_id}: Original {original_id} ist selbst abgeleitet; Ableitungen nicht verketten")
+            originals_with_derivatives.add(str(original_id))
+            roles = roles_by_source.get(str(original_id), set())
+            if roles - ORIGINAL_ROLES - {"duplicate_copy"}:
+                errors.append(
+                    f"source_files {original_id}: Original einer abgeleiteten PDF darf nur als {expected_role} zugeordnet sein, nicht als {', '.join(sorted(roles - ORIGINAL_ROLES))}"
+                )
+    # Ein Beleg = ein Dokument: merge/convert fassen nur Teile desselben Belegs zusammen,
+    # niemals mehrere Belege zu einer Datei.
+    transactions_by_source: dict[str, set[str]] = defaultdict(set)
+    for mapping in mappings:
+        transactions_by_source[str(mapping.get("source_id", ""))].add(str(mapping.get("transaction_id", "")))
+    for item in inventory:
+        if not isinstance(item, dict) or not isinstance(item.get("derived_from"), dict):
+            continue
+        derived = item["derived_from"]
+        if derived.get("method") not in {"merge", "convert"}:
+            continue
+        source_id = str(item.get("source_id", ""))
+        own = transactions_by_source.get(source_id, set())
+        if len(own) != 1:
+            errors.append(
+                f"source_files {source_id}: eine per {derived.get('method')} erzeugte PDF muss genau einem Vorgang zugeordnet sein; "
+                "niemals mehrere Belege zu einer Datei zusammenfassen"
+            )
+            continue
+        for original_id in derived.get("source_ids") or []:
+            foreign = transactions_by_source.get(str(original_id), set()) - own
+            if foreign:
+                errors.append(
+                    f"source_files {source_id}: Original {original_id} gehört auch zu {', '.join(sorted(foreign))}; "
+                    "merge fasst nur Teile desselben Belegs zusammen, niemals mehrere Belege zu einer Datei"
+                )
+    for source_id, roles in roles_by_source.items():
+        if roles & ORIGINAL_ROLES and source_id not in originals_with_derivatives:
+            errors.append(
+                f"source_files {source_id}: als Original gekennzeichnet, aber keine abgeleitete PDF nennt es in derived_from"
+            )
+    return errors
+
+
+def validate_document_file_rule(data: dict[str, Any]) -> list[str]:
+    """Ein Buchungsbeleg = genau eine eigene PDF-Datei; keine zwei Belege in einer Datei, kein Beleg auf zwei Dateien."""
+    errors: list[str] = []
+    if data.get("_normalized_source_model") != "canonical":
+        for doc in data.get("documents", []):
+            if doc.get("processing_status") != STATUS_BOOKED:
+                continue
+            source = Path(str(doc.get("source_path", "")))
+            if source.suffix.lower() != ".pdf":
+                errors.append(
+                    f"{doc.get('transaction_id', '')}: Buchungsbeleg {source.name} ist keine PDF-Datei ({DOCUMENT_FILE_RULE}); "
+                    "zuvor mit scripts/beleg_pdf.py convert/merge/split als eigene PDF ablegen"
+                )
+        return errors
+    sources = {str(item.get("source_id", "")): item for item in data.get("source_files", [])}
+    primaries_by_transaction: dict[str, list[str]] = defaultdict(list)
+    transactions_by_primary: dict[str, list[str]] = defaultdict(list)
+    for mapping in data.get("transaction_sources", []):
+        if str(mapping.get("role", "")) != "primary_invoice":
+            continue
+        tid = str(mapping.get("transaction_id", ""))
+        sid = str(mapping.get("source_id", ""))
+        primaries_by_transaction[tid].append(sid)
+        transactions_by_primary[sid].append(tid)
+    booked_ids = {
+        str(doc.get("transaction_id", ""))
+        for doc in data.get("documents", [])
+        if doc.get("processing_status") == STATUS_BOOKED
+    }
+    for tid in sorted(booked_ids):
+        primaries = primaries_by_transaction.get(tid, [])
+        if not primaries:
+            errors.append(f"{tid}: Buchungsbeleg ohne eigene PDF-Datei (keine primary_invoice-Quelle); {DOCUMENT_FILE_RULE}")
+            continue
+        if len(primaries) > 1:
+            errors.append(
+                f"{tid}: Buchungsbeleg ist auf mehrere Dateien verteilt ({', '.join(primaries)}); "
+                "mit scripts/beleg_pdf.py merge zu genau einer PDF zusammenführen"
+            )
+        for sid in primaries:
+            source = sources.get(sid, {})
+            path = Path(str(source.get("source_path", "")))
+            if path.suffix.lower() != ".pdf" or (path.is_file() and path.read_bytes()[:5] != b"%PDF-"):
+                errors.append(
+                    f"{tid}: Buchungsbeleg {path.name or sid} ist keine PDF-Datei ({DOCUMENT_FILE_RULE}); "
+                    "Bild- oder Textbelege zuvor mit scripts/beleg_pdf.py convert als eigene PDF ablegen"
+                )
+    for sid, tids in sorted(transactions_by_primary.items()):
+        booked = sorted(tid for tid in tids if tid in booked_ids)
+        if len(booked) > 1:
+            errors.append(
+                f"source_files {sid}: Sammeldatei enthält mehrere Buchungsbelege ({', '.join(booked)}); "
+                "mit scripts/beleg_pdf.py split je Vorgang in eine eigene PDF trennen und das Original als bundle_original führen"
+            )
+    return errors
+
+
+def validate_technical_incidents(data: dict[str, Any]) -> list[str]:
+    """Technische Einzelfehler lokal behandeln: betroffene Vorgänge zurückstellen, alle übrigen weiterverarbeiten."""
+    errors: list[str] = []
+    incidents = data.get("technical_incidents", [])
+    if incidents in (None, ""):
+        incidents = []
+    if not isinstance(incidents, list):
+        return ["technical_incidents muss eine Liste sein"]
+    documents = {str(doc.get("transaction_id", "")): doc for doc in data.get("documents", [])}
+    seen: set[str] = set()
+    for index, item in enumerate(incidents, start=1):
+        if not isinstance(item, dict):
+            errors.append(f"technical_incidents {index}: Eintrag ist kein Objekt")
+            continue
+        incident_id = str(item.get("incident_id", "")).strip()
+        if not incident_id or incident_id in seen:
+            errors.append(f"technical_incidents {index}: incident_id fehlt oder ist doppelt")
+        seen.add(incident_id)
+        if str(item.get("system", "")) not in TECHNICAL_INCIDENT_SYSTEMS:
+            errors.append(f"technical_incidents {incident_id}: system muss eines von {', '.join(sorted(TECHNICAL_INCIDENT_SYSTEMS))} sein")
+        for field in ("scope", "error"):
+            if not str(item.get(field, "")).strip():
+                errors.append(f"technical_incidents {incident_id}: {field} fehlt")
+        retries = item.get("retries")
+        if not isinstance(retries, int) or retries < 1:
+            errors.append(f"technical_incidents {incident_id}: zulässige Wiederholung (retries ≥ 1) ist nicht dokumentiert")
+        if not str(item.get("alternative_path", "")).strip():
+            errors.append(f"technical_incidents {incident_id}: alternativer Leseweg (alternative_path) ist nicht dokumentiert")
+        if not isinstance(item.get("resolved"), bool):
+            errors.append(f"technical_incidents {incident_id}: resolved muss true oder false sein")
+        affected = item.get("affected_transaction_ids", [])
+        if not isinstance(affected, list):
+            errors.append(f"technical_incidents {incident_id}: affected_transaction_ids muss eine Liste sein")
+            affected = []
+        if item.get("resolved") is False and not affected and not str(item.get("deferred_decision", "")).strip():
+            errors.append(f"technical_incidents {incident_id}: ungelöster Fehler ohne zurückgestellte Teilentscheidung (deferred_decision)")
+        for tid in affected:
+            doc = documents.get(str(tid))
+            if doc is None:
+                errors.append(f"technical_incidents {incident_id}: unbekannte Vorgangs-ID {tid}")
+                continue
+            if item.get("resolved") is False and doc.get("traffic_light") == "Grün":
+                errors.append(
+                    f"technical_incidents {incident_id}: Vorgang {tid} ist von einem ungelösten technischen Fehler betroffen und darf nicht Grün sein"
+                )
+    return errors
+
+
+def compute_run_completion(data: dict[str, Any]) -> dict[str, Any]:
+    """Abschluss-Gate: vollständig nur ohne zurückgestellte Teilentscheidungen und ungelöste Hindernisse."""
+    open_items: list[dict[str, str]] = []
+    register = (data.get("run", {}).get("_preflight_summary") or {}).get("abgrenzungsregister")
+    if isinstance(register, dict) and register.get("status") == "access_error":
+        open_items.append({
+            "item": "Abgrenzungsregister nicht abrufbar",
+            "cause": f"HTTP {register.get('http_status')} {register.get('error_code')}".strip(),
+            "deferred": str(register.get("deferred", "")),
+            "next_step": "Zugriff auf das Register herstellen, Registerstand abrufen, zurückgestellte Abgrenzungsentscheidungen nachholen",
+        })
+    for item in data.get("technical_incidents", []) or []:
+        if isinstance(item, dict) and item.get("resolved") is False:
+            open_items.append({
+                "item": f"Technischer Einzelfehler {item.get('incident_id', '')} ({item.get('system', '')}: {item.get('scope', '')})",
+                "cause": str(item.get("error", "")),
+                "deferred": str(item.get("deferred_decision", "")) or (
+                    "betroffene Vorgänge: " + ", ".join(str(value) for value in item.get("affected_transaction_ids", []))
+                ),
+                "next_step": str(item.get("next_step", "")) or "Zugriff wiederherstellen und zurückgestellte Teilentscheidung nachholen",
+            })
+    documents = data.get("documents", [])
+    completed_parts = [
+        f"Inventur: {len(data.get('source_files', []))} Eingabedateien mit Endstatus",
+        f"Klassifikation: {len(documents)} logische Vorgänge genau einmal klassifiziert",
+        f"Buchungen: {sum(1 for doc in documents if doc.get('traffic_light') == 'Grün')} grün, "
+        f"{sum(1 for doc in documents if doc.get('traffic_light') == 'Rot')} rot exportiert",
+        "Dubletten und DATEV-Bestand abgeglichen",
+        "GUID-Verknüpfungen, Belegtransfer und Pflichtdateien erzeugt",
+        "Klärungsquote berechnet" + (" und Zweitprüfung dokumentiert" if (data.get("_clarification_rate") or {}).get("second_review_performed") else ""),
+    ]
+    status = "vollständig abgeschlossen" if not open_items else "nicht vollständig abgeschlossen"
+    return {
+        "status": status,
+        "gate": "alle Eingaben bearbeitet, alle Vorgänge genau einmal klassifiziert, Grün/Rot ausgegeben, Dubletten/DATEV-Bestand abgeglichen, GUIDs und Pflichtdateien erzeugt, Validator valid=true",
+        "completed_parts": completed_parts,
+        "open_items": open_items,
+        "datev_import_claimed": False,
+    }
+
+
+def _evaluation_attempts(doc: dict[str, Any], tid: str, errors: list[str], *, label: str) -> bool:
+    """Dokumentierte Auswertungsversuche prüfen; liefert True, wenn das Belegbild geprüft wurde."""
+    attempts = doc.get("evaluation_attempts")
+    if not isinstance(attempts, list) or not attempts:
+        errors.append(f"{tid}: {label} erfordert dokumentierte Auswertungsversuche (evaluation_attempts)")
+        return False
+    image_reviewed = False
+    for position, attempt in enumerate(attempts, start=1):
+        if not isinstance(attempt, dict):
+            errors.append(f"{tid}: evaluation_attempts {position} ist kein Objekt")
+            continue
+        method = str(attempt.get("method", "")).strip().lower()
+        if method not in EVALUATION_METHODS:
+            errors.append(f"{tid}: evaluation_attempts {position}: method muss eines von {', '.join(sorted(EVALUATION_METHODS))} sein")
+        if not str(attempt.get("result", "")).strip():
+            errors.append(f"{tid}: evaluation_attempts {position}: result fehlt")
+        if method == IMAGE_REVIEW_METHOD:
+            image_reviewed = True
+    if not image_reviewed:
+        errors.append(
+            f"{tid}: {label} ohne dokumentierte Belegbildprüfung (evaluation_attempts.method=belegbild); "
+            "fehlende Textebene/OCR allein begründet keine Rot- oder Nichtauswertbarkeitseinstufung"
+        )
+    return image_reviewed
+
+
+CREDITOR_MISSING_PATTERN = re.compile(
+    r"(kreditor|debitor|lieferant|kunde|geschäftspartner|personenkonto|stammdaten)\w*\s+"
+    r"(fehlt|fehlen|nicht angelegt|nicht vorhanden|unbekannt|nicht in datev|neu)"
+    r"|(kein|neuer|neue|unbekannter)\s+(kreditor|debitor|lieferant|kunde|personenkonto)",
+    re.IGNORECASE,
+)
+IDENTITY_UNCLEAR_TERMS = (
+    "identität", "mehrdeutig", "nicht eindeutig", "widersprüch", "zwei firmen", "mehrere firmen",
+    "rechtsträger", "zuordnung unklar", "nicht zuzuordnen", "unklar, welche", "ambiguous",
+)
+
+
+def _validate_partner_check(doc: dict[str, Any], tid: str, reason: dict[str, Any], incident_affected: set[str]) -> list[str]:
+    """Rot wegen Personenkonto nur bei dokumentiert nicht auflösbarer Geschäftspartneridentität."""
+    errors: list[str] = []
+    check = reason.get("partner_check")
+    if not isinstance(check, dict):
+        return [
+            f"{tid}: Rot-Grund personenkonto_unklar erfordert red_reason.partner_check "
+            "(Riecken-Partnerabgleich mit tool, query und result); ein fehlender oder neuer Kreditor ist kein Rot-Grund, sondern eine Neuanlage"
+        ]
+    tool = str(check.get("tool", "")).strip()
+    result = str(check.get("result", "")).strip()
+    if tool not in PARTNER_CHECK_TOOLS:
+        errors.append(f"{tid}: partner_check.tool muss eines von {', '.join(sorted(PARTNER_CHECK_TOOLS))} sein")
+    if not str(check.get("query", "")).strip():
+        errors.append(f"{tid}: partner_check.query (gesuchter Geschäftspartner) fehlt")
+    if result == PARTNER_CHECK_RESULT_NEW:
+        errors.append(
+            f"{tid}: partner_check.result no_match bedeutet neuen Geschäftspartner; das ist kein Rot-Grund, "
+            "sondern eine automatische Neuanlage in master_records (höchste Nummer plus eins)"
+        )
+    elif result not in PARTNER_CHECK_RESULTS_RED:
+        errors.append(f"{tid}: partner_check.result muss ambiguous, identity_unclear oder error sein")
+    if result == "error" and tid not in incident_affected:
+        errors.append(
+            f"{tid}: partner_check.result error erfordert einen technical_incidents-Eintrag mit diesem Vorgang in affected_transaction_ids"
+        )
+    if result in {"ambiguous", "identity_unclear"} and not str(check.get("detail", "")).strip():
+        errors.append(f"{tid}: partner_check.detail (worin die Mehrdeutigkeit/Unklarheit besteht) fehlt")
+    return errors
+
+
+def _validate_red_reason_and_evaluation(
+    doc: dict[str, Any], tid: str, sources_by_path: dict[str, dict[str, Any]],
+    incident_affected: set[str] | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    incident_affected = incident_affected or set()
+    status = doc.get("processing_status")
+    light = doc.get("traffic_light")
+    reason = doc.get("red_reason")
+    if status == STATUS_BOOKED and light == "Rot":
+        if not isinstance(reason, dict):
+            errors.append(f"{tid}: Rot erfordert einen maschinenlesbaren Rot-Grund (red_reason)")
+        else:
+            code = str(reason.get("code", ""))
+            if code not in RED_REASON_CODES:
+                errors.append(f"{tid}: red_reason.code {code!r} ist keine zulässige Rot-Kategorie")
+            for field in ("verification_attempted", "next_check"):
+                if not str(reason.get(field, "")).strip():
+                    errors.append(f"{tid}: red_reason.{field} fehlt")
+            if code == "technisch_unlesbar":
+                _evaluation_attempts(doc, tid, errors, label="Rot-Grund technisch_unlesbar")
+            if code == "anlage_gwg_spezialregel" and doc.get("asset_booking") is not True:
+                errors.append(f"{tid}: Rot-Grund anlage_gwg_spezialregel erfordert asset_booking=true")
+            if code == "datev_dublette_unklar":
+                datev_check = ((doc.get("duplicate_checks") or {}).get("datev_live") or {}).get("result")
+                prior = (doc.get("prior_booking_check") or {}).get("result")
+                if datev_check != "possible_duplicate" and prior != "moegliche_dublette":
+                    errors.append(f"{tid}: Rot-Grund datev_dublette_unklar ohne möglichen DATEV-Dublettentreffer")
+            if code == "personenkonto_unklar":
+                errors.extend(_validate_partner_check(doc, tid, reason, incident_affected))
+        reason_text = str(doc.get("reason", "")).casefold()
+        combined = " ".join([
+            reason_text,
+            str((reason or {}).get("verification_attempted", "")).casefold() if isinstance(reason, dict) else "",
+            " ".join(str(value).casefold() for booking in doc.get("bookings", []) or [] for value in (booking.get("open_fields") or {}).values()),
+        ])
+        if CREDITOR_MISSING_PATTERN.search(combined) and not any(term in combined for term in IDENTITY_UNCLEAR_TERMS):
+            errors.append(
+                f"{tid}: \"Kreditor/Debitor fehlt oder ist neu\" ist kein Rot-Grund; eindeutig erkannte Geschäftspartner werden "
+                "automatisch als Einzelkonto neu angelegt. Rot nur bei nicht auflösbarer Geschäftspartneridentität mit partner_check"
+            )
+        ocr_only_terms = ("ocr", "textebene", "textschicht", "kein text", "scan")
+        substantive_terms = ("unlesbar", "nicht lesbar", "nicht erkennbar", "unklar", "fehlt", "offen", "widerspr", "dublette", "anlage", "gwg")
+        if any(term in reason_text for term in ocr_only_terms) and not any(term in reason_text for term in substantive_terms):
+            errors.append(
+                f"{tid}: Rot darf nicht allein mit fehlender OCR/Textebene begründet werden; Belegbild auswerten und konkreten Rot-Grund nennen"
+            )
+    elif isinstance(reason, dict) and reason:
+        if light == "Grün":
+            errors.append(f"{tid}: Grün darf keinen Rot-Grund tragen")
+    if status == STATUS_UNREADABLE:
+        if doc.get("bookings"):
+            errors.append(f"{tid}: technisch nicht auswertbarer Vorgang darf keine Buchungen enthalten")
+        if light not in (None, ""):
+            errors.append(f"{tid}: technisch nicht auswertbarer Vorgang trägt keine Ampel")
+        _evaluation_attempts(doc, tid, errors, label="Status technisch nicht auswertbar")
+        if not str(doc.get("exclusion_reason", "")).strip():
+            errors.append(f"{tid}: technisch nicht auswertbar erfordert eine konkrete Tatsachengrundlage (exclusion_reason)")
+    paths = doc.get("source_paths") or [doc.get("source_path", "")]
+    readabilities = {
+        str(sources_by_path.get(str(path), {}).get("readability", "")) for path in paths if str(path).strip()
+    }
+    if status == STATUS_BOOKED and light == "Grün" and readabilities & {"unreadable"}:
+        errors.append(f"{tid}: Quelle ist als unreadable inventarisiert; eine grüne Buchung setzt ein ausgewertetes Belegbild voraus")
+    return errors
 
 
 def validate_documents(data: dict[str, Any]) -> list[str]:
@@ -1246,11 +1749,21 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
         for transaction_id in case.get("transaction_ids", [])
     )
     separate_batches = (run.get("batch_config") or {}).get("separate_batches") or {}
+    sources_by_path = {
+        str(item.get("source_path", "")): item for item in data.get("source_files", []) if isinstance(item, dict)
+    }
+    incident_affected = {
+        str(value)
+        for item in (data.get("technical_incidents") or [])
+        if isinstance(item, dict)
+        for value in (item.get("affected_transaction_ids") or [])
+    }
     for index, doc in enumerate(data.get("documents", []), start=1):
         tid = str(doc.get("transaction_id", f"Zeile {index}"))
         if tid in seen_ids:
             errors.append(f"Doppelte Vorgangs-ID: {tid}")
         seen_ids.add(tid)
+        errors.extend(_validate_red_reason_and_evaluation(doc, tid, sources_by_path, incident_affected))
         batch_type = document_batch_type(doc)
         if batch_type != STANDARD_BATCH_TYPE:
             batch_rule = separate_batches.get(batch_type)
@@ -1822,7 +2335,9 @@ def _prepare_canonical_document_transfer(
         ]
         linked = [(mapping, document) for mapping, document in linked if document]
         transaction_ids = [str(mapping["transaction_id"]) for mapping, _ in linked]
-        excluded_roles = {"cover_sheet", "duplicate_copy"}
+        # Belegdateiregel: nur der Buchungsbeleg selbst (eine PDF) und Zahlungsavise gehen nach DATEV;
+        # Begleitdokumente werden nicht als eigener, unverknüpfter DATEV-Beleg übertragen.
+        excluded_roles = {"cover_sheet", "duplicate_copy", "supporting_document"} | set(ORIGINAL_ROLES)
         transferable = [
             (mapping, document)
             for mapping, document in linked
@@ -1833,11 +2348,18 @@ def _prepare_canonical_document_transfer(
             )
         ]
         if not transferable:
+            roles = {str(mapping.get("role", "")) for mapping, _ in linked}
             index.append({
                 "source_id": source_id,
                 "transaction_ids": transaction_ids,
                 "included": False,
-                "reason": "keine übertragbare Dokumentrolle oder kein buchungsrelevanter Vorgang",
+                "reason": (
+                    "Original einer abgeleiteten PDF; Belegbild wird über die abgeleitete Datei übertragen"
+                    if roles & ORIGINAL_ROLES
+                    else "Begleitdokument; nicht als eigener DATEV-Beleg übertragen (Belegdateiregel) – maßgebliche Seiten gehören per merge in die Beleg-PDF"
+                    if roles == {"supporting_document"}
+                    else "keine übertragbare Dokumentrolle oder kein buchungsrelevanter Vorgang"
+                ),
             })
             continue
         booking_links = [
@@ -1849,6 +2371,16 @@ def _prepare_canonical_document_transfer(
             (pair for pair in transferable if pair[0].get("role") == "primary_invoice"),
             transferable[0],
         )
+        primary_transaction_ids = sorted({
+            str(mapping["transaction_id"]) for mapping, _ in booking_links
+            if mapping.get("role") == "primary_invoice"
+        })
+        if len(primary_transaction_ids) > 1:
+            raise ValueError(
+                f"{source_id}: Sammeldatei mit mehreren Buchungsbelegen ({', '.join(primary_transaction_ids)}); {DOCUMENT_FILE_RULE}"
+            )
+        if primary_transaction_ids and source.suffix.lower() != ".pdf":
+            raise ValueError(f"{source_id}: Buchungsbeleg ist keine PDF-Datei; {DOCUMENT_FILE_RULE}")
         primary_document = preferred[1]
         period = str(primary_document.get("period") or run_period)
         try:
@@ -1912,6 +2444,8 @@ def _prepare_canonical_document_transfer(
         index.append({
             "source_id": source_id,
             "transaction_ids": transaction_ids,
+            "primary_transaction_ids": primary_transaction_ids,
+            "derived_from": source_item.get("derived_from"),
             "content_hash": digest,
             "document_guid": str(guid).upper(),
             "technical_filename": technical_name,
@@ -2152,6 +2686,10 @@ def copy_payment_advices(root: Path, data: dict[str, Any]) -> None:
         destination = root / FOLDERS["advice"] / document["document_filename"]
         shutil.copy2(source, destination)
 
+def _format_quota(value: Any) -> str:
+    return "nicht berechenbar" if value is None else f"{value} %"
+
+
 def md_cell(value: Any) -> str:
     if isinstance(value, list):
         value = ", ".join(str(item) for item in value)
@@ -2176,8 +2714,28 @@ def write_accrual_register(root: Path, data: dict[str, Any]) -> None:
         isinstance(preflight_register, dict)
         and preflight_register.get("status") == "not_found"
     )
+    register_access_error = (
+        isinstance(preflight_register, dict)
+        and preflight_register.get("status") == "access_error"
+    )
     lines = ["# Vorschlag Abgrenzungsregister", ""]
-    if first_run_without_register and register:
+    if isinstance(preflight_register, dict) and preflight_register.get("status") == "not_applicable":
+        lines.extend([
+            "**Status: Einnahmenüberschussrechnung – kein Abgrenzungsregister.** Rechnungsabgrenzungen "
+            "sind bei EÜR unzulässig; Aufwand und Ertrag werden vollständig im Buchungsmonat erfasst.",
+            "",
+        ])
+    elif register_access_error:
+        lines.extend([
+            "**Status: Register nicht abrufbar – kein Nullstand angenommen.** Der direkte Abruf am "
+            f"verbindlichen SharePoint-Ziel scheiterte mit HTTP {preflight_register.get('http_status')} "
+            f"{preflight_register.get('error_code', '')}".rstrip() + ". Die übrige Buchhaltung wurde fortgesetzt; "
+            "nur die vom Registerstand abhängigen Abgrenzungsentscheidungen sind zurückgestellt und im "
+            "Laufmanifest als offener Punkt ausgewiesen. Neue Abgrenzungen dieses Laufs stehen unten; "
+            "sie sind nach Registerabruf gegen den vorhandenen Bestand abzugleichen.",
+            "",
+        ])
+    elif first_run_without_register and register:
         lines.extend([
             "**Status: Neuanlage erforderlich.** Das Register war am "
             "verbindlichen SharePoint-Ziel noch nicht vorhanden und der "
@@ -2226,6 +2784,18 @@ def write_accrual_register(root: Path, data: dict[str, Any]) -> None:
     (root / FOLDERS["review"] / "Abgrenzungsregister_Vorschlag.md").write_text(
         "\n".join(lines) + "\n", encoding="utf-8"
     )
+
+def write_clarification_rate(root: Path, data: dict[str, Any]) -> dict[str, Any]:
+    """Klärungsquoten-Nachweis vor dem Paketbau; Fehler blockieren den Paketbau (keine Abbruchregel, Nacharbeit)."""
+    summary, errors = compute_clarification_rate(data)
+    if errors:
+        raise ValueError("Klärungsquote/Zweitprüfung unvollständig:\n" + "\n".join(errors))
+    data["_clarification_rate"] = summary
+    (root / FOLDERS["review"] / "Klaerungsquote_Nachweis.md").write_text(
+        render_markdown(summary), encoding="utf-8"
+    )
+    return summary
+
 
 def write_clarification_files(root: Path, data: dict[str, Any]) -> None:
     cases = data.get("clarification_cases", [])
@@ -2309,6 +2879,8 @@ def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
         if data.get("mandantenprofil", {}).get("status") == "provisional_first_run"
         else "freigegeben"
     )
+    rate = data.get("_clarification_rate") or compute_clarification_rate(data)[0]
+    completion = data.get("_run_completion") or compute_run_completion(data)
     lines = [
         "# Tätigkeits- und Abdeckungsnachweis",
         "",
@@ -2323,14 +2895,45 @@ def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
         f"- Grün/Rot: {light_counts.get('Grün', 0)} / {light_counts.get('Rot', 0)}",
         f"- Ausgeschlossen: {sum(1 for item in documents if item.get('processing_status') in {'nicht buchungsrelevant', 'außerhalb Auftragszeitraum'})}",
         f"- Sichere Dubletten: {status_counts.get('sichere Dublette – nicht erneut gebucht', 0)}",
+        f"- Technisch nicht auswertbar (nach dokumentiertem Auswertungsversuch): {status_counts.get(STATUS_UNREADABLE, 0)}",
         f"- Bearbeitungsstatus: {report.get('datev_import_status', 'Importpaket erstellt – noch nicht in DATEV importiert')}",
         "- Fachstatus: fachlicher Prüfprotokoll-Rücklauf ausstehend",
+        f"- Laufstatus (Abschluss-Gate): {completion.get('status', '')}",
+        f"- Belegdateiregel: {DOCUMENT_FILE_RULE}",
+        "",
+        "## Klärungsquote",
+        "",
+        f"- N / R / Q vor Zweitprüfung: {rate['before']['N']} / {rate['before']['R']} / {_format_quota(rate['before']['Q'])}",
+        f"- N / R / Q nach Zweitprüfung: {rate['after']['N']} / {rate['after']['R']} / {_format_quota(rate['after']['Q'])}",
+        f"- Grenzstufe: {rate['after']['stage_label']}",
+        f"- Zweitprüfung: {'durchgeführt' if rate['second_review_performed'] else 'nicht erforderlich' if not rate['second_review_required'] else 'FEHLT'}; "
+        f"nachgeprüft {rate['reviewed_cases']}, auf Grün korrigiert {len(rate['corrected_to_green'])}, verbleibend Rot {rate['remaining_red']}",
+        "- Details: Klaerungsquote_Nachweis.md",
+        "",
+        "## Offene Punkte des Abschluss-Gates",
+        "",
+    ]
+    if not completion.get("open_items"):
+        lines.append("- keine; alle Teilaufgaben abgeschlossen")
+    for item in completion.get("open_items", []):
+        lines.append(f"- {item.get('item')}: {item.get('cause')} – zurückgestellt: {item.get('deferred')} – nächster Schritt: {item.get('next_step')}")
+    incidents = data.get("technical_incidents", []) or []
+    if incidents:
+        lines.extend(["", "## Technische Einzelfehler (lokal behandelt)", ""])
+        for item in incidents:
+            lines.append(
+                f"- {item.get('incident_id')} ({item.get('system')}, {item.get('scope')}): {item.get('error')}; "
+                f"Wiederholungen {item.get('retries')}, alternativer Leseweg: {item.get('alternative_path')}; "
+                f"betroffen: {', '.join(str(value) for value in item.get('affected_transaction_ids', [])) or '–'}; "
+                f"{'gelöst' if item.get('resolved') else 'ungelöst – nur betroffener Schritt zurückgestellt'}"
+            )
+    lines.extend([
         "",
         "## DATEV-Stapel",
         "",
         "| Datei | Stapelbezeichnung | Zeilen | Summe |",
         "|---|---|---:|---:|",
-    ]
+    ])
     for batch in data.get("_booking_batches", []):
         lines.append(f"| {batch['file']} | {batch['label']} | {batch['rows']} | {batch['amount_total']} |")
     if not data.get("_booking_batches"):
@@ -2399,6 +3002,8 @@ def build_review(root: Path, data: dict[str, Any], node: str) -> None:
         sanitized.get("run", {}).pop(key, None)
     sanitized["booking_trace"] = data.get("_booking_trace", [])
     sanitized["booking_batches"] = data.get("_booking_batches", [])
+    sanitized["clarification_rate"] = data.get("_clarification_rate", {})
+    sanitized["run_completion"] = data.get("_run_completion", {})
     review_json.write_text(json.dumps(sanitized, ensure_ascii=False, indent=2), encoding="utf-8")
     script = Path(__file__).with_name("build_review_workbook.py")
     output = root / FOLDERS["review"] / (
@@ -2431,6 +3036,10 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         expected_booking_ids - exported_booking_ids
     )
     complete = assigned == len(docs) and not missing_booking_exports
+    source_files = data.get("source_files", [])
+    derived_files = [item for item in source_files if isinstance(item, dict) and item.get("derived_from")]
+    rate = data.get("_clarification_rate") or compute_clarification_rate(data)[0]
+    completion = data.get("_run_completion") or compute_run_completion(data)
     manifest = {
         "skill_version": SKILL_VERSION,
         "output_contract": OUTPUT_CONTRACT,
@@ -2453,8 +3062,10 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
             "account_config": data["run"]["account_config"],
             "person_account_ranges": data["run"]["person_account_ranges"],
         },
-        "hochgeladene_dateien": len(data.get("source_files", [])),
-        "quelldateien": len(data.get("source_files", [])),
+        "hochgeladene_dateien": len(source_files) - len(derived_files),
+        "abgeleitete_belegdateien": len(derived_files),
+        "quelldateien": len(source_files),
+        "document_file_rule": DOCUMENT_FILE_RULE,
         "logische_vorgaenge": len(docs),
         "buchungszeilen": len(trace),
         "input_inventory_count": len(data.get("input_inventory", [])),
@@ -2482,6 +3093,9 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "batch_split_reasons": data.get("_batch_split_reasons", []),
         "carry_fields": sorted(CARRY_FIELDS),
         "datev_test_import": data.get("datev_test_import", {"status": "pending"}),
+        "clarification_rate": rate,
+        "technical_incidents": data.get("technical_incidents", []) or [],
+        "run_completion": completion,
         "document_index": document_index,
         "belegtransfer_status": (
             "DATEV Document-Package v6.0; Buchungsbelege und Avis getrennt, jeweils ZIP mit document.xml"
@@ -2509,6 +3123,11 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         f"- Sichere Dubletten: {status_counts.get('sichere Dublette – nicht erneut gebucht', 0)}",
         f"- Nicht buchungsrelevant: {status_counts.get('nicht buchungsrelevant', 0)}",
         f"- Rote Belege mit konkret dokumentiertem Bearbeitungsbedarf: {light_counts.get('Rot', 0)}",
+        f"- Technisch nicht auswertbar: {status_counts.get(STATUS_UNREADABLE, 0)}",
+        f"- Klärungsquote vor/nach Zweitprüfung: {_format_quota(rate['before']['Q'])} / {_format_quota(rate['after']['Q'])} (N={rate['after']['N']}, R={rate['after']['R']}, {rate['after']['stage_label']})",
+        f"- Laufstatus (Abschluss-Gate): {completion['status']}"
+        + ("; offene Punkte: " + "; ".join(item['item'] for item in completion['open_items']) if completion['open_items'] else ""),
+        f"- Belegdateiregel: {DOCUMENT_FILE_RULE}; abgeleitete Belegdateien: {len(derived_files)}",
         "",
         "## DATEV-Stapel",
         "",
@@ -2549,12 +3168,16 @@ def main() -> int:
         data = load_input(args.input)
         errors = validate_input_inventory(data)
         errors.extend(validate_documents(data))
+        errors.extend(validate_document_file_rule(data))
+        errors.extend(validate_technical_incidents(data))
         errors.extend(validate_accrual_source_documents(data))
         errors.extend(validate_clarifications(data))
         if errors:
             raise ValueError("\n".join(errors))
         transfer_packages, document_index = prepare_document_transfer(data)
         root = prepare_output(args.output, data["run"])
+        write_clarification_rate(root, data)
+        data["_run_completion"] = compute_run_completion(data)
         trace = write_booking_batches(root, data)
         data["_booking_trace"] = trace
         write_master_data(root, data)

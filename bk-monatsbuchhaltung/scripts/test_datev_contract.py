@@ -30,6 +30,44 @@ def evidence(path: Path, url: str) -> dict:
     }
 
 
+MINIMAL_PDF = (
+    b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+    b"2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+    b"3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\n"
+)
+
+
+def write_pdf(path: Path, text: str = "Testbeleg") -> Path:
+    """Synthetische PDF-Belegdatei (Belegdateiregel: ein Buchungsbeleg = eine PDF)."""
+    path.write_bytes(MINIMAL_PDF + b"% " + text.encode("utf-8") + b"\ntrailer<</Root 1 0 R>>\n%%EOF\n")
+    return path
+
+
+def red_reason(code: str = "konto_unklar", **extra) -> dict:
+    reason = {
+        "code": code,
+        "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Vorbuchungen und Buchungsregeln geprüft.",
+        "next_check": "Originalbeleg beim Mandanten anfordern und offenes Feld klären.",
+    }
+    reason.update(extra)
+    return reason
+
+
+def second_review(red_ids: list[str], corrections: list[dict] | None = None, cause: dict | None = None) -> dict:
+    """Vollständige Zweitprüfung aller roten Vorgänge als Lauf-JSON-Block clarification_review."""
+    return {
+        "checked_at": "2026-10-08T10:00:00+02:00",
+        "cause_analysis": cause or {},
+        "second_review": {
+            "performed": True,
+            "performed_at": "2026-10-08T10:00:00+02:00",
+            "basis": ["belegbild", "mandantenprofil", "datev_bestand", "buchungsregeln"],
+            "reviewed_transaction_ids": list(red_ids),
+            "corrections": corrections or [],
+        },
+    }
+
+
 def booking_document(source: Path, light: str = "Grün") -> dict:
     result = {
         "transaction_id": "V0001",
@@ -68,6 +106,7 @@ def booking_document(source: Path, light: str = "Grün") -> dict:
     }
     if light == "Rot":
         result["requires_clarification"] = True
+        result["red_reason"] = red_reason()
     return result
 
 
@@ -82,8 +121,7 @@ def main() -> None:
         accrual = accrual_dir / "12861.md"
         profile.write_text("# Mandantenprofil\nBilanz, keine Kostenstellen.\n", encoding="utf-8")
         accrual.write_text("# Abgrenzungsregister\nKeine offenen Fälle.\n", encoding="utf-8")
-        source = temp / "beleg.txt"
-        source.write_text("DATEV-Vertragsbeleg", encoding="utf-8")
+        source = write_pdf(temp / "beleg.pdf", "DATEV-Vertragsbeleg")
         targets = build_targets("12861")
 
         run = {
@@ -124,6 +162,12 @@ def main() -> None:
             ),
             "datev_live_evidence": {
                 "source": "DATEV live",
+                "connector": "Riecken",
+                "retrieved_via": {
+                    "health": "datev_health_check", "core": "datev_get_client_dossier",
+                    "master_data": "datev_search_business_partners", "prior_bookings": "datev_get_account_postings",
+                    "accounts": "datev_get_account_balances", "bu_keys": "datev_suggest_posting",
+                },
                 "retrieved_at": "2026-07-26T12:00:00+02:00",
                 "beraternummer": 29098,
                 "mandantennummer": 12861,
@@ -239,21 +283,43 @@ def main() -> None:
         assert register_summary["status"] == "not_found"
         assert register_summary["first_run_without_register"] is True
 
-        incomplete_missing_register = copy.deepcopy(missing_register)
-        incomplete_missing_register["run"]["abgrenzungsregister_evidence"][
-            "direct_lookup_attempts"
-        ] = 1
-        incomplete_path = temp / "incomplete-missing-register.json"
-        incomplete_path.write_text(
-            json.dumps(incomplete_missing_register, ensure_ascii=False),
-            encoding="utf-8",
+        # v1.4.1: Das Register ist keine Pflichtquelle. Ein einfacher dokumentierter Abruf
+        # (URL, Dateiname, Abrufweg, Zeitpunkt) genügt; kein zweifacher Direktabruf nötig.
+        simple_missing_register = copy.deepcopy(missing_register)
+        simple_missing_register["run"]["abgrenzungsregister_evidence"] = {
+            "status": "not_found",
+            "source_url": str(targets["accrual_url"]),
+            "file_name": "12861.md",
+            "retrieved_via": "microsoft_sharepoint.fetch",
+            "checked_at": "2026-07-28T09:00:00+02:00",
+        }
+        simple_path = temp / "simple-missing-register.json"
+        simple_path.write_text(
+            json.dumps(simple_missing_register, ensure_ascii=False), encoding="utf-8"
         )
+        assert build_package.load_input(simple_path)["run"]["_preflight_summary"]["abgrenzungsregister"]["status"] == "not_found"
+        # Ein 403 darf nicht als leeres Register getarnt werden.
+        disguised = copy.deepcopy(simple_missing_register)
+        disguised["run"]["abgrenzungsregister_evidence"]["http_status"] = 403
+        disguised_path = temp / "disguised-register.json"
+        disguised_path.write_text(json.dumps(disguised, ensure_ascii=False), encoding="utf-8")
         try:
-            build_package.load_input(incomplete_path)
+            build_package.load_input(disguised_path)
         except ValueError as exc:
-            assert "zweimal direkt" in str(exc)
+            assert "Abrufproblem" in str(exc)
         else:
-            raise AssertionError("Unbestätigtes fehlendes Register wurde akzeptiert")
+            raise AssertionError("HTTP 403 wurde als leeres Register akzeptiert")
+        # Ein nicht geprüftes Register ist bei Bilanz der einzige Fehlerfall.
+        unchecked = copy.deepcopy(missing_register)
+        unchecked["run"].pop("abgrenzungsregister_evidence")
+        unchecked_path = temp / "unchecked-register.json"
+        unchecked_path.write_text(json.dumps(unchecked, ensure_ascii=False), encoding="utf-8")
+        try:
+            build_package.load_input(unchecked_path)
+        except ValueError as exc:
+            assert "nicht geprüft" in str(exc)
+        else:
+            raise AssertionError("Ungeprüftes Register wurde akzeptiert")
 
         missing_profile = copy.deepcopy(data)
         missing_profile["run"].pop("mandantenprofil_evidence")
