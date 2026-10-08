@@ -1,0 +1,27 @@
+{
+  "interface": {
+    "displayName": "Nachlasspflege – Vermieterkündigung",
+    "shortDescription": "Kündigung plus Mietaufhebungsvertrag erstellen",
+    "longDescription": "Ermittelt Falldaten aus DATEV-DMS und Unterlagen, berechnet den nächstmöglichen Kündigungstermin und erstellt immer zwei Word-Dokumente: das Vermieterschreiben sowie einen Mietaufhebungsvertrag auf Basis der hinterlegten Kanzleivorlage.",
+    "developerName": "Burchardt & Kollegen",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "defaultPrompt": "Erstelle für diese Nachlasspflegschaft das Kündigungsschreiben an den Vermieter und anschließend den Mietaufhebungsvertrag."
+  },
+  "name": "nachlasspflege-vermieterkuendigung",
+  "version": "0.1.4",
+  "description": "Standardisiert Vermieterkorrespondenz, Wohnungskündigungen und Aufhebungsangebote in Nachlasspflegschaften.",
+  "author": {
+    "name": "Burchardt & Kollegen"
+  },
+  "keywords": [
+    "Nachlasspflegschaft",
+    "Vermieter",
+    "Mietvertrag",
+    "Kündigung",
+    "Wohnung"
+  ],
+  "skills": "./skills"
+}
