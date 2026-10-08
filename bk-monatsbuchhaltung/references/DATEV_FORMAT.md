@@ -23,7 +23,7 @@ Der EXTF-Header enthält 31 Felder. Pflichtwerte aus Live-DATEV-Daten übernehme
 
 ## Buchungsstapel
 
-Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel` (Grün und fällige Abgrenzungsauflösungen) und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>.csv` mit Stapelbezeichnung `Klärungsposten`; der Header ist ansonsten identisch (Kategorie 21, Version 13, Datum von/bis des Monats, Festschreibung 0). Konfigurierte Stapeltypen erhalten den Suffix `_<Stapeltyp>` und die Bezeichnung aus `batch_config`; geteilte Klärungsstapel den Suffix `_02` ff. Keine Abgrenzungs-CSV-Dateien.
+Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel` (Grün und fällige Abgrenzungsauflösungen) und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>.csv` mit Stapelbezeichnung `Klärungsposten`; der Header ist ansonsten identisch (Kategorie 21, Version 13, Datum von/bis des Monats, Festschreibung 0). Konfigurierte Stapeltypen erhalten den Suffix `_<Stapeltyp>` und die Bezeichnung aus `batch_config`; geteilte Klärungsstapel den Suffix `_02` ff. Keine Abgrenzungs-CSV-Dateien. Beide Stapelarten werden in DATEV importiert; der Klärungsstapel wird nicht zurückgehalten, sondern als eigener Importvorgang eingelesen und erst nach Bearbeitung festgeschrieben.
 
 Vollständige 125-Feld-Folge ausgeben. Wesentliche Felder:
 
@@ -81,6 +81,7 @@ Verbindliche Regeln:
 
 - `document.xml` heißt exakt so, liegt genau einmal direkt im ZIP-Stamm und verwendet Namespace `http://xml.datev.de/bedi/tps/document/v06.0`, Version `6.0` und UTF-8.
 - Belegdateien liegen ebenfalls direkt im ZIP-Stamm; Unterordner sind unzulässig.
+- Jeder Buchungsbeleg ist genau eine eigene PDF-Datei im Paket (Belegdateiregel): keine Sammel-PDF mit mehreren Buchungsbelegen, kein auf mehrere Dateien verteilter Buchungsbeleg, keine Bild- oder Textdatei als Buchungsbeleg; Sammel-PDFs werden vorher mit `scripts/beleg_pdf.py split` getrennt, Teildateien mit `merge` zusammengeführt, Bilder mit `convert` umgewandelt. Zahlungsavise dürfen weitere zulässige Dateitypen haben; Begleitdokumente werden nicht als eigener DATEV-Beleg übertragen, sondern bei Bedarf in die Beleg-PDF zusammengeführt.
 - Jede Belegdatei erhält in `document.xml` genau ein `document` mit RFC-4122-GUID, `processID="1"` und einer `extension xsi:type="File"` mit identischem Dateinamen. Das optionale `document`-Attribut `type` wird in diesem Skill weggelassen; falls es in einem fremden Paket vorhanden ist, sind ausschließlich `1` für Rechnungseingang oder `2` für Rechnungsausgang zulässig.
 - `accountsPayableLedger` niemals als Wert des `document`-Attributs `type` oder als Extension in diesen Belegbildpaketen verwenden. Es bezeichnet den gesonderten Import strukturierter Rechnungseingangsdaten und gehört nicht zum hier verwendeten File-only-Belegtransfer mit anschließendem EXTF-Buchungsstapel.
 - Dieselbe GUID wird in jeder zugehörigen EXTF-Buchungszeile in Feld 20 `Beleglink` als `BEDI "GUID"` ausgegeben.

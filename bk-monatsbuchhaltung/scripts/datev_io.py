@@ -354,8 +354,9 @@ DATEV_IMPORT_ORDER = [
     "reguläre Belegtransfer_*.zip",
     "Belegtransfer_Avise_*.zip in DUO",
     "EXTF_Buchungsstapel_<JJJJ-MM>.csv je Periode, danach konfigurierte Stapeltypen derselben Periode (z. B. _Eigenbelege)",
-    "EXTF_Klaerungsposten_<JJJJ-MM>.csv (und ggf. _02 usw.) als eigener Importvorgang",
+    "EXTF_Klaerungsposten_<JJJJ-MM>.csv (und ggf. _02 usw.) als eigener Importvorgang – wird ebenfalls importiert, Festschreibung erst nach Bearbeitung",
 ]
+TRANSFER_RULE = "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung"
 CARRY_RESULTS = {"carried", "not_carried", "not_tested"}
 BATCH_KIND_BOOKING = "buchung"
 BATCH_KIND_CLARIFICATION = "klaerung"
@@ -727,3 +728,47 @@ def master_row(record: dict[str, Any]) -> list[Any]:
             bank.get("valid_to"), f"Bank {start} gültig bis"
         )
     return row
+
+# --- v1.4.1: Endstatus, Rot-Gründe und Belegdateiregel ---------------------
+STATUS_BOOKED = "Buchungszeile erzeugt"
+STATUS_SECURE_DUPLICATE = "sichere Dublette – nicht erneut gebucht"
+STATUS_NOT_RELEVANT = "nicht buchungsrelevant"
+STATUS_OUT_OF_SCOPE = "außerhalb Auftragszeitraum"
+STATUS_UNREADABLE = "technisch nicht auswertbar"
+FINAL_STATUSES = {
+    STATUS_BOOKED, STATUS_SECURE_DUPLICATE, STATUS_NOT_RELEVANT,
+    STATUS_OUT_OF_SCOPE, STATUS_UNREADABLE,
+}
+# Maschinenlesbare Rot-Gründe (VALIDIERUNG.md, Klärungsquote und Zweitprüfung).
+RED_REASON_CODES = {
+    "fehlende_belegangabe": "fehlende Belegangabe",
+    "steuer_unklar": "steuerliche Unklarheit",
+    "rechtstraeger_unklar": "Rechtsträger/Empfänger unklar",
+    "personenkonto_unklar": "Personenkonto unklar",
+    "datev_dublette_unklar": "DATEV-Dublette unklar",
+    "konto_unklar": "Konto unklar",
+    "anlage_gwg_spezialregel": "Anlage/GWG gemäß Spezialregel",
+    "technisch_unlesbar": "technisch unlesbar trotz Belegbildprüfung",
+    "spezialregel_sonstige": "sonstige begründete Spezialregel",
+}
+# Auswertungsversuche, die vor einer technischen Roteinstufung oder dem Status
+# "technisch nicht auswertbar" dokumentiert sein müssen.
+EVALUATION_METHODS = {
+    "textebene", "ocr", "belegbild", "alternativer_leseweg", "wiederholung",
+}
+IMAGE_REVIEW_METHOD = "belegbild"
+READABILITY_VALUES = {
+    "readable", "partially_readable", "image_only", "unreadable", "not_checked",
+}
+# Ein Buchungsbeleg = genau eine eigene PDF-Datei im Belegtransfer.
+DOCUMENT_FILE_RULE = "ein Buchungsbeleg = genau eine eigene PDF-Datei"
+DERIVATION_METHODS = {"split", "merge", "convert"}
+ORIGINAL_ROLES = {"bundle_original", "converted_original"}
+# DATEV-Anbindung ausschließlich über den Riecken-Connector (MCP-Server "Riecken").
+REQUIRED_CONNECTOR = "Riecken"
+REQUIRED_RETRIEVAL_STEPS = {"health", "core", "master_data", "prior_bookings", "accounts", "bu_keys"}
+# "Kreditor fehlt" ist kein Rot-Grund: personenkonto_unklar nur mit dokumentiertem,
+# nicht eindeutig auflösbarem Partnerabgleich über den Riecken-Connector.
+PARTNER_CHECK_TOOLS = {"datev_search_business_partners", "datev_suggest_posting"}
+PARTNER_CHECK_RESULTS_RED = {"ambiguous", "identity_unclear", "error"}
+PARTNER_CHECK_RESULT_NEW = "no_match"

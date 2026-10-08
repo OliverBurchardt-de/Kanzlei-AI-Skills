@@ -7,7 +7,8 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.4.0"
+VERSION = "1.4.1"
+FORBIDDEN_TARGET_VERSION = "1.4.2"
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -73,8 +74,8 @@ def test_structural_yaml_and_version_mismatch() -> None:
         temp = Path(temp_name)
         quoted = temp / "quoted.yaml"
         unquoted = temp / "unquoted.yaml"
-        quoted.write_text('interface:\n  display_name: "BK Monatsbuchhaltung v1.4.0"\n', encoding="utf-8")
-        unquoted.write_text('interface:\n  display_name: BK Monatsbuchhaltung v1.4.0\n', encoding="utf-8")
+        quoted.write_text(f'interface:\n  display_name: "BK Monatsbuchhaltung v{VERSION}"\n', encoding="utf-8")
+        unquoted.write_text(f'interface:\n  display_name: BK Monatsbuchhaltung v{VERSION}\n', encoding="utf-8")
         assert parse_simple_yaml(quoted) == parse_simple_yaml(unquoted)
         mismatch = temp / "mismatch.py"
         mismatch.write_text('SKILL_VERSION = "9.9.9"\n', encoding="utf-8")
@@ -109,6 +110,20 @@ def main() -> None:
     require(skill, "unkonfigurierter Pflichtkostenstelle", "verbleibender Kostenstellen-Stopp")
     require(skill, "Riecken-DATEV-Connector", "DATEV-Anbindung über Riecken")
     require(skill, "`datev_health_check`", "Riecken-Erreichbarkeitsprüfung")
+    # v1.4.1: Durchführungspflicht, Abschluss-Gate, Klärungsquote, Belegdateiregel.
+    require(skill, "Auftrag zur vollständigen Abarbeitung", "Durchführungspflicht")
+    require(skill, "kein freiwilliger Abbruch", "Verbot des vorzeitigen Abbruchs")
+    require(skill, "Abschluss-Gate", "Abschluss-Gate")
+    require(skill, "nicht vollständig abgeschlossen", "Kennzeichnung unvollständiger Läufe")
+    require(skill, "Klärungsquote", "Klärungsquote")
+    require(skill, "scripts/clarification_rate.py", "Klärungsquotenprüfung")
+    require(skill, "ein Buchungsbeleg = genau eine eigene PDF-Datei", "Belegdateiregel")
+    require(skill, "scripts/beleg_pdf.py", "PDF-Werkzeug")
+    require(skill, "Beide Stapel werden übertragen", "Übertragung des Klärungsstapels")
+    require(skill, "Niemals melden oder ausweisen, Klärungsposten würden nicht übertragen", "Verbot der Falschmeldung")
+    for path in (SKILL_ROOT / "SKILL.md", SKILL_ROOT / "agents" / "openai.yaml"):
+        if FORBIDDEN_TARGET_VERSION in path.read_text(encoding="utf-8"):
+            raise AssertionError(f"{path.name} verweist auf die unzulässige Zielversion {FORBIDDEN_TARGET_VERSION}")
 
     interface = ui.get("interface", {})
     policy = ui.get("policy", {})

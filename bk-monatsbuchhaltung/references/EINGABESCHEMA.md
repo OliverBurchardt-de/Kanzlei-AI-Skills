@@ -25,7 +25,7 @@ Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stel
 
 ## DATEV-Anbindung (Riecken-Connector)
 
-Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
+Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Kein anderer DATEV-Zugang und kein anderer DATEV-MCP-Server wird verwendet, auch wenn er in der Umgebung verfügbar ist. Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
 
 | Prüfung | Riecken-Werkzeug | Nachweisfeld |
 |---|---|---|
@@ -58,7 +58,7 @@ Beispiel:
 
 Regeln:
 
-- Jeder Wert in `datev_live_evidence` stammt aus einem Riecken-Abruf dieses Laufs. Werte aus Erinnerung, früheren Läufen oder anderen DATEV-Zugängen sind unzulässig.
+- Jeder Wert in `datev_live_evidence` stammt aus einem Riecken-Abruf dieses Laufs. Werte aus Erinnerung, früheren Läufen oder anderen DATEV-Zugängen sind unzulässig. `connector: "Riecken"` und `retrieved_via` mit einem `datev_*`-Werkzeug für `health`, `core`, `master_data`, `prior_bookings`, `accounts` und `bu_keys` sind Pflicht; der Generator bricht den Paketbau sonst ab, der Validator prüft dasselbe im Laufmanifest.
 - Liefert der Connector einen Kernwert nicht, ist das ein technischer Preflight-Blocker; das Mandantenprofil ersetzt den Live-Abruf nicht.
 - Eine im Profil genannte Kostenstelle, die über den Connector in keiner Vorbuchung und keinem Anlagegut nachweisbar ist, gilt nicht als live validiert. Der Vorgang wird Rot mit offenem `kost1` und Klärungsfall „Kostenstelle in DATEV anlegen/bestätigen“ (Abschnitt Kostenstellen, Regel 6).
 - `datev_get_account_balances` nur mit `account_number` oder einem Kontenbereich aufrufen; `confirmed_full_list` bleibt in diesem Skill ungenutzt.
@@ -168,7 +168,24 @@ Jede physische Datei genau einmal:
 ]
 ```
 
-`readability`: `readable`, `partially_readable`, `unreadable` oder `not_checked`. Gleicher SHA-256 innerhalb eines Uploads ist nur als ausdrücklich zugeordnete `duplicate_copy` zulässig.
+`readability`: `readable`, `partially_readable`, `image_only` (Scan ohne Textebene, über das Belegbild auswertbar), `unreadable` oder `not_checked`. Gleicher SHA-256 innerhalb eines Uploads ist nur als ausdrücklich zugeordnete `duplicate_copy` zulässig.
+
+### Abgeleitete Belegdateien (Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei)
+
+Jeder gebuchte Vorgang besitzt genau eine `primary_invoice`-Quelle, und diese ist eine PDF-Datei, die für keinen weiteren Vorgang Primärbeleg ist. Mit `scripts/beleg_pdf.py` aufgeteilte, zusammengeführte oder umgewandelte PDFs sind eigene Einträge in `source_files` mit `derived_from`; sie liegen in einem Arbeitsordner außerhalb des Eingabeordners:
+
+```json
+{
+  "source_id": "D0001",
+  "source_path": "…/work/V0001.pdf",
+  "size_bytes": 23456,
+  "sha256": "…64 hex…",
+  "readability": "image_only",
+  "derived_from": {"source_ids": ["S0001"], "method": "split", "pages": "1-2", "tool": "scripts/beleg_pdf.py"}
+}
+```
+
+`method` ist `split` (Sammel-PDF, Pflichtangabe `pages`), `merge` (mindestens zwei Originale desselben Belegs) oder `convert` (Bilddatei). Eine per `merge` oder `convert` erzeugte PDF ist genau einem Vorgang zugeordnet, und ihre Originale dürfen keinem anderen Vorgang zugeordnet sein: Jeder Beleg wird genau ein eigenes Dokument, niemals werden mehrere Belege zu einer Datei zusammengefasst. Das Original bleibt inventarisiert und wird je betroffenem Vorgang mit der Rolle `bundle_original` (split) beziehungsweise `converted_original` (merge/convert) zugeordnet; es wird nicht in den Belegtransfer übernommen. Ableitungen werden nicht verkettet. Der Generator weist Sammeldateien mit mehreren Buchungsbelegen, Nicht-PDF-Buchungsbelege und auf mehrere Dateien verteilte Buchungsbelege zurück.
 
 ## `transactions` und `transaction_sources`
 
@@ -181,7 +198,7 @@ Ein logischer Vorgang besitzt eine eigene `transaction_id`. Eine Datei kann mehr
 ]
 ```
 
-Rollen: `primary_invoice`, `supporting_document`, `payment_notice`, `cover_sheet`, `duplicate_copy`. Deckblätter und Dublettenkopien werden nicht zusätzlich übertragen. Jede Quelldatei wird höchstens einmal in den DATEV-Belegtransfer aufgenommen; mehrere Buchungen dürfen auf dieselbe übertragene Quelle verweisen.
+Rollen: `primary_invoice`, `supporting_document`, `payment_notice`, `cover_sheet`, `duplicate_copy`, `bundle_original`, `converted_original`. Deckblätter, Dublettenkopien und Originale abgeleiteter PDFs werden nicht zusätzlich übertragen. Jede Quelldatei wird höchstens einmal in den DATEV-Belegtransfer aufgenommen; ein Buchungsbeleg ist genau eine eigene PDF-Datei (`primary_invoice` genau einmal je gebuchtem Vorgang und je Datei). Mehrere Buchungszeilen desselben Vorgangs verweisen auf dieselbe übertragene Quelle. Begleitdokumente (`supporting_document`) werden nicht als eigener DATEV-Beleg übertragen (sie hätten keinen Buchungs-Beleglink); zum Belegbild gehörende Seiten werden per `merge` in die Beleg-PDF aufgenommen, sonst bleiben sie inventarisierte Arbeitsunterlage mit Endstatus.
 
 Pflichtfelder je `transactions[]`:
 
@@ -190,14 +207,62 @@ Pflichtfelder je `transactions[]`:
 - optional `batch_type` (`standard` oder ein in `batch_config` konfigurierter Stapeltyp)
 - `entity_assessment`; bei buchungsrelevanten oder als Dublette behandelten Vorgängen zusätzlich `duplicate_checks`
 
-Zulässige Status:
+Zulässige Endstatus (jede Eingabedatei und jeder Vorgang erhält genau einen):
 
-- `Buchungszeile erzeugt`
+- `Buchungszeile erzeugt` (regulär verarbeitet, Grün oder konkret fachlich ungeklärt Rot)
 - `sichere Dublette – nicht erneut gebucht`
-- `nicht buchungsrelevant`
+- `nicht buchungsrelevant` (einschließlich Aussteuerung an einen anderen Mandanten/Rechtsträger mit `handoff_required`)
 - `außerhalb Auftragszeitraum`
+- `technisch nicht auswertbar` (nur nach dokumentiertem Auswertungsversuch)
 
 Ampel `Grün` oder `Rot` nur bei `Buchungszeile erzeugt`; sonst `null`.
+
+### Rot-Grund (`red_reason`) und Auswertungsversuche (`evaluation_attempts`)
+
+Jeder rote Vorgang trägt einen maschinenlesbaren Rot-Grund:
+
+```json
+"red_reason": {
+  "code": "konto_unklar",
+  "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Vorbuchungen des Kreditors und Kontenrahmen geprüft; Leistungsart nicht erkennbar.",
+  "next_check": "Leistungsbeschreibung beim Mandanten anfordern."
+}
+```
+
+Zulässige `code`-Werte: `fehlende_belegangabe`, `steuer_unklar`, `rechtstraeger_unklar`, `personenkonto_unklar` (nur mit `partner_check`), `datev_dublette_unklar` (nur mit möglichem DATEV-Treffer), `konto_unklar`, `anlage_gwg_spezialregel` (nur mit `asset_booking: true`), `technisch_unlesbar` (nur mit `evaluation_attempts` einschließlich Belegbildprüfung), `spezialregel_sonstige`. `reason` darf nicht allein auf fehlende OCR oder Textebene verweisen.
+
+`personenkonto_unklar` erfordert den dokumentierten Riecken-Partnerabgleich; ein fehlender oder neuer Kreditor ist kein Rot-Grund, sondern eine Neuanlage in `master_records`:
+
+```json
+"red_reason": {
+  "code": "personenkonto_unklar",
+  "partner_check": {
+    "tool": "datev_search_business_partners",
+    "query": "Müller Bau",
+    "result": "ambiguous",
+    "detail": "Zwei Einzelkreditoren 70012 Müller Bau GmbH und 70058 Müller Bauservice; Beleg nennt weder Rechtsform noch USt-ID."
+  },
+  "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Stammdaten beider Treffer und Vorbuchungen geprüft.",
+  "next_check": "USt-ID oder IBAN beim Mandanten erfragen."
+}
+```
+
+`result` ist `ambiguous` oder `identity_unclear` (jeweils mit `detail`) oder `error` (nur zusammen mit einem `technical_incidents`-Eintrag, der den Vorgang in `affected_transaction_ids` führt). `no_match` wird zurückgewiesen. Der Generator sperrt außerdem jede Rot-Begründung, die lediglich „Kreditor/Debitor/Lieferant fehlt, nicht angelegt oder neu“ nennt, ohne eine Identitätsunklarheit zu beschreiben.
+
+`evaluation_attempts` dokumentiert den tatsächlichen Auswertungsversuch bei `technisch_unlesbar` und beim Status `technisch nicht auswertbar`:
+
+```json
+"processing_status": "technisch nicht auswertbar",
+"traffic_light": null,
+"exclusion_reason": "Datei ist eine passwortgeschützte PDF; Belegbild nicht darstellbar.",
+"evaluation_attempts": [
+  {"method": "textebene", "result": "keine Textebene"},
+  {"method": "belegbild", "result": "Seiten nicht renderbar (verschlüsselt)"},
+  {"method": "wiederholung", "result": "zweiter Leseversuch identisch fehlgeschlagen"}
+]
+```
+
+`method` ist `textebene`, `ocr`, `belegbild`, `alternativer_leseweg` oder `wiederholung`; ein Eintrag mit `belegbild` ist Pflicht.
 
 ## Rechtsträger, Dokumentart und Ausschluss
 
@@ -261,6 +326,85 @@ Erlaubte Feldnamen: `amount`, `debit_credit`, `currency`, `exchange_rate`, `base
 Jeder rote Vorgang benötigt `requires_clarification: true` und genau einen Klärungsfall mit `booking_risk`. Die Prüfungsdatei zeigt die konkreten offenen Felder, das Risiko und die Mitarbeiterentscheidung. Buchungstexte bleiben sachliche Beleg-/Leistungsbeschreibungen.
 
 Bei Zahlungsavis: `payment_advice: true`, Status `nicht buchungsrelevant`, keine Ampel, keine Buchungen. Es entsteht ein separates Avis-Belegtransfer-ZIP.
+
+## Klärungsquote und Zweitprüfung (`clarification_review`)
+
+Der Generator berechnet N, R und Q aus den Vorgängen (`scripts/clarification_rate.py`). Der Agent dokumentiert die Zweitprüfung und die Ursachenprüfung:
+
+```json
+"clarification_review": {
+  "checked_at": "2026-10-08T10:00:00+02:00",
+  "cause_analysis": {"konto_unklar": "Fünf Lieferanten ohne Leistungsbeschreibung; keine systematische Fehleinstufung."},
+  "second_review": {
+    "performed": true,
+    "performed_at": "2026-10-08T11:30:00+02:00",
+    "basis": ["belegbild", "mandantenprofil", "datev_bestand", "buchungsregeln"],
+    "reviewed_transaction_ids": ["V0003", "V0007"],
+    "corrections": [
+      {"transaction_id": "V0003", "from": "Rot", "to": "Grün", "reason": "Konto 4930 aus DATEV-Vorbuchung des Kreditors eindeutig; Belegbild bestätigt Leistungsart."}
+    ],
+    "before": {"N": 100, "R": 25}
+  }
+}
+```
+
+Bei `Q > 20 %` (vor Zweitprüfung) muss `performed: true` sein und `reviewed_transaction_ids` alle roten Vorgänge vor der Zweitprüfung umfassen (verbleibende rote plus korrigierte). `corrections[].to` ist `Grün`, `Rot` oder `ausgeschlossen` (nach Zweitprüfung als sichere Dublette oder nicht buchungsrelevant erkannt); jede Korrektur braucht eine konkrete Begründung, und der Vorgang muss im Lauf-JSON den korrigierten Zustand tragen. `before` ist optional und muss mit den Korrekturen konsistent sein. Bei `10 % < Q ≤ 20 %` ist `cause_analysis` je vorkommendem Rot-Code Pflicht; eine Kategorie mit mindestens der Hälfte von mindestens fünf Rot-Fällen erfordert sie immer.
+
+## Technische Einzelfehler (`technical_incidents`)
+
+Ein Zugriffsausfall auf ein Register, einen Geschäftspartner oder einen Beleg blockiert nur die betroffene Teilentscheidung:
+
+```json
+"technical_incidents": [
+  {
+    "incident_id": "T001",
+    "system": "DATEV",
+    "scope": "datev_search_business_partners für Lieferant Muster GmbH",
+    "error": "Timeout nach 30 s",
+    "retries": 2,
+    "alternative_path": "datev_get_account_postings auf Kreditorenbereich versucht; ebenfalls Timeout",
+    "affected_transaction_ids": ["V0042"],
+    "deferred_decision": "Personenkonto für Muster GmbH",
+    "next_step": "Partnerabfrage nach Wiederherstellung des Connectors wiederholen",
+    "resolved": false
+  }
+]
+```
+
+`system` ist `DATEV`, `SharePoint`, `OCR`, `Belegbild`, `Register` oder `sonstige`. Von einem ungelösten Fehler betroffene Vorgänge dürfen nicht Grün sein (begründet Rot, zum Beispiel `personenkonto_unklar`, oder zurückgestellt). Ungelöste Einträge führen zu `run_completion.status = "nicht vollständig abgeschlossen"` mit dem offenen Punkt im Laufmanifest.
+
+## Abgrenzungsregister: Abrufergebnis (nur Bilanz)
+
+Das Register ist keine Pflichtquelle; nur der einmalige Abruf am exakten Ziel wird dokumentiert. Leer oder nicht vorhanden ist normal:
+
+```json
+"abgrenzungsregister_evidence": {
+  "status": "not_found",
+  "source_url": "<accrual_url aus sharepoint_target.py>",
+  "file_name": "12861.md",
+  "retrieved_via": "microsoft_sharepoint.fetch",
+  "checked_at": "2026-10-08T09:00:00+02:00"
+}
+```
+
+`status` ist `found` (dann wie beim Mandantenprofil mit `file_uri`, `sha256` und Inhalt; der Inhalt darf leer sein), `empty` oder `not_found` (nur die vier Felder oben) oder `access_error` (unten). Bei EÜR entfällt `abgrenzungsregister_evidence`; `accrual_register`, `accrual_candidates` und `accrual_releases` müssen bei EÜR leer sein.
+
+## Abgrenzungsregister: Abruffehler
+
+```json
+"abgrenzungsregister_evidence": {
+  "status": "access_error",
+  "source_url": "<accrual_url aus sharepoint_target.py>",
+  "file_name": "12861.md",
+  "retrieved_via": "microsoft_sharepoint.fetch",
+  "checked_at": "2026-10-08T09:00:00+02:00",
+  "http_status": 403,
+  "error_code": "accessDenied",
+  "direct_lookup_attempts": 2
+}
+```
+
+Ein `access_error` ist kein Nullstand: keine `carried_forward`-Einträge erfinden, keine Auflösungen bestehender Registereinträge buchen; neue Abgrenzungen dieses Laufs regulär verarbeiten. 404/`itemNotFound` ist kein `access_error`, sondern `status: "not_found"`; umgekehrt darf ein 401/403 nicht als `not_found` deklariert werden.
 
 ## Tätigkeitsnachweis
 

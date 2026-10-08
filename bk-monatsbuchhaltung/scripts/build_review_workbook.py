@@ -222,17 +222,21 @@ def build(data: dict[str, Any], output: Path) -> None:
     bookings = wb.create_sheet("Buchungszeilen")
     notes = wb.create_sheet("Mandanten-Hinweise")
     masters = wb.create_sheet("Stammdatenänderungen")
+    rate_sheet = wb.create_sheet("Klärungsquote")
 
     guide_rows = [
         ["Schritt / Feld", "Bedeutung"],
-        ["1. Belegprüfung", "Rote Fälle bearbeiten. Grüne Vorgänge stehen im Buchungsstapel, rote im Klärungsstapel. Rechts neben der Ampel steht der vollständige Dateiname des jeweiligen Stapels. Die Spalte Belegdatum laut Beleg zeigt das sicher erkannte Datum; im Klärungsstapel ist das DATEV-Belegdatum immer leer und wird in DATEV nachgetragen."],
+        ["1. Belegprüfung", "Rote Fälle bearbeiten. Grüne Vorgänge stehen im Buchungsstapel, rote im Klärungsstapel; beide Stapel werden in DATEV importiert, der Klärungsstapel wird dort bearbeitet und erst danach festgeschrieben. Rechts neben der Ampel steht der vollständige Dateiname des jeweiligen Stapels. Die Spalte Belegdatum laut Beleg zeigt das sicher erkannte Datum; im Klärungsstapel ist das DATEV-Belegdatum immer leer und wird in DATEV nachgetragen."],
         ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, BU-Schlüssel, Belegfeld 1, Buchungstext und Periode nachvollziehen."],
         ["3. Rücklaufstatus", "Für jeden roten Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
         ["4. Mitarbeiter-Ergebnis", "Bei geändert oder nicht übernommen ist die endgültige Behandlung als Mitarbeiter-Ergebnis Pflicht."],
         ["Grün", "Vollständig und plausibel; keine offene fachliche Frage."],
         ["Rot", "Aktive Bearbeitung erforderlich. Nur konkret ungeklärte Felder bleiben leer; bei Anlagenzugängen bleibt das Anlagenkonto immer offen. Arbeitsanweisungen stehen ausschließlich hier."],
         ["Zahlungsavise", "Nicht buchen. Das gesonderte Belegtransfer_Avise-ZIP in DATEV Unternehmen online hochladen."],
-        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. Buchungsstapel je Monat (danach konfigurierte Stapeltypen wie _Eigenbelege derselben Periode), 5. Klärungsstapel je Monat als eigener Importvorgang; erst festschreiben, wenn alle roten Zeilen bearbeitet sind. DATEV-Testimportstatus beachten."],
+        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. Buchungsstapel je Monat (danach konfigurierte Stapeltypen wie _Eigenbelege derselben Periode), 5. Klärungsstapel je Monat als eigener Importvorgang, ebenfalls importieren; erst festschreiben, wenn alle roten Zeilen bearbeitet sind. Alle Stapel, mit und ohne Klärung, werden übertragen. DATEV-Testimportstatus beachten."],
+        ["Klärungsquote", "Blatt Klärungsquote zeigt N (buchungsrelevante Vorgänge), R (rote Vorgänge) und Q = 100 × R / N vor und nach der Zweitprüfung, die Grenzstufe, die Verteilung nach Rot-Gründen und die verbleibenden offenen Gründe. Die Quote ist ein Qualitätsindikator, kein Zielwert."],
+        ["Technisch nicht auswertbar", "Vorgänge mit diesem Endstatus wurden nach dokumentiertem Auswertungsversuch einschließlich Belegbildprüfung nicht ausgewertet; sie stehen ohne Ampel in der Belegprüfung mit den Versuchen als nächstem Schritt."],
+        ["Belegdateien", "Jeder Buchungsbeleg ist im Belegtransfer genau eine eigene PDF-Datei; Sammel-PDFs wurden je Vorgang getrennt, verteilte oder Bildbelege zu einer PDF zusammengeführt."],
     ]
     if cost_config:
         allowed = ", ".join(f"{number} {name}" for number, name in cost_config.get("kost1_allowed", {}).items())
@@ -273,6 +277,9 @@ def build(data: dict[str, Any], output: Path) -> None:
         ("Sichere Dubletten", sum(1 for doc in docs if doc.get("processing_status") == "sichere Dublette – nicht erneut gebucht")),
         ("Zahlungsavise", sum(1 for doc in docs if doc.get("payment_advice"))),
         ("Nicht buchungsrelevant", sum(1 for doc in docs if doc.get("processing_status") == "nicht buchungsrelevant")),
+        ("Technisch nicht auswertbar", sum(1 for doc in docs if doc.get("processing_status") == "technisch nicht auswertbar")),
+        ("Klärungsquote nach Zweitprüfung", _quota_text(((data.get("clarification_rate") or {}).get("after") or {}).get("Q", "nicht berechnet"))),
+        ("Laufstatus (Abschluss-Gate)", (data.get("run_completion") or {}).get("status", "nicht ausgewiesen")),
         ("Offene Klärfälle", len(data.get("clarification_cases", []))),
         ("Neue/geänderte Stammdaten", len(data.get("master_records", []))),
         ("Mandanten-Hinweise", len(data.get("client_notes", []))),
@@ -334,6 +341,12 @@ def build(data: dict[str, Any], output: Path) -> None:
                 next_step = "Keine erneute Buchung."
             elif doc.get("processing_status") == "nicht buchungsrelevant":
                 next_step = "Keine Buchung."
+            elif doc.get("processing_status") == "technisch nicht auswertbar":
+                attempts = "; ".join(
+                    f"{clean(item.get('method'))}: {clean(item.get('result'))}"
+                    for item in doc.get("evaluation_attempts", []) or [] if isinstance(item, dict)
+                )
+                next_step = "Technisch nicht auswertbar nach dokumentiertem Auswertungsversuch (" + attempts + "); Original anfordern."
             elif doc.get("traffic_light") == "Grün":
                 next_step = "Keine weitere Bearbeitung."
         row_values = [
@@ -479,8 +492,69 @@ def build(data: dict[str, Any], output: Path) -> None:
         masters.cell(row, 6).alignment = Alignment(wrap_text=True)
         masters.cell(row, 8).alignment = Alignment(wrap_text=True)
 
+    _build_rate_sheet(rate_sheet, data.get("clarification_rate") or {})
+
     output.parent.mkdir(parents=True, exist_ok=True)
     wb.save(output)
+
+
+def _quota_text(value: Any) -> str:
+    if value is None:
+        return "nicht berechenbar"
+    if isinstance(value, (int, float)):
+        return f"{value} %"
+    return str(value)
+
+
+def _build_rate_sheet(ws, rate: dict[str, Any]) -> None:
+    """Klärungsquoten-Nachweis als Registerblatt (VALIDIERUNG.md, Klärungsquote und Zweitprüfung)."""
+    before = rate.get("before") or {}
+    after = rate.get("after") or {}
+    counts = rate.get("counts") or {}
+    ws.append(["Kennzahl", "vor Zweitprüfung", "nach Zweitprüfung"])
+    ws.append(["N (buchungsrelevante Vorgänge, einmalig gezählt)", before.get("N", "nicht berechnet"), after.get("N", "nicht berechnet")])
+    ws.append(["R (rote Vorgänge, Mehrfachzeilen einmal)", before.get("R", "nicht berechnet"), after.get("R", "nicht berechnet")])
+    ws.append(["Q = 100 × R / N", _quota_text(before.get("Q", "nicht berechnet")), _quota_text(after.get("Q", "nicht berechnet"))])
+    ws.append(["Grenzstufe", before.get("stage_label", ""), after.get("stage_label", "")])
+    ws.append([])
+    ws.append(["Prüfung", "Ergebnis"])
+    ws.append(["Prüfdatum", rate.get("checked_at", "")])
+    ws.append(["Prüfschritt", rate.get("check_step", "")])
+    ws.append(["Zweitprüfung erforderlich", "ja" if rate.get("second_review_required") else "nein"])
+    ws.append(["Zweitprüfung durchgeführt", "ja" if rate.get("second_review_performed") else "nein"])
+    ws.append(["Konkret nachgeprüfte Fälle", rate.get("reviewed_cases", 0)])
+    ws.append(["Fachlich auf Grün korrigiert", len(rate.get("corrected_to_green", []))])
+    ws.append(["Verbleibende rote Fälle", rate.get("remaining_red", 0)])
+    ws.append(["Rote Buchungszeilen (nicht rote Fälle)", counts.get("rote_buchungszeilen", 0)])
+    ws.append(["Technisch nicht auswertbar", counts.get("technisch_nicht_auswertbar", 0)])
+    ws.append(["Bereits in DATEV vorhanden", counts.get("bereits_in_datev_vorhanden", 0)])
+    ws.append(["Sichere Dubletten", counts.get("sichere_dubletten", 0)])
+    ws.append(["Aussteuerungen", counts.get("aussteuerungen", 0)])
+    ws.append(["Ergebnis", rate.get("result", "nicht berechnet")])
+    ws.append([])
+    ws.append(["Rot-Grund", "Anzahl", "Ursachen-/Plausibilitätsprüfung"])
+    labels = rate.get("reason_labels") or {}
+    cause = rate.get("cause_analysis") or {}
+    distribution = rate.get("reason_distribution") or {}
+    if not distribution:
+        ws.append(["–", 0, "keine roten Vorgänge"])
+    for code, count in distribution.items():
+        ws.append([f"{labels.get(code, code)} ({code})", count, cause.get(code, "")])
+    ws.append([])
+    ws.append(["Vorgangs-ID", "Rot-Grund", "Offene Felder", "Belegreferenz", "Durchgeführter Prüfversuch", "Nächster Prüfschritt"])
+    for row in rate.get("red_cases", []) or []:
+        ws.append([
+            row.get("transaction_id", ""), f"{row.get('label', '')} ({row.get('code', '')})",
+            ", ".join(row.get("open_fields", [])), row.get("document_reference", ""),
+            row.get("verification_attempted", ""), row.get("next_check", ""),
+        ])
+    apply_header(ws, 1, 1, 3)
+    apply_header(ws, 7, 1, 2)
+    set_widths(ws, [46, 28, 48, 22, 48, 48])
+    for row in range(2, ws.max_row + 1):
+        for col in range(1, 7):
+            ws.cell(row, col).alignment = Alignment(wrap_text=True, vertical="top")
+    ws.freeze_panes = "A2"
 
 
 def main() -> int:
