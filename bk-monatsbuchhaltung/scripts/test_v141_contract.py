@@ -454,6 +454,21 @@ def test_completeness_gate(root: Path) -> None:
     scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung offen."})])
     package, manifest, report = build_ok(scenario, "full")
     assert report["completion_gate"]["passed"] is True
+    # Alle Stapel – mit und ohne Klärung – werden übertragen.
+    scope = {item["file"]: item for item in manifest["import_scope"]}
+    assert scope[f"EXTF_Klaerungsposten_{PERIOD}.csv"]["import"] == "ja" and scope[f"EXTF_Buchungsstapel_{PERIOD}.csv"]["import"] == "ja"
+    assert "wird importiert" in scope[f"EXTF_Klaerungsposten_{PERIOD}.csv"]["note"]
+    assert any(item["kind"] == "belegtransfer" and item["import"] == "ja" for item in manifest["import_scope"])
+    protocol = (package / "03_Technische_Protokolle" / "Laufprotokoll.md").read_text(encoding="utf-8")
+    activity = (package / "02_Buchungspruefung" / "Taetigkeitsnachweis.md").read_text(encoding="utf-8")
+    assert "sowohl die mit Klärungen als auch die ohne Klärung" in protocol and "sowohl die mit Klärungen als auch die ohne Klärung" in activity
+    withheld = root / "withheld" / PACKAGE_DIR
+    shutil.copytree(package, withheld)
+    manifest_path = withheld / "03_Technische_Protokolle" / "Laufmanifest.json"
+    tampered = json.loads(manifest_path.read_text(encoding="utf-8"))
+    tampered["import_scope"] = [item for item in tampered["import_scope"] if not item["file"].startswith("EXTF_Klaerungsposten_")]
+    manifest_path.write_text(json.dumps(tampered, ensure_ascii=False), encoding="utf-8")
+    assert any("Klärungsstapel ist nicht als zu importieren geführt" in item for item in run_validator(withheld)["errors"])
     inventory_only = root / "inventory-only" / PACKAGE_DIR
     shutil.copytree(package / "03_Technische_Protokolle", inventory_only / "03_Technische_Protokolle")
     report = run_validator(inventory_only)

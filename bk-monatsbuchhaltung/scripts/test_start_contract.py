@@ -119,6 +119,8 @@ def main() -> None:
     require(skill, "scripts/clarification_rate.py", "Klärungsquotenprüfung")
     require(skill, "ein Buchungsbeleg = genau eine eigene PDF-Datei", "Belegdateiregel")
     require(skill, "scripts/beleg_pdf.py", "PDF-Werkzeug")
+    require(skill, "Beide Stapel werden übertragen", "Übertragung des Klärungsstapels")
+    require(skill, "Niemals melden oder ausweisen, Klärungsposten würden nicht übertragen", "Verbot der Falschmeldung")
     for path in (SKILL_ROOT / "SKILL.md", SKILL_ROOT / "agents" / "openai.yaml"):
         if FORBIDDEN_TARGET_VERSION in path.read_text(encoding="utf-8"):
             raise AssertionError(f"{path.name} verweist auf die unzulässige Zielversion {FORBIDDEN_TARGET_VERSION}")

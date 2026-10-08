@@ -40,6 +40,7 @@ from datev_io import (
     STANDARD_BATCH_TYPE,
     STATUS_BOOKED,
     STATUS_UNREADABLE,
+    TRANSFER_RULE,
     ascii_filename,
     batch_file_name,
     batch_label,
@@ -2931,13 +2932,15 @@ def write_activity_and_handoffs(root: Path, data: dict[str, Any]) -> None:
         "",
         "## DATEV-Stapel",
         "",
-        "| Datei | Stapelbezeichnung | Zeilen | Summe |",
-        "|---|---|---:|---:|",
+        f"{TRANSFER_RULE}. Der Klärungsstapel wird importiert und in DATEV bearbeitet; nur seine Festschreibung wartet auf die Bearbeitung der roten Zeilen.",
+        "",
+        "| Datei | Stapelbezeichnung | Zeilen | Summe | Import |",
+        "|---|---|---:|---:|---|",
     ])
     for batch in data.get("_booking_batches", []):
-        lines.append(f"| {batch['file']} | {batch['label']} | {batch['rows']} | {batch['amount_total']} |")
+        lines.append(f"| {batch['file']} | {batch['label']} | {batch['rows']} | {batch['amount_total']} | ja |")
     if not data.get("_booking_batches"):
-        lines.append("| – | – | 0 | 0 |")
+        lines.append("| – | – | 0 | 0 | – |")
     for reason in data.get("_batch_split_reasons", []):
         lines.append(f"\nTeilungsgrund: {reason}")
     lines.extend([
@@ -3016,6 +3019,25 @@ def build_review(root: Path, data: dict[str, Any], node: str) -> None:
     )
 
 
+def build_import_scope(data: dict[str, Any], document_index: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Jede DATEV-Datei des Pakets wird importiert – Buchungsstapel und Klärungsstapel gleichermaßen."""
+    scope: list[dict[str, Any]] = []
+    if data.get("master_records"):
+        scope.append({"file": "EXTF_Debitoren_Kreditoren.csv", "kind": "stammdaten", "import": "ja", "note": "zuerst importieren"})
+    for name in sorted({str(item.get("document_package", "")) for item in document_index if item.get("included") and item.get("document_package")}):
+        scope.append({"file": name, "kind": "belegtransfer", "import": "ja", "note": "DATEV Unternehmen online"})
+    for batch in data.get("_booking_batches", []):
+        clarification = batch.get("batch_kind") == BATCH_KIND_CLARIFICATION
+        scope.append({
+            "file": batch["file"], "kind": batch["batch_kind"], "rows": batch["rows"], "import": "ja",
+            "note": (
+                "Klärungsstapel: wird importiert und in DATEV bearbeitet; Festschreibung erst nach Bearbeitung aller roten Zeilen"
+                if clarification else "Buchungsstapel: wird importiert; Festschreibung unabhängig vom Klärungsstapel"
+            ),
+        })
+    return scope
+
+
 def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]],
                    document_index: list[dict[str, Any]]) -> None:
     docs = data.get("documents", [])
@@ -3091,6 +3113,8 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         "booking_trace": trace,
         "booking_batches": data.get("_booking_batches", []),
         "batch_split_reasons": data.get("_batch_split_reasons", []),
+        "transfer_rule": TRANSFER_RULE,
+        "import_scope": build_import_scope(data, document_index),
         "carry_fields": sorted(CARRY_FIELDS),
         "datev_test_import": data.get("datev_test_import", {"status": "pending"}),
         "clarification_rate": rate,
@@ -3145,6 +3169,7 @@ def write_manifest(root: Path, data: dict[str, Any], trace: list[dict[str, Any]]
         summary.append(f"- Teilung: {reason}")
     summary.extend([
         "- Importreihenfolge: " + "; ".join(DATEV_IMPORT_ORDER),
+        f"- Übertragung: {TRANSFER_RULE}; Klärungsstapel werden importiert und erst nach Bearbeitung festgeschrieben.",
         "",
         "Belegtransfer wurde als DATEV Document-Package mit document.xml erzeugt.",
     ])
