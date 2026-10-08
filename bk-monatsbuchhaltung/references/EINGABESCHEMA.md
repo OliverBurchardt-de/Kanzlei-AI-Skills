@@ -58,7 +58,7 @@ Beispiel:
 
 Regeln:
 
-- Jeder Wert in `datev_live_evidence` stammt aus einem Riecken-Abruf dieses Laufs. Werte aus Erinnerung, früheren Läufen oder anderen DATEV-Zugängen sind unzulässig.
+- Jeder Wert in `datev_live_evidence` stammt aus einem Riecken-Abruf dieses Laufs. Werte aus Erinnerung, früheren Läufen oder anderen DATEV-Zugängen sind unzulässig. `connector: "Riecken"` und `retrieved_via` mit einem `datev_*`-Werkzeug für `health`, `core`, `master_data`, `prior_bookings`, `accounts` und `bu_keys` sind Pflicht; der Generator bricht den Paketbau sonst ab, der Validator prüft dasselbe im Laufmanifest.
 - Liefert der Connector einen Kernwert nicht, ist das ein technischer Preflight-Blocker; das Mandantenprofil ersetzt den Live-Abruf nicht.
 - Eine im Profil genannte Kostenstelle, die über den Connector in keiner Vorbuchung und keinem Anlagegut nachweisbar ist, gilt nicht als live validiert. Der Vorgang wird Rot mit offenem `kost1` und Klärungsfall „Kostenstelle in DATEV anlegen/bestätigen“ (Abschnitt Kostenstellen, Regel 6).
 - `datev_get_account_balances` nur mit `account_number` oder einem Kontenbereich aufrufen; `confirmed_full_list` bleibt in diesem Skill ungenutzt.
@@ -185,7 +185,7 @@ Jeder gebuchte Vorgang besitzt genau eine `primary_invoice`-Quelle, und diese is
 }
 ```
 
-`method` ist `split` (Sammel-PDF, Pflichtangabe `pages`), `merge` (mindestens zwei Originale) oder `convert` (Bilddatei). Das Original bleibt inventarisiert und wird je betroffenem Vorgang mit der Rolle `bundle_original` (split) beziehungsweise `converted_original` (merge/convert) zugeordnet; es wird nicht in den Belegtransfer übernommen. Ableitungen werden nicht verkettet. Der Generator weist Sammeldateien mit mehreren Buchungsbelegen, Nicht-PDF-Buchungsbelege und auf mehrere Dateien verteilte Buchungsbelege zurück.
+`method` ist `split` (Sammel-PDF, Pflichtangabe `pages`), `merge` (mindestens zwei Originale desselben Belegs) oder `convert` (Bilddatei). Eine per `merge` oder `convert` erzeugte PDF ist genau einem Vorgang zugeordnet, und ihre Originale dürfen keinem anderen Vorgang zugeordnet sein: Jeder Beleg wird genau ein eigenes Dokument, niemals werden mehrere Belege zu einer Datei zusammengefasst. Das Original bleibt inventarisiert und wird je betroffenem Vorgang mit der Rolle `bundle_original` (split) beziehungsweise `converted_original` (merge/convert) zugeordnet; es wird nicht in den Belegtransfer übernommen. Ableitungen werden nicht verkettet. Der Generator weist Sammeldateien mit mehreren Buchungsbelegen, Nicht-PDF-Buchungsbelege und auf mehrere Dateien verteilte Buchungsbelege zurück.
 
 ## `transactions` und `transaction_sources`
 
@@ -229,7 +229,25 @@ Jeder rote Vorgang trägt einen maschinenlesbaren Rot-Grund:
 }
 ```
 
-Zulässige `code`-Werte: `fehlende_belegangabe`, `steuer_unklar`, `rechtstraeger_unklar`, `personenkonto_unklar`, `datev_dublette_unklar` (nur mit möglichem DATEV-Treffer), `konto_unklar`, `anlage_gwg_spezialregel` (nur mit `asset_booking: true`), `technisch_unlesbar` (nur mit `evaluation_attempts` einschließlich Belegbildprüfung), `spezialregel_sonstige`. `reason` darf nicht allein auf fehlende OCR oder Textebene verweisen.
+Zulässige `code`-Werte: `fehlende_belegangabe`, `steuer_unklar`, `rechtstraeger_unklar`, `personenkonto_unklar` (nur mit `partner_check`), `datev_dublette_unklar` (nur mit möglichem DATEV-Treffer), `konto_unklar`, `anlage_gwg_spezialregel` (nur mit `asset_booking: true`), `technisch_unlesbar` (nur mit `evaluation_attempts` einschließlich Belegbildprüfung), `spezialregel_sonstige`. `reason` darf nicht allein auf fehlende OCR oder Textebene verweisen.
+
+`personenkonto_unklar` erfordert den dokumentierten Riecken-Partnerabgleich; ein fehlender oder neuer Kreditor ist kein Rot-Grund, sondern eine Neuanlage in `master_records`:
+
+```json
+"red_reason": {
+  "code": "personenkonto_unklar",
+  "partner_check": {
+    "tool": "datev_search_business_partners",
+    "query": "Müller Bau",
+    "result": "ambiguous",
+    "detail": "Zwei Einzelkreditoren 70012 Müller Bau GmbH und 70058 Müller Bauservice; Beleg nennt weder Rechtsform noch USt-ID."
+  },
+  "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Stammdaten beider Treffer und Vorbuchungen geprüft.",
+  "next_check": "USt-ID oder IBAN beim Mandanten erfragen."
+}
+```
+
+`result` ist `ambiguous` oder `identity_unclear` (jeweils mit `detail`) oder `error` (nur zusammen mit einem `technical_incidents`-Eintrag, der den Vorgang in `affected_transaction_ids` führt). `no_match` wird zurückgewiesen. Der Generator sperrt außerdem jede Rot-Begründung, die lediglich „Kreditor/Debitor/Lieferant fehlt, nicht angelegt oder neu“ nennt, ohne eine Identitätsunklarheit zu beschreiben.
 
 `evaluation_attempts` dokumentiert den tatsächlichen Auswertungsversuch bei `technisch_unlesbar` und beim Status `technisch nicht auswertbar`:
 

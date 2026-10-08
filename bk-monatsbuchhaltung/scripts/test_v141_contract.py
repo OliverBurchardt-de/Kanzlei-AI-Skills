@@ -168,7 +168,10 @@ def test_single_failure_continues(root: Path) -> None:
     affected = scenario.add(
         "Rot", reason="Personenkonto wegen DATEV-Timeout nicht bestätigt; Kreditor offen.",
         bookings=[red_booking(contra_account=None, contra_account_name=None, open_fields={"contra_account": "Partnerabfrage in DATEV fehlgeschlagen; Personenkonto offen."})],
-        red_reason=red_reason("personenkonto_unklar"),
+        red_reason=red_reason("personenkonto_unklar", partner_check={
+            "tool": "datev_search_business_partners", "query": "DATEV Test GmbH", "result": "error",
+            "detail": "Timeout; Partnerabgleich nicht abschließbar.",
+        }),
     )
     incident = {
         "incident_id": "T001", "system": "DATEV", "scope": "datev_search_business_partners für DATEV Test GmbH",
@@ -595,6 +598,75 @@ def test_document_file_rule(root: Path) -> None:
     assert info["page_count"] == 3 and info["suggested_readability"] == "image_only" and "Belegbild" in info["note"]
 
 
+# 11. Nachschärfungen: Riecken-Pflicht und "Kreditor fehlt" ist kein Rot-Grund --------
+
+def test_riecken_and_creditor_rule(root: Path) -> None:
+    # Riecken-Connector ist Pflicht.
+    (root / "connector").mkdir()
+    other = Scenario(root / "connector", make_run(root / "connector"))
+    other.add("Grün")
+    load_fails(other, "other-connector", "Riecken-Connector",
+               lambda data: data["run"]["datev_live_evidence"].__setitem__("connector", "Klardaten"))
+    load_fails(other, "no-connector", "Riecken-Connector",
+               lambda data: data["run"]["datev_live_evidence"].pop("connector"))
+    load_fails(other, "no-tool", "retrieved_via nennt kein Riecken-Werkzeug",
+               lambda data: data["run"]["datev_live_evidence"]["retrieved_via"].__setitem__("prior_bookings", "Erinnerung aus Vorlauf"))
+    _, manifest, _ = build_ok(other, "riecken")
+    assert manifest["preflight_evidence"]["datev"]["connector"] == "Riecken"
+    tampered = copy.deepcopy(manifest)
+    tampered["preflight_evidence"]["datev"]["connector"] = "anderer Zugang"
+    assert any("Riecken" in item for item in validate_package._validate_preflight_manifest(tampered))
+
+    # "Kreditor fehlt" ist kein Rot-Grund.
+    (root / "creditor").mkdir()
+    scenario = Scenario(root / "creditor", make_run(root / "creditor"))
+    scenario.add("Grün")
+    red = scenario.add("Rot", reason="Kreditor fehlt in DATEV.",
+                       bookings=[red_booking(contra_account=None, contra_account_name=None, open_fields={"contra_account": "Kreditor nicht angelegt."})],
+                       red_reason=red_reason("personenkonto_unklar"))
+    errors = scenario.document_errors("creditor-missing")
+    assert any("kein Rot-Grund" in item for item in errors), errors
+    assert any("partner_check" in item for item in errors), errors
+    # no_match bedeutet Neuanlage, nicht Rot.
+    red["reason"] = "Geschäftspartner laut Beleg eindeutig, Personenkonto offen."
+    red["bookings"][0]["open_fields"] = {"contra_account": "Personenkonto offen."}
+    red["red_reason"] = red_reason("personenkonto_unklar", partner_check={"tool": "datev_search_business_partners", "query": "Neu GmbH", "result": "no_match"})
+    assert any("Neuanlage" in item for item in scenario.document_errors("creditor-no-match"))
+    # Auch ein anderer Code rettet eine "Kreditor fehlt"-Begründung nicht.
+    red["reason"] = "Lieferant nicht angelegt."
+    red["red_reason"] = red_reason("konto_unklar")
+    assert any("kein Rot-Grund" in item for item in scenario.document_errors("creditor-other-code"))
+    # Zulässig: dokumentierte Mehrdeutigkeit der Geschäftspartneridentität.
+    red["reason"] = "Geschäftspartneridentität nicht eindeutig: zwei Einzelkreditoren Müller Bau."
+    red["red_reason"] = red_reason("personenkonto_unklar", partner_check={
+        "tool": "datev_search_business_partners", "query": "Müller Bau", "result": "ambiguous",
+        "detail": "70012 Müller Bau GmbH und 70058 Müller Bauservice; Beleg ohne Rechtsform und USt-ID.",
+    })
+    assert scenario.document_errors("creditor-ambiguous") == []
+    build_ok(scenario, "creditor-ok")
+    # error nur mit technical_incidents-Eintrag.
+    red["red_reason"]["partner_check"].update({"result": "error"})
+    assert any("technical_incidents" in item for item in scenario.document_errors("creditor-error"))
+
+    # Jeder Beleg ein eigenes Dokument: merge darf keine zwei Belege zusammenfassen.
+    (root / "twobelege").mkdir()
+    two = Scenario(root / "twobelege", make_run(root / "twobelege"))
+    two.add("Grün")
+    two.add("Grün")
+    a = multi_page_pdf(root / "twobelege" / "a.pdf", 1)
+    b = multi_page_pdf(root / "twobelege" / "b.pdf", 2)
+    merged = beleg_pdf.merge([a, b], root / "twobelege" / "work" / "beide.pdf")
+    two.sources = [source_entry(a, "S1"), source_entry(b, "S2"),
+                   source_entry(Path(merged["path"]), "D1", derived_from={"source_ids": ["S1", "S2"], "method": "merge"})]
+    two.mappings = [
+        {"transaction_id": "V0001", "source_id": "S1", "role": "converted_original"},
+        {"transaction_id": "V0002", "source_id": "S2", "role": "converted_original"},
+        {"transaction_id": "V0001", "source_id": "D1", "role": "primary_invoice"},
+        {"transaction_id": "V0002", "source_id": "D1", "role": "primary_invoice"},
+    ]
+    build_fails(two, "two-in-one", "niemals mehrere Belege zu einer Datei")
+
+
 def main() -> None:
     with tempfile.TemporaryDirectory(prefix="bk_v141_") as name:
         root = Path(name)
@@ -602,6 +674,7 @@ def main() -> None:
             test_anti_abort, test_single_failure_continues, test_accrual_register_states,
             test_clarification_rate_second_review, test_high_rate_stays_open, test_multiline_and_duplicates,
             test_scan_without_text_layer, test_completeness_gate, test_version, test_document_file_rule,
+            test_riecken_and_creditor_rule,
         ):
             case_root = root / case.__name__
             case_root.mkdir()

@@ -26,6 +26,8 @@ from datev_io import (
     MASTER_FIELDS,
     OPEN_FIELD_INDEXES,
     RED_REASON_CODES,
+    REQUIRED_CONNECTOR,
+    REQUIRED_RETRIEVAL_STEPS,
     STANDARD_BATCH_TYPE,
     STATUS_BOOKED,
     STATUS_UNREADABLE,
@@ -615,6 +617,13 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
     elif not datev.get("retrieved_at"):
         errors.append("DATEV-Livenachweis enthält keinen Abrufzeitpunkt.")
     else:
+        if str(datev.get("connector", "")).strip() != REQUIRED_CONNECTOR:
+            errors.append(f"DATEV-Livenachweis stammt nicht vom {REQUIRED_CONNECTOR}-Connector.")
+        retrieved_via = datev.get("retrieved_via")
+        if not isinstance(retrieved_via, dict) or any(
+            not str(retrieved_via.get(step, "")).startswith("datev_") for step in REQUIRED_RETRIEVAL_STEPS
+        ):
+            errors.append("DATEV-Livenachweis nennt nicht für jede Prüfung ein Riecken-Werkzeug (retrieved_via).")
         if not isinstance(datev.get("validated_accounts"), list) or not datev["validated_accounts"]:
             errors.append("DATEV-Livenachweis enthält keine validierten Konten.")
         if not isinstance(datev.get("validated_bu_keys"), list):

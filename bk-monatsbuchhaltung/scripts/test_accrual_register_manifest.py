@@ -63,6 +63,12 @@ def main() -> None:
             },
             "datev": {
                 "source": "DATEV live",
+                "connector": "Riecken",
+                "retrieved_via": {
+                    "health": "datev_health_check", "core": "datev_get_client_dossier",
+                    "master_data": "datev_search_business_partners", "prior_bookings": "datev_get_account_postings",
+                    "accounts": "datev_get_account_balances", "bu_keys": "datev_suggest_posting",
+                },
                 "retrieved_at": "2026-07-28T09:00:00+02:00",
                 "validated_accounts": ["0480"],
                 "validated_bu_keys": [],

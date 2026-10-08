@@ -43,12 +43,14 @@ def write_pdf(path: Path, text: str = "Testbeleg") -> Path:
     return path
 
 
-def red_reason(code: str = "konto_unklar") -> dict:
-    return {
+def red_reason(code: str = "konto_unklar", **extra) -> dict:
+    reason = {
         "code": code,
         "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Vorbuchungen und Buchungsregeln geprüft.",
         "next_check": "Originalbeleg beim Mandanten anfordern und offenes Feld klären.",
     }
+    reason.update(extra)
+    return reason
 
 
 def second_review(red_ids: list[str], corrections: list[dict] | None = None, cause: dict | None = None) -> dict:
@@ -160,6 +162,12 @@ def main() -> None:
             ),
             "datev_live_evidence": {
                 "source": "DATEV live",
+                "connector": "Riecken",
+                "retrieved_via": {
+                    "health": "datev_health_check", "core": "datev_get_client_dossier",
+                    "master_data": "datev_search_business_partners", "prior_bookings": "datev_get_account_postings",
+                    "accounts": "datev_get_account_balances", "bu_keys": "datev_suggest_posting",
+                },
                 "retrieved_at": "2026-07-26T12:00:00+02:00",
                 "beraternummer": 29098,
                 "mandantennummer": 12861,

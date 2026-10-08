@@ -37,6 +37,7 @@ def main() -> None:
         run["datev_live_evidence"] = {
             **{key: run[key] for key in ("beraternummer", "mandantennummer", "wirtschaftsjahr_beginn", "sachkontenlaenge", "sachkontenrahmen")},
             "source": "DATEV live", "retrieved_at": "2026-10-07T10:00:00+02:00",
+            "connector": "Riecken", "retrieved_via": {"health": "datev_health_check", "core": "datev_get_client_dossier", "master_data": "datev_search_business_partners", "prior_bookings": "datev_get_account_postings", "accounts": "datev_get_account_balances", "bu_keys": "datev_suggest_posting"},
             "validated_accounts": ["4900", "4655", "70001"], "validated_bu_keys": ["401"],
             "highest_creditor_account": 70001, "highest_debtor_account": 10000,
             "used_person_accounts": [{"account": "70001", "account_type": "kreditor", "name": "DATEV Test GmbH"}],

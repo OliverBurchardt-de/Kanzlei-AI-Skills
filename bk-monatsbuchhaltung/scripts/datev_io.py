@@ -763,3 +763,11 @@ READABILITY_VALUES = {
 DOCUMENT_FILE_RULE = "ein Buchungsbeleg = genau eine eigene PDF-Datei"
 DERIVATION_METHODS = {"split", "merge", "convert"}
 ORIGINAL_ROLES = {"bundle_original", "converted_original"}
+# DATEV-Anbindung ausschließlich über den Riecken-Connector (MCP-Server "Riecken").
+REQUIRED_CONNECTOR = "Riecken"
+REQUIRED_RETRIEVAL_STEPS = {"health", "core", "master_data", "prior_bookings", "accounts", "bu_keys"}
+# "Kreditor fehlt" ist kein Rot-Grund: personenkonto_unklar nur mit dokumentiertem,
+# nicht eindeutig auflösbarem Partnerabgleich über den Riecken-Connector.
+PARTNER_CHECK_TOOLS = {"datev_search_business_partners", "datev_suggest_posting"}
+PARTNER_CHECK_RESULTS_RED = {"ambiguous", "identity_unclear", "error"}
+PARTNER_CHECK_RESULT_NEW = "no_match"

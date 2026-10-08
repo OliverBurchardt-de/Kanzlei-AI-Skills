@@ -30,8 +30,13 @@ from datev_io import (
     IMAGE_REVIEW_METHOD,
     MASTER_FIELDS,
     ORIGINAL_ROLES,
+    PARTNER_CHECK_RESULTS_RED,
+    PARTNER_CHECK_RESULT_NEW,
+    PARTNER_CHECK_TOOLS,
     READABILITY_VALUES,
     RED_REASON_CODES,
+    REQUIRED_CONNECTOR,
+    REQUIRED_RETRIEVAL_STEPS,
     STANDARD_BATCH_TYPE,
     STATUS_BOOKED,
     STATUS_UNREADABLE,
@@ -334,6 +339,22 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
         raise ValueError("Abbruch: technischer DATEV-Livenachweis fehlt.")
     if live.get("source") != "DATEV live":
         raise ValueError("Abbruch: DATEV-Livenachweis hat eine unzulässige Quelle.")
+    if str(live.get("connector", "")).strip() != REQUIRED_CONNECTOR:
+        raise ValueError(
+            f"Abbruch: DATEV-Anbindung muss über den {REQUIRED_CONNECTOR}-Connector erfolgen "
+            f"(datev_live_evidence.connector = \"{REQUIRED_CONNECTOR}\"); ein anderer DATEV-Zugang ist unzulässig."
+        )
+    retrieved_via = live.get("retrieved_via")
+    if not isinstance(retrieved_via, dict):
+        raise ValueError("Abbruch: datev_live_evidence.retrieved_via (Riecken-Werkzeug je Prüfung) fehlt.")
+    missing_steps = sorted(
+        step for step in REQUIRED_RETRIEVAL_STEPS
+        if not str(retrieved_via.get(step, "")).strip().startswith("datev_")
+    )
+    if missing_steps:
+        raise ValueError(
+            "Abbruch: retrieved_via nennt kein Riecken-Werkzeug (datev_*) für: " + ", ".join(missing_steps)
+        )
     for key in (
         "beraternummer", "mandantennummer", "wirtschaftsjahr_beginn",
         "sachkontenlaenge", "sachkontenrahmen",
@@ -1336,6 +1357,32 @@ def _validate_derived_sources(
                 errors.append(
                     f"source_files {original_id}: Original einer abgeleiteten PDF darf nur als {expected_role} zugeordnet sein, nicht als {', '.join(sorted(roles - ORIGINAL_ROLES))}"
                 )
+    # Ein Beleg = ein Dokument: merge/convert fassen nur Teile desselben Belegs zusammen,
+    # niemals mehrere Belege zu einer Datei.
+    transactions_by_source: dict[str, set[str]] = defaultdict(set)
+    for mapping in mappings:
+        transactions_by_source[str(mapping.get("source_id", ""))].add(str(mapping.get("transaction_id", "")))
+    for item in inventory:
+        if not isinstance(item, dict) or not isinstance(item.get("derived_from"), dict):
+            continue
+        derived = item["derived_from"]
+        if derived.get("method") not in {"merge", "convert"}:
+            continue
+        source_id = str(item.get("source_id", ""))
+        own = transactions_by_source.get(source_id, set())
+        if len(own) != 1:
+            errors.append(
+                f"source_files {source_id}: eine per {derived.get('method')} erzeugte PDF muss genau einem Vorgang zugeordnet sein; "
+                "niemals mehrere Belege zu einer Datei zusammenfassen"
+            )
+            continue
+        for original_id in derived.get("source_ids") or []:
+            foreign = transactions_by_source.get(str(original_id), set()) - own
+            if foreign:
+                errors.append(
+                    f"source_files {source_id}: Original {original_id} gehört auch zu {', '.join(sorted(foreign))}; "
+                    "merge fasst nur Teile desselben Belegs zusammen, niemals mehrere Belege zu einer Datei"
+                )
     for source_id, roles in roles_by_source.items():
         if roles & ORIGINAL_ROLES and source_id not in originals_with_derivatives:
             errors.append(
@@ -1516,10 +1563,55 @@ def _evaluation_attempts(doc: dict[str, Any], tid: str, errors: list[str], *, la
     return image_reviewed
 
 
+CREDITOR_MISSING_PATTERN = re.compile(
+    r"(kreditor|debitor|lieferant|kunde|geschäftspartner|personenkonto|stammdaten)\w*\s+"
+    r"(fehlt|fehlen|nicht angelegt|nicht vorhanden|unbekannt|nicht in datev|neu)"
+    r"|(kein|neuer|neue|unbekannter)\s+(kreditor|debitor|lieferant|kunde|personenkonto)",
+    re.IGNORECASE,
+)
+IDENTITY_UNCLEAR_TERMS = (
+    "identität", "mehrdeutig", "nicht eindeutig", "widersprüch", "zwei firmen", "mehrere firmen",
+    "rechtsträger", "zuordnung unklar", "nicht zuzuordnen", "unklar, welche", "ambiguous",
+)
+
+
+def _validate_partner_check(doc: dict[str, Any], tid: str, reason: dict[str, Any], incident_affected: set[str]) -> list[str]:
+    """Rot wegen Personenkonto nur bei dokumentiert nicht auflösbarer Geschäftspartneridentität."""
+    errors: list[str] = []
+    check = reason.get("partner_check")
+    if not isinstance(check, dict):
+        return [
+            f"{tid}: Rot-Grund personenkonto_unklar erfordert red_reason.partner_check "
+            "(Riecken-Partnerabgleich mit tool, query und result); ein fehlender oder neuer Kreditor ist kein Rot-Grund, sondern eine Neuanlage"
+        ]
+    tool = str(check.get("tool", "")).strip()
+    result = str(check.get("result", "")).strip()
+    if tool not in PARTNER_CHECK_TOOLS:
+        errors.append(f"{tid}: partner_check.tool muss eines von {', '.join(sorted(PARTNER_CHECK_TOOLS))} sein")
+    if not str(check.get("query", "")).strip():
+        errors.append(f"{tid}: partner_check.query (gesuchter Geschäftspartner) fehlt")
+    if result == PARTNER_CHECK_RESULT_NEW:
+        errors.append(
+            f"{tid}: partner_check.result no_match bedeutet neuen Geschäftspartner; das ist kein Rot-Grund, "
+            "sondern eine automatische Neuanlage in master_records (höchste Nummer plus eins)"
+        )
+    elif result not in PARTNER_CHECK_RESULTS_RED:
+        errors.append(f"{tid}: partner_check.result muss ambiguous, identity_unclear oder error sein")
+    if result == "error" and tid not in incident_affected:
+        errors.append(
+            f"{tid}: partner_check.result error erfordert einen technical_incidents-Eintrag mit diesem Vorgang in affected_transaction_ids"
+        )
+    if result in {"ambiguous", "identity_unclear"} and not str(check.get("detail", "")).strip():
+        errors.append(f"{tid}: partner_check.detail (worin die Mehrdeutigkeit/Unklarheit besteht) fehlt")
+    return errors
+
+
 def _validate_red_reason_and_evaluation(
-    doc: dict[str, Any], tid: str, sources_by_path: dict[str, dict[str, Any]]
+    doc: dict[str, Any], tid: str, sources_by_path: dict[str, dict[str, Any]],
+    incident_affected: set[str] | None = None,
 ) -> list[str]:
     errors: list[str] = []
+    incident_affected = incident_affected or set()
     status = doc.get("processing_status")
     light = doc.get("traffic_light")
     reason = doc.get("red_reason")
@@ -1542,7 +1634,19 @@ def _validate_red_reason_and_evaluation(
                 prior = (doc.get("prior_booking_check") or {}).get("result")
                 if datev_check != "possible_duplicate" and prior != "moegliche_dublette":
                     errors.append(f"{tid}: Rot-Grund datev_dublette_unklar ohne möglichen DATEV-Dublettentreffer")
+            if code == "personenkonto_unklar":
+                errors.extend(_validate_partner_check(doc, tid, reason, incident_affected))
         reason_text = str(doc.get("reason", "")).casefold()
+        combined = " ".join([
+            reason_text,
+            str((reason or {}).get("verification_attempted", "")).casefold() if isinstance(reason, dict) else "",
+            " ".join(str(value).casefold() for booking in doc.get("bookings", []) or [] for value in (booking.get("open_fields") or {}).values()),
+        ])
+        if CREDITOR_MISSING_PATTERN.search(combined) and not any(term in combined for term in IDENTITY_UNCLEAR_TERMS):
+            errors.append(
+                f"{tid}: \"Kreditor/Debitor fehlt oder ist neu\" ist kein Rot-Grund; eindeutig erkannte Geschäftspartner werden "
+                "automatisch als Einzelkonto neu angelegt. Rot nur bei nicht auflösbarer Geschäftspartneridentität mit partner_check"
+            )
         ocr_only_terms = ("ocr", "textebene", "textschicht", "kein text", "scan")
         substantive_terms = ("unlesbar", "nicht lesbar", "nicht erkennbar", "unklar", "fehlt", "offen", "widerspr", "dublette", "anlage", "gwg")
         if any(term in reason_text for term in ocr_only_terms) and not any(term in reason_text for term in substantive_terms):
@@ -1588,12 +1692,18 @@ def validate_documents(data: dict[str, Any]) -> list[str]:
     sources_by_path = {
         str(item.get("source_path", "")): item for item in data.get("source_files", []) if isinstance(item, dict)
     }
+    incident_affected = {
+        str(value)
+        for item in (data.get("technical_incidents") or [])
+        if isinstance(item, dict)
+        for value in (item.get("affected_transaction_ids") or [])
+    }
     for index, doc in enumerate(data.get("documents", []), start=1):
         tid = str(doc.get("transaction_id", f"Zeile {index}"))
         if tid in seen_ids:
             errors.append(f"Doppelte Vorgangs-ID: {tid}")
         seen_ids.add(tid)
-        errors.extend(_validate_red_reason_and_evaluation(doc, tid, sources_by_path))
+        errors.extend(_validate_red_reason_and_evaluation(doc, tid, sources_by_path, incident_affected))
         batch_type = document_batch_type(doc)
         if batch_type != STANDARD_BATCH_TYPE:
             batch_rule = separate_batches.get(batch_type)
