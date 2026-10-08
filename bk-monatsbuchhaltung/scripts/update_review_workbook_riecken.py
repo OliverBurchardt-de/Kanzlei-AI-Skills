@@ -213,7 +213,7 @@ def update_summary_sheet(sheet, transfer: dict[str, Any], records: dict[str, Any
         if sheet.cell(r, 1).value == "Offene Klärfälle":
             open_cases = sum(len(seq.get("calls", [])) and sum(len(call) for call in seq.get("calls", [])) for seq in records.get("records_rot", []))
             sheet.cell(r, 2).value = open_cases
-            sheet.cell(r, 1).value = "Offene Klärfälle (Riecken-Stapel Klärungsposten, ohne entschiedene Fälle)"
+            sheet.cell(r, 1).value = "Offene Klärfälle (Riecken-Stapel Rechnungen Nachlauf, ohne entschiedene Fälle)"
         if sheet.cell(r, 1).value == "Kontrollpunkt":
             pass
     sheet.cell(row + 1, 1).value = "Nicht gebuchte Vorgänge (Entscheidung Auftraggeber)"
@@ -226,7 +226,7 @@ def update_guide_sheet(sheet, clearing: dict[str, Any]) -> None:
         if key == "1. Belegprüfung":
             sheet.cell(row, 2).value = (
                 "Rote Fälle bearbeiten. Grüne Vorgänge wurden über den Riecken-Connector im Stapel Eingangsrechnungen je Monat gebucht, "
-                f"rote im Stapel Klärungsposten je Monat auf das Klärungskonto {clearing.get('account')} {clearing.get('name')}. "
+                f"rote im Stapel Rechnungen Nachlauf je Monat auf das Klärungskonto {clearing.get('account')} {clearing.get('name')}. "
                 "Rechts neben der Ampel steht der Riecken-Stapel. Nicht gebuchte Vorgänge tragen den Grund der Entscheidung."
             )
         elif key == "2. Buchungszeilen":
@@ -237,7 +237,7 @@ def update_guide_sheet(sheet, clearing: dict[str, Any]) -> None:
         elif key == "DATEV-Import":
             sheet.cell(row, 1).value = "DATEV / DUO"
             sheet.cell(row, 2).value = (
-                "Buchungsstapel, Klärungsposten und Personenkonten wurden über den Riecken-Connector nach DATEV geschrieben; die EXTF-Dateien "
+                "Buchungsstapel, Stapel Rechnungen Nachlauf und Personenkonten wurden über den Riecken-Connector nach DATEV geschrieben; die EXTF-Dateien "
                 "dürfen nicht zusätzlich importiert werden (sie liegen unter 03_Technische_Protokolle/ersetzt). Reguläre und Avis-Belegtransfer-ZIPs "
                 "in DATEV Unternehmen online hochladen; erst danach lösen die Beleglinks der Riecken-Buchungen auf."
             )
@@ -245,7 +245,7 @@ def update_guide_sheet(sheet, clearing: dict[str, Any]) -> None:
         "Klärungskonto",
         f"{clearing.get('account')} {clearing.get('name')} ist ein reines Arbeitskonto mit Zielsaldo 0. Jede rote Zeile vom Klärungskonto auf das "
         "Zielkonto umbuchen (Anlagen zuerst in der Anlagenbuchführung anlegen); erst wenn das Konto für die Periode den Saldo 0 hat, "
-        "den Klärungsstapel festschreiben.",
+        "den Stapel Rechnungen Nachlauf festschreiben.",
     ])
     last = sheet.max_row
     sheet.cell(last, 1).font = Font(bold=True)
@@ -382,7 +382,7 @@ def status_markdown(package: Path, transfer: dict[str, Any], records: dict[str, 
     if not steps:
         steps = [
             "Reguläre und Avis-Belegtransfer-ZIPs in DATEV Unternehmen online hochladen; erst danach lösen die Beleglinks auf.",
-            "Klärungsposten vom Klärungskonto auf die Zielkonten umbuchen; Klärungskonto je Periode auf Saldo 0 bringen; erst danach festschreiben.",
+            "Stapel Rechnungen Nachlauf vom Klärungskonto auf die Zielkonten umbuchen; Klärungskonto je Periode auf Saldo 0 bringen; erst danach festschreiben.",
         ]
     lines += [f"- {step}" for step in steps]
     lines.append("")

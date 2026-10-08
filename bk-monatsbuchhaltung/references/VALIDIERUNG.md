@@ -167,6 +167,7 @@ Gilt nur nach einer Übertragung nach `SKILL.md` Abschnitt 5. Die Punkte vor der
 - Über Riecken übertragene EXTF-Dateien liegen nicht mehr in `01_DATEV_Import`, sondern unter `03_Technische_Protokolle/ersetzt/`; `validate_package.py` ist für ein so verändertes Paket nicht mehr maßgeblich, der Nachweis ist die Statusdatei.
 - Die Statusdatei `00_STATUS_NACH_RIECKEN_UEBERTRAGUNG.md` und das Blatt `Riecken-Übertragung` der Prüfungs-Excel existieren; die Ursprungsfassung der Excel liegt als `<Name>_vor_Riecken.xlsx` unter `ersetzt/`.
 - Jede Nutzerentscheidung zu nicht übertragenen Vorgängen trägt Entscheider und Datum.
+- Der rote Riecken-Stapel heißt `Rechnungen Nachlauf`; keine Riecken-Stapelbezeichnung enthält `Klärung` oder `Prüfung`.
 
 ## Zeichen und Dateien
 
@@ -205,7 +206,7 @@ DATEV-Testplan vor produktiver Freigabe der Versionsreihe 1.4 (eingeführt mit 1
 
 Produktive Freigabe der Versionsreihe 1.4 (aktuell Paketvertrag 1.4.1, Skill 1.5.0) erst nach Test 1, 2, 3 und 6; bis dahin bleibt `datev_test_import.status = pending`.
 
-Für die Übertragung über den Riecken-Connector (`SKILL.md` Abschnitt 5) ist kein EXTF-Testimport nötig, weil keine EXTF-Datei importiert wird. Ein erster Echtlauf ist aber in DATEV zu sichten: Stapel `Eingangsrechnungen` und `Klärungsposten` je Monat vorhanden, Zeilenzahl und Summe wie in der Vorschau, Beleglinks lösen nach dem DUO-Upload der Belegtransfer-ZIPs auf. Solange die Leseschnittstelle die Stapel nicht zeigt, gilt die Übertragung als nicht nachgewiesen.
+Für die Übertragung über den Riecken-Connector (`SKILL.md` Abschnitt 5) ist kein EXTF-Testimport nötig, weil keine EXTF-Datei importiert wird. Ein erster Echtlauf ist aber in DATEV zu sichten: Stapel `Eingangsrechnungen` und `Rechnungen Nachlauf` je Monat vorhanden, Zeilenzahl und Summe wie in der Vorschau, Beleglinks lösen nach dem DUO-Upload der Belegtransfer-ZIPs auf. Solange die Leseschnittstelle die Stapel nicht zeigt, gilt die Übertragung als nicht nachgewiesen.
 
 Quelle: [DATEV-Schnittstellenvorgaben und Testimport](https://developer.datev.de/de/product-detail/accounting-extf-files/2.0/documentation/interface-requirements-file).
 

@@ -421,7 +421,7 @@ Das Objekt beschreibt eine ausgeführte Übertragung über den Riecken-Connector
   ],
   "sequences": [
     {"month": "2026-07", "description": "Eingangsrechnungen", "record_count": 22, "total_amount": "7116.10", "change_plan_id": "4cd28534baa245f3166a854822c4bbf5", "source_file": "EXTF_Buchungsstapel_2026-07.csv"},
-    {"month": "2026-07", "description": "Klärungsposten", "record_count": 7, "total_amount": "1682.90", "change_plan_id": "90d4a0aa0f22d1abad858349529a966c", "source_file": "EXTF_Klaerungsposten_2026-07.csv"}
+    {"month": "2026-07", "description": "Rechnungen Nachlauf", "record_count": 7, "total_amount": "1682.90", "change_plan_id": "90d4a0aa0f22d1abad858349529a966c", "source_file": "EXTF_Klaerungsposten_2026-07.csv"}
   ],
   "not_transferred": [
     {"transaction_id": "B006-V000054", "reason": "Betrag unsicher (Seite 2 fehlt)", "decision": "nicht buchen, Beleg bleibt im Belegtransfer", "decided_by": "Oliver Burchardt", "decided_at": "2026-10-08"}
@@ -431,14 +431,14 @@ Das Objekt beschreibt eine ausgeführte Übertragung über den Riecken-Connector
   ],
   "transferred_files": ["EXTF_Debitoren_Kreditoren.csv", "EXTF_Buchungsstapel_2026-07.csv", "EXTF_Klaerungsposten_2026-07.csv"],
   "visibility_check": {"tool": "datev_get_account_postings", "result": "nicht sichtbar", "checked_at": "2026-10-08T15:35:00+02:00"},
-  "open_steps": ["Belegtransfer-ZIPs in DUO hochladen", "Klärungsposten umbuchen, Klärungskonto auf Saldo 0 bringen, dann festschreiben"]
+  "open_steps": ["Belegtransfer-ZIPs in DUO hochladen", "Stapel Rechnungen Nachlauf vom Klärungskonto auf die Zielkonten umbuchen, Klärungskonto auf Saldo 0 bringen, dann festschreiben"]
 }
 ```
 
 Felder:
 
 - `change_plans[]`: `id`, `type` (`business_partner` oder `posting_batch`), `executed_at`.
-- `sequences[]`: `month`, `description` (`Eingangsrechnungen` oder `Klärungsposten`, bei konfigurierten Vorläufen deren Bezeichnung), `record_count`, `total_amount`; optional `change_plan_id` und `source_file`.
+- `sequences[]`: `month`, `description` (`Eingangsrechnungen` oder `Rechnungen Nachlauf`, bei konfigurierten Vorläufen deren Bezeichnung; nie `Klärungsposten`), `record_count`, `total_amount`; optional `change_plan_id` und `source_file`.
 - `clearing_account`: `account` (Nummer) und `name` (Bezeichnung) des Klärungskontos aus dem Mandantenprofil.
 - `not_transferred[]`: `transaction_id`, `reason`, `decision`, `decided_by`, `decided_at`; `decision` ist eine der Entscheidungen „nicht buchen“, „Beleg belassen“ oder „Beleg entfernen“, jeweils mit Freitext.
 - `removed_documents[]`: `guid`, `file` (Belegtransfer-ZIP), `reason`.

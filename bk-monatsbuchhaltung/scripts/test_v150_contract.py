@@ -56,7 +56,7 @@ def test_version_and_texts() -> None:
         "Eine Übertragung über Riecken erfolgt ausschließlich nach Abschnitt 5 und nur auf ausdrücklichen Auftrag nach der Paketübergabe.",
         "Das Klärungskonto nach Abschnitt 5 gilt ausschließlich für die Übertragung über den Riecken-Connector.",
         "Ausnahme: Klärungsbuchungen nach Abschnitt 5 tragen das Kürzel `KLÄR`",
-        "`159900 Klärungskonto Buchhaltung`", "nie Klärungskonto an Klärungskonto", "insbesondere kein 1 Cent",
+        "`159900 Klärungskonto Buchhaltung`", "nie Klärungskonto an Klärungskonto", f"Stapelbezeichnung `Rechnungen Nachlauf`", "insbesondere kein 1 Cent",
         "`KLÄR <Vorgangs-ID> <offenes Thema> <Zielkonto oder Alternativen>`", "00_STATUS_NACH_RIECKEN_UEBERTRAGUNG.md",
         "scripts/riecken_records.py", "scripts/update_review_workbook_riecken.py", "scripts/remove_document_from_transfer.py",
     ):
@@ -115,12 +115,12 @@ def test_records(root: Path) -> tuple[Path, Path, dict, list]:
 
     # Überlanger Vorgabetext wird abgewiesen, nicht gekürzt.
     long_text = "KLÄR V0003 " + "Konto unklar, Beleg ohne Leistungsbeschreibung, Lieferant fragen " * 2
-    _, rejected = riecken_records.build_records(package, data, CLEARING, CLEARING_NAME, {"V0003": long_text}, "Eingangsrechnungen", "Klärungsposten")
+    _, rejected = riecken_records.build_records(package, data, CLEARING, CLEARING_NAME, {"V0003": long_text}, "Eingangsrechnungen", "Rechnungen Nachlauf")
     assert any(item["transaction_id"] == "V0003" and riecken_records.REASON_TEXT in item["reason"] for item in rejected)
 
     # Klärungskonto muss zu account_config.clarification passen.
     try:
-        riecken_records.build_records(package, data, "1590", CLEARING_NAME, {}, "Eingangsrechnungen", "Klärungsposten")
+        riecken_records.build_records(package, data, "1590", CLEARING_NAME, {}, "Eingangsrechnungen", "Rechnungen Nachlauf")
     except ValueError as exc:
         assert "weicht von account_config.clarification" in str(exc)
     else:
@@ -143,7 +143,15 @@ def test_records(root: Path) -> tuple[Path, Path, dict, list]:
     green_records = [item for call in green[0]["calls"] for item in call]
     red_records = [item for call in red[0]["calls"] for item in call]
     assert len(green_records) == 2 and {item["transaction_id"] for item in green_records} == {"V0001", "V0002"}
-    assert green[0]["description"] == "Eingangsrechnungen" and red[0]["description"] == "Klärungsposten"
+    assert green[0]["description"] == "Eingangsrechnungen" and red[0]["description"] == "Rechnungen Nachlauf"
+    assert "Klärungsposten" not in json.dumps(records["preview"], ensure_ascii=False)
+    # Ein Riecken-Stapelname mit Klärungs- oder Prüfhinweis wird abgewiesen.
+    try:
+        riecken_records.build_records(package, data, CLEARING, CLEARING_NAME, {}, "Eingangsrechnungen", "Klärungsposten")
+    except ValueError as exc:
+        assert "kein Hinweis auf Klärung" in str(exc)
+    else:
+        raise AssertionError("Riecken-Stapelname Klärungsposten wurde akzeptiert")
     # grün 1:1, Gutschrift mit vertauschtem Soll/Haben
     by_tid = {item["transaction_id"]: item for item in green_records}
     assert by_tid["V0001"]["debit_account"] == "4900" and by_tid["V0001"]["credit_account"] == "70001" and by_tid["V0001"]["tax_key"] == 401
@@ -225,7 +233,7 @@ def test_workbook_update(package: Path, work: Path, records: dict, rejected: lis
     cols = {str(c.value): c.column for c in review[1]}
     rows = {str(review.cell(r, cols["Vorgangs-ID"]).value): r for r in range(2, review.max_row + 1)}
     assert review.cell(rows["V0001"], cols["Buchungsstapel"]).value == "Riecken: Eingangsrechnungen 2025-12"
-    assert review.cell(rows["V0003"], cols["Buchungsstapel"]).value == f"Riecken: Klärungsposten 2025-12 (Konto {CLEARING})"
+    assert review.cell(rows["V0003"], cols["Buchungsstapel"]).value == f"Riecken: Rechnungen Nachlauf 2025-12 (Konto {CLEARING})"
     assert str(review.cell(rows["V0003"], cols["Kontierung"]).value).startswith("Gebucht über Riecken: Soll 1599 an Haben 70001")
     assert "Kontierung aus Beleg nicht erkennbar" in str(review.cell(rows["V0003"], cols["Offener Punkt / nächster Schritt"]).value)
     assert str(review.cell(rows["V0003"], cols["Offener Punkt / nächster Schritt"]).value).startswith("Umbuchung: Klärungskonto 1599")
@@ -247,7 +255,7 @@ def test_workbook_update(package: Path, work: Path, records: dict, rejected: lis
 
     summary = wb["Übersicht"]
     texts = [str(summary.cell(r, 1).value) for r in range(1, summary.max_row + 1)]
-    assert "Riecken-Stapel" in texts and "Klärungsposten" in texts and "DATEV-Stapel" not in texts
+    assert "Riecken-Stapel" in texts and "Rechnungen Nachlauf" in texts and "DATEV-Stapel" not in texts
     guide = wb["Anleitung"]
     guide_texts = " ".join(str(guide.cell(r, c).value or "") for r in range(1, guide.max_row + 1) for c in (1, 2))
     assert "Zielsaldo 0" in guide_texts and "Klärungskonto" in guide_texts and "dürfen nicht zusätzlich importiert werden" in guide_texts
@@ -256,7 +264,7 @@ def test_workbook_update(package: Path, work: Path, records: dict, rejected: lis
     assert "aaaa1111" in sheet_text and "bbbb2222" in sheet_text and "V0005" in sheet_text and "V0007" in sheet_text and "Belegtransfer-ZIPs in DUO hochladen" in sheet_text
 
     status = (package / "00_STATUS_NACH_RIECKEN_UEBERTRAGUNG.md").read_text(encoding="utf-8")
-    for needle in ("aaaa1111", "bbbb2222", "Klärungsposten", "V0005", "V0006", "V0007", "nicht sichtbar", "EXTF_Klaerungsposten_2025-12.csv", "Offene Schritte"):
+    for needle in ("aaaa1111", "bbbb2222", "Rechnungen Nachlauf", "V0005", "V0006", "V0007", "nicht sichtbar", "EXTF_Klaerungsposten_2025-12.csv", "Offene Schritte"):
         assert needle in status, needle
     manifest = json.loads((package / "03_Technische_Protokolle" / "Laufmanifest.json").read_text(encoding="utf-8"))
     assert manifest["riecken_transfer"]["change_plans"][0]["id"] == "aaaa1111"

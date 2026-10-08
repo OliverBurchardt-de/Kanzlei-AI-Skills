@@ -3,7 +3,7 @@
 Eingaben: fertiges Paket (EXTF-Dateien, Belegtransfer-ZIPs mit document.xml,
 Laufmanifest), Lauf-JSON und Klärungskonto. Ausgabe: ``riecken_records.json`` mit
 Records für ``datev_add_posting`` getrennt nach grün (Stapel Eingangsrechnungen)
-und rot (Stapel Klärungsposten über das Klärungskonto) sowie
+und rot (Stapel Rechnungen Nachlauf über das Klärungskonto; neutraler, in DATEV sichtbarer Name) sowie
 ``nicht_uebertragbar.json`` mit den abgewiesenen Zeilen.
 
 Regeln für rote Zeilen:
@@ -40,7 +40,8 @@ KLAER_PREFIX = "KLÄR"
 MAX_TEXT_LENGTH = 60
 MAX_RECORDS_PER_CALL = 100
 GREEN_LABEL = "Eingangsrechnungen"
-RED_LABEL = "Klärungsposten"
+RED_LABEL = "Rechnungen Nachlauf"
+FORBIDDEN_LABEL_WORDS = ("klärung", "klaerung", "prüf", "pruef")
 DATEV_FOLDER = "01_DATEV_Import"
 LOG_FOLDER = "03_Technische_Protokolle"
 PLACEHOLDER_AMOUNTS = {Decimal("0.01")}
@@ -282,6 +283,9 @@ def build_records(package: Path, data: dict[str, Any], clearing: str, clearing_n
     clearing = account_text(clearing)
     if not clearing:
         raise ValueError("Klärungskonto muss eine Kontonummer sein.")
+    for label in (green_label, red_label):
+        if any(word in label.casefold() for word in FORBIDDEN_LABEL_WORDS):
+            raise ValueError(f"Riecken-Stapelbezeichnung {label!r} ist unzulässig: kein Hinweis auf Klärung oder Prüfung im Stapelnamen.")
     documents = {str(doc.get("transaction_id")): doc for doc in data.get("documents", [])}
     cases: dict[str, dict[str, Any]] = {}
     for case in data.get("clarification_cases", []):
