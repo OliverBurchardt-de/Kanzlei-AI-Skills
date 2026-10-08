@@ -34,7 +34,7 @@ Alle Subagents erhalten denselben vom Hauptagenten geprüften Kontext:
 - DATEV-Vorbuchungen und Ergebnis der live geprüften Dublettensuche,
 - Bilanz-/EÜR-Status und gegebenenfalls Abgrenzungsregister.
 
-Subagents dürfen diesen Kontext nicht neu abrufen oder verändern. Fehlende technische Pflichtdaten melden sie als Batchfehler; fachliche Unsicherheiten behandeln sie nach den normalen Ampel- und Klärungsregeln.
+Subagents dürfen diesen Kontext nicht neu abrufen oder verändern. Fehlende technische Pflichtdaten melden sie als Batchfehler; fachliche Unsicherheiten behandeln sie nach den normalen Ampel- und Klärungsregeln. Die Durchführungspflicht gilt je Batch: Jede zugewiesene Quelle erhält einen nachgewiesenen Endstatus, jeder rote Vorgang einen Rot-Grund (`red_reason`), Scans ohne Textebene werden über das Belegbild ausgewertet, und ein technischer Einzelfehler (ein Beleg, ein Geschäftspartner) wird als `technical_incidents`-Eintrag im Batchergebnis gemeldet, ohne die übrigen Quellen des Batches zu blockieren. Ein fehlgeschlagener Batch blockiert nicht die anderen Batches; der Hauptagent wiederholt ihn oder bearbeitet ihn selbst. Der Hauptagent richtet vor der Delegation Sammel-PDFs nach der Belegdateiregel her (`scripts/beleg_pdf.py split`), damit jeder Buchungsbeleg als eigene PDF vorliegt.
 
 ## 3. Auftrag je Subagent
 
@@ -54,6 +54,7 @@ Jeder Subagent schreibt genau eine eigene Datei `batch_NNN_result.json`. Er ver�
   "profile_suggestions": [],
   "accrual_candidates": [],
   "person_account_proposals": [],
+  "technical_incidents": [],
   "batch_notes": []
 }
 ```
@@ -122,7 +123,8 @@ Der Hauptagent prüft und entscheidet anschließend global:
 4. neue Personenkonten fortlaufend ab der live geprüften Höchstnummer,
 5. Kollisionen und Zusammenlegung von Klärungsfällen,
 6. Abgrenzungen, Übergaben und periodenübergreifende Sachverhalte,
-7. alle verwendeten Konten und BU-Schlüssel erneut gegen DATEV live über den Riecken-Connector.
+7. alle verwendeten Konten und BU-Schlüssel erneut gegen DATEV live über den Riecken-Connector,
+8. Klärungsquote nach `VALIDIERUNG.md` (`scripts/clarification_rate.py`) mit Zweitprüfung aller roten Vorgänge bei `Q > 20 %` und konsolidierte `technical_incidents`.
 
 Erst danach `person_account_proposals` in vollständige `master_records` überführen, `_parallel_review.global_reconciliation_required` auf `false` setzen und das endgültige Lauf-JSON nach `EINGABESCHEMA.md` erstellen. `build_package.py` mit diesem finalen Lauf-JSON ausführen.
 

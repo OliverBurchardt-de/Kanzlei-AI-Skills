@@ -2,7 +2,7 @@
 
 ## 1. Scope und Vollständigkeit
 
-Verarbeitet werden ausschließlich die bereitgestellten Dateien innerhalb des ausdrücklich beauftragten Modus `belegbuchhaltung`. Bank, Kasse, Lohn, Zahlungsverkehr, OPOS-Ausgleich, Abstimmungen und Monatsabschluss bleiben außerhalb des Skills; insbesondere erzeugt der Skill niemals Kassenbuchungen. Jede Quelldatei wird genau einmal inventarisiert und jedem logischen Vorgang wird ein Endstatus zugeordnet. Kein buchungsrelevanter Vorgang darf fehlen.
+Verarbeitet werden ausschließlich die bereitgestellten Dateien innerhalb des ausdrücklich beauftragten Modus `belegbuchhaltung`. Bank, Kasse, Lohn, Zahlungsverkehr, OPOS-Ausgleich, Abstimmungen und Monatsabschluss bleiben außerhalb des Skills; insbesondere erzeugt der Skill niemals Kassenbuchungen. Jede Quelldatei wird genau einmal inventarisiert und jedem logischen Vorgang wird genau ein Endstatus zugeordnet: regulär verarbeitet (Grün oder konkret fachlich ungeklärt Rot), sichere Dublette, nicht buchungsrelevant, Aussteuerung an einen anderen Mandanten/Rechtsträger, außerhalb Auftragszeitraum oder nach dokumentiertem Auswertungsversuch technisch nicht auswertbar. Kein buchungsrelevanter Vorgang darf fehlen. Ein Auftrag ist ein Auftrag zur vollständigen Abarbeitung bis zum Abschluss-Gate (SKILL.md, Laufregel Durchführungspflicht); Inventur, Stichproben, Vorprüfungen oder Zwischenberichte sind kein Endpunkt, technische Einzelfehler werden lokal behandelt.
 
 ## 2. Ausgabe und Stapel
 
@@ -32,7 +32,7 @@ Jeder Ausschluss weist Rechtsträger, Dokumentart und konkreten Grund aus. Diese
 
 ## 3b. Quelldatei und logischer Vorgang
 
-`source_files`, `transactions` und `transaction_sources` strikt trennen. Eine Rechnung plus Begleit-E-Mail ist ein Vorgang mit zwei Quellen. Eine Sammeldatei kann mehrere Vorgänge belegen. Jede physische Quelldatei höchstens einmal in den Belegtransfer aufnehmen; mehrere Buchungszeilen oder Vorgänge dürfen auf denselben DATEV-Beleg verweisen. Deckblätter und Dublettenkopien nicht zusätzlich übertragen.
+`source_files`, `transactions` und `transaction_sources` strikt trennen. Eine Rechnung plus Begleit-E-Mail ist ein Vorgang mit zwei Quellen. Eine hochgeladene Sammeldatei kann mehrere Vorgänge belegen; sie wird dann vor dem Paketbau mit `scripts/beleg_pdf.py split` je Vorgang in eine eigene PDF getrennt. **Belegdateiregel: Jeder Buchungsbeleg ist im DATEV-Belegtransfer genau eine eigene PDF-Datei.** Niemals zwei Buchungsbelege in einer übertragenen Datei sammeln, niemals einen Buchungsbeleg auf zwei übertragene Dateien verteilen (Teildateien mit `merge` zusammenführen), Bild- oder Textbelege mit `convert` in eine PDF überführen. Abgeleitete PDFs sind eigene Quellen mit `derived_from`; das Original bleibt inventarisiert (`bundle_original`/`converted_original`) und wird nicht übertragen. Jede physische Quelldatei höchstens einmal in den Belegtransfer aufnehmen; mehrere Buchungszeilen desselben Vorgangs verweisen auf denselben DATEV-Beleg. Deckblätter, Dublettenkopien und Begleitdokumente nicht als eigenen DATEV-Beleg übertragen; zum Belegbild gehörende Begleitseiten in die Beleg-PDF zusammenführen.
 
 ## 4. Belegfeld 1
 
@@ -40,7 +40,7 @@ Belegfeld 1 enthält eine sicher erkannte externe Referenz. Fehlt eine belastbar
 
 ## 5. Durchlauf ohne Zwischenfragen
 
-Nach dem technischen Preflight wird nicht unterbrochen. Fachliche Unsicherheit wird mit sämtlichen sicheren Angaben und konkret offenen Feldern in den Klärungsstapel des Monats exportiert und genau einmal als Klärungsfall dokumentiert. Mitarbeitername ist mandantenseitig fest zugeordnet; die Excel-Datei braucht nur Bearbeitungsstatus und Mitarbeiter-Ergebnis.
+Nach dem technischen Preflight wird nicht unterbrochen. Fachliche Unsicherheit wird mit sämtlichen sicheren Angaben und konkret offenen Feldern in den Klärungsstapel des Monats exportiert und genau einmal als Klärungsfall dokumentiert; jeder rote Vorgang trägt einen maschinenlesbaren Rot-Grund (`red_reason`) mit durchgeführtem Prüfversuch und nächstem Prüfschritt. Rot ist nur bei konkreter Unsicherheit zulässig: Ein Scan ohne Textebene, ein neuer Kreditor oder ein ungeprüfter Dublettenverdacht sind für sich allein kein Rot-Grund. Mitarbeitername ist mandantenseitig fest zugeordnet; die Excel-Datei braucht nur Bearbeitungsstatus und Mitarbeiter-Ergebnis.
 
 ## 6. Betrieblicher Anlass
 
@@ -124,3 +124,7 @@ Stichprobe geeigneter inländischer Rechnungen auf Pflichtangaben. Ausländische
 ## 17. Getrennte Buchungsvorläufe
 
 Nur wenn das Mandantenprofil unter `batch_config.separate_batches` einen Stapeltyp freischaltet (zum Beispiel `eigenbelege` für Eigenrechnungen eines Labors), erhalten Vorgänge mit `batch_type: <Stapeltyp>` je Periode einen eigenen Vorlauf `EXTF_Buchungsstapel_<JJJJ-MM>_<Stapeltyp>.csv` mit der konfigurierten Stapelbezeichnung. Jede Zeile trägt die vorgeschriebene Kostenstelle (`required_kost1`) und das vorgeschriebene Gegenkonto (`required_contra_account`); Abweichungen und ein `batch_type` ohne Konfiguration sind Generatorfehler. Rote Vorgänge eines Stapeltyps landen in `EXTF_Klaerungsposten_<JJJJ-MM>_<Stapeltyp>.csv`. Der Eigenbeleg-Stapel wird nach dem Standardstapel derselben Periode importiert.
+
+## 18. Klärungsquote und Zweitprüfung
+
+Vor dem Paketbau und erneut vor der Abschlussmeldung wird die Klärungsquote `Q = 100 × R / N` nach `VALIDIERUNG.md`, Abschnitt `Klärungsquote und Zweitprüfung`, berechnet: `N` sind die einmalig gezählten buchungsrelevanten Vorgänge, `R` die roten Vorgänge. Bis 10 % normale Vollständigkeitskontrolle, über 10 bis 20 % dokumentierte Ursachenprüfung je Rot-Kategorie, über 20 % verpflichtende vollständige Zweitprüfung aller roten Vorgänge anhand Belegbild, Mandantenprofil, DATEV-Bestand und Buchungsregeln. Die Quote ist ein Qualitätsindikator und kein Zielwert; sie wird nie durch Schätzungen, Ersatzkonten oder Umstufungen gesenkt, eine hohe Quote löst Nacharbeit und keinen Abbruch aus, berechtigt rote Fälle bleiben Rot und werden als fachlich offen ausgewiesen. Der Nachweis steht in `Klaerungsquote_Nachweis.md`, im Registerblatt `Klärungsquote` der Prüfungs-Excel, im Laufmanifest und im Validierungsbericht.

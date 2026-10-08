@@ -168,7 +168,24 @@ Jede physische Datei genau einmal:
 ]
 ```
 
-`readability`: `readable`, `partially_readable`, `unreadable` oder `not_checked`. Gleicher SHA-256 innerhalb eines Uploads ist nur als ausdrücklich zugeordnete `duplicate_copy` zulässig.
+`readability`: `readable`, `partially_readable`, `image_only` (Scan ohne Textebene, über das Belegbild auswertbar), `unreadable` oder `not_checked`. Gleicher SHA-256 innerhalb eines Uploads ist nur als ausdrücklich zugeordnete `duplicate_copy` zulässig.
+
+### Abgeleitete Belegdateien (Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei)
+
+Jeder gebuchte Vorgang besitzt genau eine `primary_invoice`-Quelle, und diese ist eine PDF-Datei, die für keinen weiteren Vorgang Primärbeleg ist. Mit `scripts/beleg_pdf.py` aufgeteilte, zusammengeführte oder umgewandelte PDFs sind eigene Einträge in `source_files` mit `derived_from`; sie liegen in einem Arbeitsordner außerhalb des Eingabeordners:
+
+```json
+{
+  "source_id": "D0001",
+  "source_path": "…/work/V0001.pdf",
+  "size_bytes": 23456,
+  "sha256": "…64 hex…",
+  "readability": "image_only",
+  "derived_from": {"source_ids": ["S0001"], "method": "split", "pages": "1-2", "tool": "scripts/beleg_pdf.py"}
+}
+```
+
+`method` ist `split` (Sammel-PDF, Pflichtangabe `pages`), `merge` (mindestens zwei Originale) oder `convert` (Bilddatei). Das Original bleibt inventarisiert und wird je betroffenem Vorgang mit der Rolle `bundle_original` (split) beziehungsweise `converted_original` (merge/convert) zugeordnet; es wird nicht in den Belegtransfer übernommen. Ableitungen werden nicht verkettet. Der Generator weist Sammeldateien mit mehreren Buchungsbelegen, Nicht-PDF-Buchungsbelege und auf mehrere Dateien verteilte Buchungsbelege zurück.
 
 ## `transactions` und `transaction_sources`
 
@@ -181,7 +198,7 @@ Ein logischer Vorgang besitzt eine eigene `transaction_id`. Eine Datei kann mehr
 ]
 ```
 
-Rollen: `primary_invoice`, `supporting_document`, `payment_notice`, `cover_sheet`, `duplicate_copy`. Deckblätter und Dublettenkopien werden nicht zusätzlich übertragen. Jede Quelldatei wird höchstens einmal in den DATEV-Belegtransfer aufgenommen; mehrere Buchungen dürfen auf dieselbe übertragene Quelle verweisen.
+Rollen: `primary_invoice`, `supporting_document`, `payment_notice`, `cover_sheet`, `duplicate_copy`, `bundle_original`, `converted_original`. Deckblätter, Dublettenkopien und Originale abgeleiteter PDFs werden nicht zusätzlich übertragen. Jede Quelldatei wird höchstens einmal in den DATEV-Belegtransfer aufgenommen; ein Buchungsbeleg ist genau eine eigene PDF-Datei (`primary_invoice` genau einmal je gebuchtem Vorgang und je Datei). Mehrere Buchungszeilen desselben Vorgangs verweisen auf dieselbe übertragene Quelle. Begleitdokumente (`supporting_document`) werden nicht als eigener DATEV-Beleg übertragen (sie hätten keinen Buchungs-Beleglink); zum Belegbild gehörende Seiten werden per `merge` in die Beleg-PDF aufgenommen, sonst bleiben sie inventarisierte Arbeitsunterlage mit Endstatus.
 
 Pflichtfelder je `transactions[]`:
 
@@ -190,14 +207,44 @@ Pflichtfelder je `transactions[]`:
 - optional `batch_type` (`standard` oder ein in `batch_config` konfigurierter Stapeltyp)
 - `entity_assessment`; bei buchungsrelevanten oder als Dublette behandelten Vorgängen zusätzlich `duplicate_checks`
 
-Zulässige Status:
+Zulässige Endstatus (jede Eingabedatei und jeder Vorgang erhält genau einen):
 
-- `Buchungszeile erzeugt`
+- `Buchungszeile erzeugt` (regulär verarbeitet, Grün oder konkret fachlich ungeklärt Rot)
 - `sichere Dublette – nicht erneut gebucht`
-- `nicht buchungsrelevant`
+- `nicht buchungsrelevant` (einschließlich Aussteuerung an einen anderen Mandanten/Rechtsträger mit `handoff_required`)
 - `außerhalb Auftragszeitraum`
+- `technisch nicht auswertbar` (nur nach dokumentiertem Auswertungsversuch)
 
 Ampel `Grün` oder `Rot` nur bei `Buchungszeile erzeugt`; sonst `null`.
+
+### Rot-Grund (`red_reason`) und Auswertungsversuche (`evaluation_attempts`)
+
+Jeder rote Vorgang trägt einen maschinenlesbaren Rot-Grund:
+
+```json
+"red_reason": {
+  "code": "konto_unklar",
+  "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Vorbuchungen des Kreditors und Kontenrahmen geprüft; Leistungsart nicht erkennbar.",
+  "next_check": "Leistungsbeschreibung beim Mandanten anfordern."
+}
+```
+
+Zulässige `code`-Werte: `fehlende_belegangabe`, `steuer_unklar`, `rechtstraeger_unklar`, `personenkonto_unklar`, `datev_dublette_unklar` (nur mit möglichem DATEV-Treffer), `konto_unklar`, `anlage_gwg_spezialregel` (nur mit `asset_booking: true`), `technisch_unlesbar` (nur mit `evaluation_attempts` einschließlich Belegbildprüfung), `spezialregel_sonstige`. `reason` darf nicht allein auf fehlende OCR oder Textebene verweisen.
+
+`evaluation_attempts` dokumentiert den tatsächlichen Auswertungsversuch bei `technisch_unlesbar` und beim Status `technisch nicht auswertbar`:
+
+```json
+"processing_status": "technisch nicht auswertbar",
+"traffic_light": null,
+"exclusion_reason": "Datei ist eine passwortgeschützte PDF; Belegbild nicht darstellbar.",
+"evaluation_attempts": [
+  {"method": "textebene", "result": "keine Textebene"},
+  {"method": "belegbild", "result": "Seiten nicht renderbar (verschlüsselt)"},
+  {"method": "wiederholung", "result": "zweiter Leseversuch identisch fehlgeschlagen"}
+]
+```
+
+`method` ist `textebene`, `ocr`, `belegbild`, `alternativer_leseweg` oder `wiederholung`; ein Eintrag mit `belegbild` ist Pflicht.
 
 ## Rechtsträger, Dokumentart und Ausschluss
 
@@ -261,6 +308,69 @@ Erlaubte Feldnamen: `amount`, `debit_credit`, `currency`, `exchange_rate`, `base
 Jeder rote Vorgang benötigt `requires_clarification: true` und genau einen Klärungsfall mit `booking_risk`. Die Prüfungsdatei zeigt die konkreten offenen Felder, das Risiko und die Mitarbeiterentscheidung. Buchungstexte bleiben sachliche Beleg-/Leistungsbeschreibungen.
 
 Bei Zahlungsavis: `payment_advice: true`, Status `nicht buchungsrelevant`, keine Ampel, keine Buchungen. Es entsteht ein separates Avis-Belegtransfer-ZIP.
+
+## Klärungsquote und Zweitprüfung (`clarification_review`)
+
+Der Generator berechnet N, R und Q aus den Vorgängen (`scripts/clarification_rate.py`). Der Agent dokumentiert die Zweitprüfung und die Ursachenprüfung:
+
+```json
+"clarification_review": {
+  "checked_at": "2026-10-08T10:00:00+02:00",
+  "cause_analysis": {"konto_unklar": "Fünf Lieferanten ohne Leistungsbeschreibung; keine systematische Fehleinstufung."},
+  "second_review": {
+    "performed": true,
+    "performed_at": "2026-10-08T11:30:00+02:00",
+    "basis": ["belegbild", "mandantenprofil", "datev_bestand", "buchungsregeln"],
+    "reviewed_transaction_ids": ["V0003", "V0007"],
+    "corrections": [
+      {"transaction_id": "V0003", "from": "Rot", "to": "Grün", "reason": "Konto 4930 aus DATEV-Vorbuchung des Kreditors eindeutig; Belegbild bestätigt Leistungsart."}
+    ],
+    "before": {"N": 100, "R": 25}
+  }
+}
+```
+
+Bei `Q > 20 %` (vor Zweitprüfung) muss `performed: true` sein und `reviewed_transaction_ids` alle roten Vorgänge vor der Zweitprüfung umfassen (verbleibende rote plus korrigierte). `corrections[].to` ist `Grün`, `Rot` oder `ausgeschlossen` (nach Zweitprüfung als sichere Dublette oder nicht buchungsrelevant erkannt); jede Korrektur braucht eine konkrete Begründung, und der Vorgang muss im Lauf-JSON den korrigierten Zustand tragen. `before` ist optional und muss mit den Korrekturen konsistent sein. Bei `10 % < Q ≤ 20 %` ist `cause_analysis` je vorkommendem Rot-Code Pflicht; eine Kategorie mit mindestens der Hälfte von mindestens fünf Rot-Fällen erfordert sie immer.
+
+## Technische Einzelfehler (`technical_incidents`)
+
+Ein Zugriffsausfall auf ein Register, einen Geschäftspartner oder einen Beleg blockiert nur die betroffene Teilentscheidung:
+
+```json
+"technical_incidents": [
+  {
+    "incident_id": "T001",
+    "system": "DATEV",
+    "scope": "datev_search_business_partners für Lieferant Muster GmbH",
+    "error": "Timeout nach 30 s",
+    "retries": 2,
+    "alternative_path": "datev_get_account_postings auf Kreditorenbereich versucht; ebenfalls Timeout",
+    "affected_transaction_ids": ["V0042"],
+    "deferred_decision": "Personenkonto für Muster GmbH",
+    "next_step": "Partnerabfrage nach Wiederherstellung des Connectors wiederholen",
+    "resolved": false
+  }
+]
+```
+
+`system` ist `DATEV`, `SharePoint`, `OCR`, `Belegbild`, `Register` oder `sonstige`. Von einem ungelösten Fehler betroffene Vorgänge dürfen nicht Grün sein (begründet Rot, zum Beispiel `personenkonto_unklar`, oder zurückgestellt). Ungelöste Einträge führen zu `run_completion.status = "nicht vollständig abgeschlossen"` mit dem offenen Punkt im Laufmanifest.
+
+## Abgrenzungsregister: Abruffehler
+
+```json
+"abgrenzungsregister_evidence": {
+  "status": "access_error",
+  "source_url": "<accrual_url aus sharepoint_target.py>",
+  "file_name": "12861.md",
+  "retrieved_via": "microsoft_sharepoint.fetch",
+  "checked_at": "2026-10-08T09:00:00+02:00",
+  "http_status": 403,
+  "error_code": "accessDenied",
+  "direct_lookup_attempts": 2
+}
+```
+
+Ein `access_error` ist kein Nullstand: keine `carried_forward`-Einträge erfinden, keine Auflösungen bestehender Registereinträge buchen; neue Abgrenzungen dieses Laufs regulär verarbeiten. 404/`itemNotFound` ist kein `access_error`, sondern `status: "not_found"`.
 
 ## Tätigkeitsnachweis
 

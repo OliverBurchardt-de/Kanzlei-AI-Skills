@@ -30,6 +30,42 @@ def evidence(path: Path, url: str) -> dict:
     }
 
 
+MINIMAL_PDF = (
+    b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n"
+    b"2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+    b"3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]>>endobj\n"
+)
+
+
+def write_pdf(path: Path, text: str = "Testbeleg") -> Path:
+    """Synthetische PDF-Belegdatei (Belegdateiregel: ein Buchungsbeleg = eine PDF)."""
+    path.write_bytes(MINIMAL_PDF + b"% " + text.encode("utf-8") + b"\ntrailer<</Root 1 0 R>>\n%%EOF\n")
+    return path
+
+
+def red_reason(code: str = "konto_unklar") -> dict:
+    return {
+        "code": code,
+        "verification_attempted": "Belegbild, Mandantenprofil, DATEV-Vorbuchungen und Buchungsregeln geprüft.",
+        "next_check": "Originalbeleg beim Mandanten anfordern und offenes Feld klären.",
+    }
+
+
+def second_review(red_ids: list[str], corrections: list[dict] | None = None, cause: dict | None = None) -> dict:
+    """Vollständige Zweitprüfung aller roten Vorgänge als Lauf-JSON-Block clarification_review."""
+    return {
+        "checked_at": "2026-10-08T10:00:00+02:00",
+        "cause_analysis": cause or {},
+        "second_review": {
+            "performed": True,
+            "performed_at": "2026-10-08T10:00:00+02:00",
+            "basis": ["belegbild", "mandantenprofil", "datev_bestand", "buchungsregeln"],
+            "reviewed_transaction_ids": list(red_ids),
+            "corrections": corrections or [],
+        },
+    }
+
+
 def booking_document(source: Path, light: str = "Grün") -> dict:
     result = {
         "transaction_id": "V0001",
@@ -68,6 +104,7 @@ def booking_document(source: Path, light: str = "Grün") -> dict:
     }
     if light == "Rot":
         result["requires_clarification"] = True
+        result["red_reason"] = red_reason()
     return result
 
 
@@ -82,8 +119,7 @@ def main() -> None:
         accrual = accrual_dir / "12861.md"
         profile.write_text("# Mandantenprofil\nBilanz, keine Kostenstellen.\n", encoding="utf-8")
         accrual.write_text("# Abgrenzungsregister\nKeine offenen Fälle.\n", encoding="utf-8")
-        source = temp / "beleg.txt"
-        source.write_text("DATEV-Vertragsbeleg", encoding="utf-8")
+        source = write_pdf(temp / "beleg.pdf", "DATEV-Vertragsbeleg")
         targets = build_targets("12861")
 
         run = {
