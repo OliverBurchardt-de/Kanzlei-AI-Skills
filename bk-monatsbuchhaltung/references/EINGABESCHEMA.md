@@ -19,13 +19,13 @@ Pflichtfelder:
 - `vat_config`, `account_config`, `person_account_ranges`
 - optional `requested_entities`: alle vom Nutzer ausdrücklich genannten Personen oder Geschäftspartner
 
-Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stelle mehr. `account_config.asset_accounts` ist vollständig, duplikatfrei und enthält das GWG-Konto.
+Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stelle mehr. `account_config.asset_accounts` ist vollständig, duplikatfrei und enthält das GWG-Konto. Optional trägt `account_config.clarification` das Klärungskonto aus dem Mandantenprofil (`klaerungskonto`, Kanzleistandard `1599` beziehungsweise `159900`); der Generator weist jede EXTF-Buchungszeile auf diesem Konto zurück, es wird ausschließlich für die Riecken-Übertragung nach `SKILL.md` Abschnitt 5 verwendet.
 
 `datev_live_evidence` enthält Kerndaten, geprüfte Stammdaten/Vorbuchungen, `validated_accounts`, `validated_bu_keys`, höchste Debitoren-/Kreditorennummer, Abrufzeitpunkt, `used_person_accounts` sowie `connector: "Riecken"` und je Prüfung das verwendete Werkzeug (`retrieved_via`). Sammel-/CPD-Konten sind unzulässig. Bei vorhandener `cost_center_config` zusätzlich `cost_system_active: true` und `validated_cost_centers` (Liste der live in DATEV nachgewiesenen KOST1-Nummern, siehe Abschnitt DATEV-Anbindung).
 
 ## DATEV-Anbindung (Riecken-Connector)
 
-Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Kein anderer DATEV-Zugang und kein anderer DATEV-MCP-Server wird verwendet, auch wenn er in der Umgebung verfügbar ist. Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
+Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Kein anderer DATEV-Zugang und kein anderer DATEV-MCP-Server wird verwendet, auch wenn er in der Umgebung verfügbar ist. Während des Buchhaltungslaufs wird der Connector nur lesend verwendet; Ergebnis des Laufs ist das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Werkzeuge `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner` und `datev_execute_change_plan` werden ausschließlich in `SKILL.md` Abschnitt 5 (Übertragung über den Riecken-Connector, nur auf ausdrücklichen Auftrag nach der Paketübergabe) verwendet; `datev_prepare_document_filing` wird in diesem Skill nicht aufgerufen.
 
 | Prüfung | Riecken-Werkzeug | Nachweisfeld |
 |---|---|---|
@@ -405,6 +405,48 @@ Das Register ist keine Pflichtquelle; nur der einmalige Abruf am exakten Ziel wi
 ```
 
 Ein `access_error` ist kein Nullstand: keine `carried_forward`-Einträge erfinden, keine Auflösungen bestehender Registereinträge buchen; neue Abgrenzungen dieses Laufs regulär verarbeiten. 404/`itemNotFound` ist kein `access_error`, sondern `status: "not_found"`; umgekehrt darf ein 401/403 nicht als `not_found` deklariert werden.
+
+## Riecken-Übertragung (`riecken_transfer`, optional, nur nach `SKILL.md` Abschnitt 5)
+
+Das Objekt beschreibt eine ausgeführte Übertragung über den Riecken-Connector. Es gehört nicht zum Paketvertrag 1.4.1 von `build_package.py`; es wird nach der Übertragung als `riecken_transfer.json` geführt, von `scripts/update_review_workbook_riecken.py` gelesen und in die Statusdatei `00_STATUS_NACH_RIECKEN_UEBERTRAGUNG.md` sowie in das Laufmanifest (`riecken_transfer`) übernommen.
+
+```json
+"riecken_transfer": {
+  "transferred_at": "2026-10-08T15:30:00+02:00",
+  "clearing_account": {"account": "159900", "name": "Klärungskonto Buchhaltung"},
+  "change_plans": [
+    {"id": "4cd28534baa245f3166a854822c4bbf5", "type": "posting_batch", "executed_at": "2026-10-08T15:20:00+02:00"},
+    {"id": "90d4a0aa0f22d1abad858349529a966c", "type": "posting_batch", "executed_at": "2026-10-08T15:28:00+02:00"},
+    {"id": "b1f0c0d2e3a44b5c8d9e0f1a2b3c4d5e", "type": "business_partner", "executed_at": "2026-10-08T15:05:00+02:00"}
+  ],
+  "sequences": [
+    {"month": "2026-07", "description": "Eingangsrechnungen", "record_count": 22, "total_amount": "7116.10", "change_plan_id": "4cd28534baa245f3166a854822c4bbf5", "source_file": "EXTF_Buchungsstapel_2026-07.csv"},
+    {"month": "2026-07", "description": "Klärungsposten", "record_count": 7, "total_amount": "1682.90", "change_plan_id": "90d4a0aa0f22d1abad858349529a966c", "source_file": "EXTF_Klaerungsposten_2026-07.csv"}
+  ],
+  "not_transferred": [
+    {"transaction_id": "B006-V000054", "reason": "Betrag unsicher (Seite 2 fehlt)", "decision": "nicht buchen, Beleg bleibt im Belegtransfer", "decided_by": "Oliver Burchardt", "decided_at": "2026-10-08"}
+  ],
+  "removed_documents": [
+    {"guid": "0F2A4C6E-8B1D-4E3F-9A5C-7D2B6E8F1A3C", "file": "Belegtransfer_12371_2026-08_001.zip", "reason": "Fehlbuchung des Mandanten bereits über 1590 korrigiert; Entscheidung Oliver Burchardt 2026-10-08"}
+  ],
+  "transferred_files": ["EXTF_Debitoren_Kreditoren.csv", "EXTF_Buchungsstapel_2026-07.csv", "EXTF_Klaerungsposten_2026-07.csv"],
+  "visibility_check": {"tool": "datev_get_account_postings", "result": "nicht sichtbar", "checked_at": "2026-10-08T15:35:00+02:00"},
+  "open_steps": ["Belegtransfer-ZIPs in DUO hochladen", "Klärungsposten umbuchen, Klärungskonto auf Saldo 0 bringen, dann festschreiben"]
+}
+```
+
+Felder:
+
+- `change_plans[]`: `id`, `type` (`business_partner` oder `posting_batch`), `executed_at`.
+- `sequences[]`: `month`, `description` (`Eingangsrechnungen` oder `Klärungsposten`, bei konfigurierten Vorläufen deren Bezeichnung), `record_count`, `total_amount`; optional `change_plan_id` und `source_file`.
+- `clearing_account`: `account` (Nummer) und `name` (Bezeichnung) des Klärungskontos aus dem Mandantenprofil.
+- `not_transferred[]`: `transaction_id`, `reason`, `decision`, `decided_by`, `decided_at`; `decision` ist eine der Entscheidungen „nicht buchen“, „Beleg belassen“ oder „Beleg entfernen“, jeweils mit Freitext.
+- `removed_documents[]`: `guid`, `file` (Belegtransfer-ZIP), `reason`.
+- `transferred_files[]`: EXTF-Dateien, die über Riecken geschrieben wurden und nicht mehr importiert werden dürfen; sie werden nach `03_Technische_Protokolle/ersetzt/` verschoben.
+- `visibility_check`: Ergebnis der Sichtbarkeitsprüfung über die Leseschnittstelle; eine nicht nachgewiesene Verbuchung wird niemals als bestätigt ausgewiesen.
+- `open_steps[]`: verbleibende Schritte für den Mitarbeiter.
+
+`scripts/riecken_records.py` erzeugt vor der Übertragung `riecken_records.json` (Records je Stapel für `datev_add_posting`, getrennt nach `records_gruen` und `records_rot`) und `nicht_uebertragbar.json` (abgewiesene Zeilen mit `transaction_id`, `file`, `csv_row`, `reason` und leeren Feldern `decision`, `decided_by`, `decided_at` für die Nutzerentscheidung).
 
 ## Tätigkeitsnachweis
 

@@ -21,7 +21,8 @@
 ## Konten
 
 - Privat erkannte Ausgaben:
-- Ersatz-/Klärungskonten: nicht verwenden; ungeklärte Felder offen lassen.
+- Ersatzkonten im EXTF-Paket: nicht verwenden; ungeklärte Felder offen lassen.
+- klaerungskonto (nur für Riecken-Übertragung, Arbeitskonto mit Zielsaldo 0): 159900 Klärungskonto Buchhaltung
 - GWG-Konto:
 - Sämtliche verwendbaren Anlagenkonten (einschließlich GWG):
 - Bewirtung abzugsfähig:

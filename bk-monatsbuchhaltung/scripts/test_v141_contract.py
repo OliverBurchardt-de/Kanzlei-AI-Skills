@@ -8,7 +8,7 @@
 6. Mehrfachzeilen und Dubletten in der Zählweise
 7. Scan ohne Textebene ist nicht allein wegen fehlender OCR Rot
 8. Vollständigkeits-Gate: nur Inventar oder nur Prüfungs-Excel ist kein Abschluss
-9. Versionstest 1.4.1, kein Verweis auf 1.4.2
+9. Versionstest: Paketvertrag 1.4.1 (Skill 1.5.0), kein Verweis auf 1.4.2
 10. Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei
 """
 
@@ -40,7 +40,8 @@ from test_v140_contract import PACKAGE_DIR, PERIOD, Scenario, csv_rows, extf_nam
 
 
 SKILL_ROOT = SCRIPT_DIR.parent
-VERSION = "1.4.1"
+VERSION = "1.4.1"  # Paketvertrag der Skripte
+SKILL_VERSION = "1.5.0"
 
 
 def source_entry(path: Path, source_id: str, **extra) -> dict:
@@ -498,16 +499,17 @@ def test_completeness_gate(root: Path) -> None:
 
 def test_version(root: Path) -> None:
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
-    assert f"# BK Monatsbuchhaltung v{VERSION}" in skill and f"Startnachweis: bk-monatsbuchhaltung v{VERSION}" in skill
-    assert f"Version `{VERSION}`" in skill
-    assert f"BK Monatsbuchhaltung v{VERSION}" in (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+    # Seit v1.5.0 trägt SKILL.md die Skillversion; die Skripte behalten den Paketvertrag 1.4.1.
+    assert f"# BK Monatsbuchhaltung v{SKILL_VERSION}" in skill and f"Startnachweis: bk-monatsbuchhaltung v{SKILL_VERSION} (Paketvertrag {VERSION})" in skill
+    assert f"Version `{SKILL_VERSION}`" in skill and f"bleibt Version `{VERSION}`" in skill
+    assert f"BK Monatsbuchhaltung v{SKILL_VERSION}" in (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
     assert build_package.SKILL_VERSION == VERSION and validate_package.EXPECTED_SKILL_VERSION == VERSION
     for path in [SKILL_ROOT / "SKILL.md", SKILL_ROOT / "agents" / "openai.yaml", *sorted((SKILL_ROOT / "references").glob("*.md")),
                  SCRIPT_DIR / "build_package.py", SCRIPT_DIR / "validate_package.py", SCRIPT_DIR / "datev_io.py"]:
         assert "1.4.2" not in path.read_text(encoding="utf-8"), f"{path.name} verweist auf 1.4.2"
     for manifest_path in (SKILL_ROOT.parent / ".codex-plugin" / "plugin.json", SKILL_ROOT / ".codex-plugin" / "plugin.json"):
         if manifest_path.is_file():
-            assert json.loads(manifest_path.read_text(encoding="utf-8")).get("version") == VERSION
+            assert json.loads(manifest_path.read_text(encoding="utf-8")).get("version") in {VERSION, SKILL_VERSION}
     scenario = Scenario(root, make_run(root))
     scenario.add("Grün")
     _, manifest, report = build_ok(scenario, "version")
