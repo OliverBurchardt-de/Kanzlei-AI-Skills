@@ -283,21 +283,43 @@ def main() -> None:
         assert register_summary["status"] == "not_found"
         assert register_summary["first_run_without_register"] is True
 
-        incomplete_missing_register = copy.deepcopy(missing_register)
-        incomplete_missing_register["run"]["abgrenzungsregister_evidence"][
-            "direct_lookup_attempts"
-        ] = 1
-        incomplete_path = temp / "incomplete-missing-register.json"
-        incomplete_path.write_text(
-            json.dumps(incomplete_missing_register, ensure_ascii=False),
-            encoding="utf-8",
+        # v1.4.1: Das Register ist keine Pflichtquelle. Ein einfacher dokumentierter Abruf
+        # (URL, Dateiname, Abrufweg, Zeitpunkt) genügt; kein zweifacher Direktabruf nötig.
+        simple_missing_register = copy.deepcopy(missing_register)
+        simple_missing_register["run"]["abgrenzungsregister_evidence"] = {
+            "status": "not_found",
+            "source_url": str(targets["accrual_url"]),
+            "file_name": "12861.md",
+            "retrieved_via": "microsoft_sharepoint.fetch",
+            "checked_at": "2026-07-28T09:00:00+02:00",
+        }
+        simple_path = temp / "simple-missing-register.json"
+        simple_path.write_text(
+            json.dumps(simple_missing_register, ensure_ascii=False), encoding="utf-8"
         )
+        assert build_package.load_input(simple_path)["run"]["_preflight_summary"]["abgrenzungsregister"]["status"] == "not_found"
+        # Ein 403 darf nicht als leeres Register getarnt werden.
+        disguised = copy.deepcopy(simple_missing_register)
+        disguised["run"]["abgrenzungsregister_evidence"]["http_status"] = 403
+        disguised_path = temp / "disguised-register.json"
+        disguised_path.write_text(json.dumps(disguised, ensure_ascii=False), encoding="utf-8")
         try:
-            build_package.load_input(incomplete_path)
+            build_package.load_input(disguised_path)
         except ValueError as exc:
-            assert "zweimal direkt" in str(exc)
+            assert "Abrufproblem" in str(exc)
         else:
-            raise AssertionError("Unbestätigtes fehlendes Register wurde akzeptiert")
+            raise AssertionError("HTTP 403 wurde als leeres Register akzeptiert")
+        # Ein nicht geprüftes Register ist bei Bilanz der einzige Fehlerfall.
+        unchecked = copy.deepcopy(missing_register)
+        unchecked["run"].pop("abgrenzungsregister_evidence")
+        unchecked_path = temp / "unchecked-register.json"
+        unchecked_path.write_text(json.dumps(unchecked, ensure_ascii=False), encoding="utf-8")
+        try:
+            build_package.load_input(unchecked_path)
+        except ValueError as exc:
+            assert "nicht geprüft" in str(exc)
+        else:
+            raise AssertionError("Ungeprüftes Register wurde akzeptiert")
 
         missing_profile = copy.deepcopy(data)
         missing_profile["run"].pop("mandantenprofil_evidence")

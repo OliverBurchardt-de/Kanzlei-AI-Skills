@@ -205,6 +205,12 @@ def red_booking(**fields) -> dict:
 def test_clarification_batches(root: Path) -> None:
     """Spezifikation Klärungsstapel: getrennte Dateien, Pflichtleerung, Sortierregel, Teilung."""
     scenario = Scenario(root, make_run(root))
+    # Abgrenzungsauflösung nur bei Bilanz; das Register wird lediglich abgerufen (hier: nicht vorhanden).
+    scenario.run["accounting_method"] = "Bilanz"
+    scenario.run["abgrenzungsregister_evidence"] = {
+        "status": "not_found", "source_url": str(build_targets("12861")["accrual_url"]), "file_name": "12861.md",
+        "retrieved_via": "microsoft_sharepoint.fetch", "checked_at": "2026-10-08T09:00:00+02:00",
+    }
     scenario.add("Grün")
     scenario.add("Grün")
     scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung aus Beleg nicht erkennbar."})])

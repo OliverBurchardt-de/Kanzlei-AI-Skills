@@ -373,6 +373,22 @@ Ein Zugriffsausfall auf ein Register, einen Geschäftspartner oder einen Beleg b
 
 `system` ist `DATEV`, `SharePoint`, `OCR`, `Belegbild`, `Register` oder `sonstige`. Von einem ungelösten Fehler betroffene Vorgänge dürfen nicht Grün sein (begründet Rot, zum Beispiel `personenkonto_unklar`, oder zurückgestellt). Ungelöste Einträge führen zu `run_completion.status = "nicht vollständig abgeschlossen"` mit dem offenen Punkt im Laufmanifest.
 
+## Abgrenzungsregister: Abrufergebnis (nur Bilanz)
+
+Das Register ist keine Pflichtquelle; nur der einmalige Abruf am exakten Ziel wird dokumentiert. Leer oder nicht vorhanden ist normal:
+
+```json
+"abgrenzungsregister_evidence": {
+  "status": "not_found",
+  "source_url": "<accrual_url aus sharepoint_target.py>",
+  "file_name": "12861.md",
+  "retrieved_via": "microsoft_sharepoint.fetch",
+  "checked_at": "2026-10-08T09:00:00+02:00"
+}
+```
+
+`status` ist `found` (dann wie beim Mandantenprofil mit `file_uri`, `sha256` und Inhalt; der Inhalt darf leer sein), `empty` oder `not_found` (nur die vier Felder oben) oder `access_error` (unten). Bei EÜR entfällt `abgrenzungsregister_evidence`; `accrual_register`, `accrual_candidates` und `accrual_releases` müssen bei EÜR leer sein.
+
 ## Abgrenzungsregister: Abruffehler
 
 ```json
@@ -388,7 +404,7 @@ Ein Zugriffsausfall auf ein Register, einen Geschäftspartner oder einen Beleg b
 }
 ```
 
-Ein `access_error` ist kein Nullstand: keine `carried_forward`-Einträge erfinden, keine Auflösungen bestehender Registereinträge buchen; neue Abgrenzungen dieses Laufs regulär verarbeiten. 404/`itemNotFound` ist kein `access_error`, sondern `status: "not_found"`.
+Ein `access_error` ist kein Nullstand: keine `carried_forward`-Einträge erfinden, keine Auflösungen bestehender Registereinträge buchen; neue Abgrenzungen dieses Laufs regulär verarbeiten. 404/`itemNotFound` ist kein `access_error`, sondern `status: "not_found"`; umgekehrt darf ein 401/403 nicht als `not_found` deklariert werden.
 
 ## Tätigkeitsnachweis
 

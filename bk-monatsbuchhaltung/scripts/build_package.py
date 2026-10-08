@@ -188,6 +188,7 @@ def _validate_sharepoint_evidence(
     expected_url: str,
     expected_name: str,
     label: str,
+    allow_empty: bool = False,
 ) -> dict[str, str]:
     if not isinstance(evidence, dict):
         raise ValueError(f"Abbruch: {label}-Abrufnachweis fehlt.")
@@ -221,7 +222,7 @@ def _validate_sharepoint_evidence(
         raise ValueError(f"Abbruch: {label}-Abrufnachweis enthält weder raw_file_path noch content_utf8.")
     if hashlib.sha256(raw_bytes).hexdigest() != digest:
         raise ValueError(f"Abbruch: {label}-SHA-256 stimmt nicht mit dem Inhalt überein.")
-    if not raw_bytes.strip():
+    if not raw_bytes.strip() and not allow_empty:
         raise ValueError(f"Abbruch: {label}-Datei ist leer.")
     return {
         "source_url": expected_url,
@@ -273,34 +274,85 @@ def _validate_access_error_evidence(
     }
 
 
+REGISTER_ABSENT_STATES = {"not_found", "empty"}
+ACCESS_DENIED_CODES = {"accessdenied", "forbidden", "unauthorized", "unauthenticated"}
+
+
 def _validate_accrual_register_evidence(
     evidence: Any,
     *,
     expected_url: str,
     expected_name: str,
 ) -> dict[str, Any]:
-    if isinstance(evidence, dict) and evidence.get("status") == "access_error":
+    """Das Abgrenzungsregister wird nur geprüft. Leer oder nicht vorhanden ist ein normaler Zustand.
+
+    Pflicht ist allein der dokumentierte Abruf am exakten SharePoint-Ziel; ein formaler
+    Nichtvorhanden-Nachweis wie beim Mandantenprofil ist nicht erforderlich.
+    """
+    if not isinstance(evidence, dict):
+        raise ValueError(
+            "Abgrenzungsregister wurde nicht geprüft: abgrenzungsregister_evidence fehlt (Bilanz). "
+            "Ein leeres oder nicht vorhandenes Register ist zulässig; nur der Abruf am exakten "
+            "SharePoint-Ziel ist zu dokumentieren (status found/empty/not_found/access_error)."
+        )
+    status = str(evidence.get("status", "")).strip().lower()
+    if status == "access_error":
         return _validate_access_error_evidence(
             evidence,
             expected_url=expected_url,
             expected_name=expected_name,
             label="Abgrenzungsregister",
         )
-    if not isinstance(evidence, dict) or evidence.get("status") != "not_found":
-        return _validate_sharepoint_evidence(
-            evidence,
-            expected_url=expected_url,
-            expected_name=expected_name,
-            label="Abgrenzungsregister",
-        )
-    summary = _confirmed_not_found_evidence(
+    if status in REGISTER_ABSENT_STATES:
+        required = {"source_url", "file_name", "retrieved_via", "checked_at"}
+        missing = sorted(key for key in required if evidence.get(key) in (None, ""))
+        if missing:
+            raise ValueError("Abgrenzungsregister-Abruf unvollständig dokumentiert: " + ", ".join(missing))
+        if evidence["source_url"] != expected_url or evidence["file_name"] != expected_name:
+            raise ValueError("Abgrenzungsregister-Abruf verwendet nicht das verbindliche SharePoint-Ziel.")
+        error_code = str(evidence.get("error_code", "")).strip().lower()
+        if str(evidence.get("http_status", "")) in {"401", "403"} or error_code in ACCESS_DENIED_CODES:
+            raise ValueError(
+                "Abgrenzungsregister: HTTP 401/403 bzw. accessDenied ist ein Abrufproblem (status access_error), "
+                "kein leeres Register."
+            )
+        try:
+            datetime.fromisoformat(str(evidence["checked_at"]).replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("Abrufzeitpunkt für Abgrenzungsregister ist ungültig.") from exc
+        return {
+            "status": "not_found",
+            "source_url": expected_url,
+            "file_name": expected_name,
+            "retrieved_via": str(evidence["retrieved_via"]),
+            "checked_at": str(evidence["checked_at"]),
+            "first_run_without_register": True,
+            "register_state": "nicht vorhanden oder leer – zulässiger Anfangszustand, keine Registerdatei erforderlich",
+        }
+    summary = _validate_sharepoint_evidence(
         evidence,
         expected_url=expected_url,
         expected_name=expected_name,
         label="Abgrenzungsregister",
+        allow_empty=True,
     )
-    summary["first_run_without_register"] = True
+    summary["status"] = "found"
+    summary["register_state"] = "vorhanden (Inhalt kann leer sein)"
     return summary
+
+
+def validate_accounting_method_accruals(data: dict[str, Any]) -> list[str]:
+    """EÜR: kein Abgrenzungsregister und keine Abgrenzungen; Bilanz: Register nur geprüft."""
+    if str(data.get("run", {}).get("accounting_method", "")).strip() != "EÜR":
+        return []
+    errors: list[str] = []
+    for field in ("accrual_register", "accrual_candidates", "accrual_releases"):
+        if data.get(field):
+            errors.append(
+                f"{field}: bei Einnahmenüberschussrechnung (EÜR) sind Rechnungsabgrenzungen unzulässig; "
+                "Aufwand und Ertrag werden im Zahlungs-/Buchungsmonat vollständig erfasst"
+            )
+    return errors
 
 
 def validate_preflight_evidence(data: dict[str, Any]) -> None:
@@ -327,13 +379,18 @@ def validate_preflight_evidence(data: dict[str, Any]) -> None:
     accounting_method = str(run.get("accounting_method", "")).strip()
     if accounting_method not in {"Bilanz", "EÜR"}:
         raise ValueError("Abbruch: accounting_method muss Bilanz oder EÜR sein.")
-    accrual_summary = None
+    accrual_summary: dict[str, Any] | None
     if accounting_method == "Bilanz":
         accrual_summary = _validate_accrual_register_evidence(
             run.get("abgrenzungsregister_evidence"),
             expected_url=str(targets["accrual_url"]),
             expected_name=f"{client_number}.md",
         )
+    else:
+        accrual_summary = {
+            "status": "not_applicable",
+            "register_state": "EÜR: kein Abgrenzungsregister; Abgrenzungen sind unzulässig",
+        }
     live = run.get("datev_live_evidence")
     if not isinstance(live, dict):
         raise ValueError("Abbruch: technischer DATEV-Livenachweis fehlt.")
@@ -1214,6 +1271,9 @@ def load_input(path: Path) -> dict[str, Any]:
     if live_errors:
         raise ValueError("\n".join(live_errors))
     validate_accrual_thresholds(data)
+    accrual_errors = validate_accounting_method_accruals(data)
+    if accrual_errors:
+        raise ValueError("\n".join(accrual_errors))
     return data
 
 
@@ -2659,7 +2719,13 @@ def write_accrual_register(root: Path, data: dict[str, Any]) -> None:
         and preflight_register.get("status") == "access_error"
     )
     lines = ["# Vorschlag Abgrenzungsregister", ""]
-    if register_access_error:
+    if isinstance(preflight_register, dict) and preflight_register.get("status") == "not_applicable":
+        lines.extend([
+            "**Status: Einnahmenüberschussrechnung – kein Abgrenzungsregister.** Rechnungsabgrenzungen "
+            "sind bei EÜR unzulässig; Aufwand und Ertrag werden vollständig im Buchungsmonat erfasst.",
+            "",
+        ])
+    elif register_access_error:
         lines.extend([
             "**Status: Register nicht abrufbar – kein Nullstand angenommen.** Der direkte Abruf am "
             f"verbindlichen SharePoint-Ziel scheiterte mit HTTP {preflight_register.get('http_status')} "

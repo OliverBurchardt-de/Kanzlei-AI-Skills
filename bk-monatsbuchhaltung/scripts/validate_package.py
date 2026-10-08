@@ -543,19 +543,14 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
             if completion.get("status") != "nicht vollständig abgeschlossen":
                 errors.append("Abgrenzungsregister nicht abrufbar: Lauf muss als nicht vollständig abgeschlossen ausgewiesen sein.")
             return
-        if isinstance(item, dict) and item.get("status") == "not_found":
+        if isinstance(item, dict) and item.get("status") in {"not_found", "empty"}:
+            # Leer oder nicht vorhanden ist ein normaler Zustand; nur der Abruf muss dokumentiert sein.
             if item.get("source_url") != str(targets["accrual_url"]):
-                errors.append("Abgrenzungsregister-Nichtvorhanden-Nachweis verwendet nicht die exakte URL.")
+                errors.append("Abgrenzungsregister-Abruf verwendet nicht die exakte URL.")
             if item.get("file_name") != f"{client_number}.md":
                 errors.append("Abgrenzungsregister-Dateiname stimmt nicht.")
             if not item.get("retrieved_via") or not item.get("checked_at"):
-                errors.append("Abgrenzungsregister-Nichtvorhanden-Nachweis ist unvollständig.")
-            if item.get("not_found_code") != "itemNotFound":
-                errors.append("Abgrenzungsregister wurde nicht eindeutig als itemNotFound bestätigt.")
-            if item.get("site_verified") is not True or item.get("library_verified") is not True:
-                errors.append("Site/Bibliothek für das Abgrenzungsregister wurden nicht bestätigt.")
-            if not isinstance(item.get("direct_lookup_attempts"), int) or item["direct_lookup_attempts"] < 2:
-                errors.append("Abgrenzungsregister wurde nicht zweimal direkt geprüft.")
+                errors.append("Abgrenzungsregister-Abruf ist unvollständig dokumentiert.")
             return
         check_sharepoint(
             item,
@@ -565,6 +560,11 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
         )
     if contract.get("accounting_method") == "Bilanz":
         check_accrual_register(evidence.get("abgrenzungsregister"))
+    elif contract.get("accounting_method") == "EÜR":
+        if manifest.get("accrual_releases") or any(
+            item.get("kind") == "accrual" for item in manifest.get("booking_trace", []) or []
+        ):
+            errors.append("EÜR: Abgrenzungsauflösungen sind unzulässig; kein Abgrenzungsregister bei Einnahmenüberschussrechnung.")
     if contract.get("accounting_method") not in {"Bilanz", "EÜR"}:
         errors.append("Rechnungslegungsart im Laufmanifest ist ungültig.")
     required = contract.get("kostenstellenpflicht")

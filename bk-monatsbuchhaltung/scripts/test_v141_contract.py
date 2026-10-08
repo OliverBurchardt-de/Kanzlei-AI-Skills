@@ -251,8 +251,37 @@ def test_accrual_register_states(root: Path) -> None:
     assert any("Abgrenzungsregister nicht abrufbar" in item["item"] for item in manifest["run_completion"]["open_items"])
     assert report["valid"] and report["completion_gate"]["passed"] is False
     # d) 403 darf nicht als bestätigtes Nichtvorhandensein getarnt werden; 404 ist kein access_error.
-    load_fails(forbidden, "fake-not-found", "nicht als itemNotFound bestätigt",
-               lambda data: data["run"].__setitem__("abgrenzungsregister_evidence", {**base_not_found, "not_found_code": "accessDenied"}))
+    load_fails(forbidden, "fake-not-found", "Abrufproblem",
+               lambda data: data["run"].__setitem__("abgrenzungsregister_evidence", {**base_not_found, "error_code": "accessDenied"}))
+    # Leeres Register mit minimalem Abrufnachweis: normal, kein weiterer Nachweis nötig.
+    (root / "minimal").mkdir()
+    minimal = Scenario(root / "minimal", bilanz_run(root / "minimal"))
+    minimal.run["abgrenzungsregister_evidence"] = {
+        "status": "empty", "source_url": url, "file_name": "12861.md",
+        "retrieved_via": "microsoft_sharepoint.fetch", "checked_at": "2026-10-08T09:00:00+02:00",
+    }
+    minimal.add("Grün")
+    _, manifest, report = build_ok(minimal, "minimal")
+    assert manifest["preflight_evidence"]["abgrenzungsregister"]["status"] == "not_found" and report["completion_gate"]["passed"]
+    # Leere Registerdatei mit Inhalt "" ist ebenfalls zulässig.
+    (root / "blank").mkdir()
+    blank_file = root / "blank" / "register.md"
+    blank_file.write_text("", encoding="utf-8")
+    blank = Scenario(root / "blank", bilanz_run(root / "blank"))
+    blank.run["abgrenzungsregister_evidence"] = {**evidence(blank_file, url), "file_name": "12861.md"}
+    blank.add("Grün")
+    build_ok(blank, "blank")
+    # EÜR: kein Register, Abgrenzungen unzulässig.
+    (root / "euer").mkdir()
+    euer = Scenario(root / "euer", make_run(root / "euer"))
+    euer.add("Grün")
+    euer.run.pop("abgrenzungsregister_evidence", None)
+    _, manifest, _ = build_ok(euer, "euer")
+    assert manifest["preflight_evidence"]["abgrenzungsregister"]["status"] == "not_applicable"
+    text = (root / "euer" / "euer" / PACKAGE_DIR / "02_Buchungspruefung" / "Abgrenzungsregister_Vorschlag.md").read_text(encoding="utf-8")
+    assert "Einnahmenüberschussrechnung" in text
+    load_fails(euer, "euer-accrual", "bei Einnahmenüberschussrechnung (EÜR) sind Rechnungsabgrenzungen unzulässig",
+               lambda data: data.__setitem__("accrual_releases", [{**data["transactions"][0]["bookings"][0], "accrual_id": "A1", "period": PERIOD, "booking_date": "2025-12-31"}]))
     load_fails(forbidden, "fake-access", "kein Abrufproblem",
                lambda data: data["run"]["abgrenzungsregister_evidence"].__setitem__("http_status", 404))
     load_fails(forbidden, "single-attempt", "mindestens zwei Direktabrufe",
