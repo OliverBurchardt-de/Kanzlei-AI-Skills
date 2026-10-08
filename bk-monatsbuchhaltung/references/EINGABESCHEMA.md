@@ -25,7 +25,7 @@ Kontonummern müssen zur Sachkontenlänge passen; Personenkonten haben eine Stel
 
 ## DATEV-Anbindung (Riecken-Connector)
 
-Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
+Die Anbindung an DATEV erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`). Kein anderer DATEV-Zugang und kein anderer DATEV-MCP-Server wird verwendet, auch wenn er in der Umgebung verfügbar ist. Der Connector wird nur lesend verwendet; die Übergabe an DATEV bleibt das EXTF-Importpaket mit Belegtransfer-ZIPs. Die schreibenden Funktionen `datev_add_posting`, `datev_prepare_posting_batch`, `datev_prepare_business_partner`, `datev_prepare_document_filing` und `datev_execute_change_plan` werden in diesem Skill nicht aufgerufen.
 
 | Prüfung | Riecken-Werkzeug | Nachweisfeld |
 |---|---|---|

@@ -635,7 +635,7 @@ def test_riecken_and_creditor_rule(root: Path) -> None:
     other = Scenario(root / "connector", make_run(root / "connector"))
     other.add("Grün")
     load_fails(other, "other-connector", "Riecken-Connector",
-               lambda data: data["run"]["datev_live_evidence"].__setitem__("connector", "Klardaten"))
+               lambda data: data["run"]["datev_live_evidence"].__setitem__("connector", "anderer DATEV-Zugang"))
     load_fails(other, "no-connector", "Riecken-Connector",
                lambda data: data["run"]["datev_live_evidence"].pop("connector"))
     load_fails(other, "no-tool", "retrieved_via nennt kein Riecken-Werkzeug",
