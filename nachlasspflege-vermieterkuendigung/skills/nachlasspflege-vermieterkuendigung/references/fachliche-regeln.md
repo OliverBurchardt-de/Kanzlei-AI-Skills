@@ -28,10 +28,9 @@ Kernaussagen:
 - Es soll nach Mietvertrag, Übergabeprotokoll, Kaution, Schlüsseln/Gegenständen gefragt werden.
 - Ein Mietaufhebungsvertrag kann sinnvoll sein, um weitere Mietverbindlichkeiten zu vermeiden und dem Vermieter die Mietsache zügig zurückzugeben.
 
-## DATEV-DMS – Kanzleimuster Padniewski
+## DATEV-DMS – Kanzleiinternes Referenzschreiben
 
-Mandant/Nachlasspflege AG Castrop-Rauxel, DMS Nr. 87339:
-„Brief an Vermieter in Nachlasssache Padniewski“.
+Begleitschreiben an den Vermieter aus einem abgeschlossenen Nachlasspflegschaftsfall der Kanzlei (Referenzfall). Mandant, Gericht und DMS-Dokumentnummer sind im Repository bewusst nicht hinterlegt; der Referenzfall ist kanzleiintern bekannt.
 
 Wiederverwendbare Elemente:
 - Aufhebungsvertrag erneut anbieten.

@@ -1,6 +1,6 @@
 # Kanzleimuster – Erstanschreiben / Kündigung an Vermieter
 
-> Dieses Muster ist eigenständig für die Nachlasspflegschaft entwickelt. Es wird nicht aus dem Padniewski-Schreiben abgeleitet. Platzhalter nie ungeprüft übernehmen; die juristische Prüfung und Terminberechnung gehen vor.
+> Dieses Muster ist eigenständig für die Nachlasspflegschaft entwickelt. Es wird nicht aus dem kanzleiinternen Referenzschreiben abgeleitet. Platzhalter nie ungeprüft übernehmen; die juristische Prüfung und Terminberechnung gehen vor.
 
 **Betreff:** Nachlass [ERBLASSER] – Mietverhältnis [WOHNUNGSANSCHRIFT]
 

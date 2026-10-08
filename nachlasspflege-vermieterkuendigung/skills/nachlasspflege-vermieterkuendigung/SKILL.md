@@ -14,7 +14,7 @@ Der Standardoutput besteht **immer aus zwei Word-Dateien für Sara**:
 1. dem neu formulierten Kündigungs-/Vermieterschreiben ohne Wasserzeichen und
 2. unmittelbar danach dem ausgefüllten Mietaufhebungsvertrag auf Basis der hinterlegten Kanzleivorlage mit dem Wasserzeichen **„Entwurf“** auf allen Seiten.
 
-Nur wenn der Anwender ausdrücklich verlangt, eines der beiden Dokumente nicht zu erstellen, darf davon abgewichen werden. Das Vermieterschreiben wird **nicht aus dem Padniewski-Schreiben abgeleitet**.
+Nur wenn der Anwender ausdrücklich verlangt, eines der beiden Dokumente nicht zu erstellen, darf davon abgewichen werden. Das Vermieterschreiben wird **nicht aus dem kanzleiinternen Referenzschreiben abgeleitet**.
 
 ## 1. Daten zuerst aus dem Fall ermitteln
 
@@ -71,7 +71,7 @@ Dokumentiere intern kurz:
 
 ## 3. Vermieterschreiben eigenständig neu entwerfen
 
-Das Vermieterschreiben wird **nicht aus dem Padniewski-Schreiben Nr. 87339 kopiert oder stilistisch abgeleitet**. Entwirf es für jeden Fall neu auf Grundlage der Falldaten, der nachstehenden Pflichtinhalte und der fachlichen Regeln aus der NachlassAkademie-Unterlage. Nutze `templates/erstanschreiben.md` als kanzleiinternes Grundmuster.
+Das Vermieterschreiben wird **nicht aus dem kanzleiinternen Referenzschreiben (Begleitschreiben an den Vermieter aus einem abgeschlossenen Referenzfall) kopiert oder stilistisch abgeleitet**. Entwirf es für jeden Fall neu auf Grundlage der Falldaten, der nachstehenden Pflichtinhalte und der fachlichen Regeln aus der NachlassAkademie-Unterlage. Nutze `templates/erstanschreiben.md` als kanzleiinternes Grundmuster.
 
 ### A. Bestellung und Legitimation
 
@@ -137,11 +137,11 @@ Den Beschluss nur beifügen, wenn dies im Einzelfall sinnvoll oder vom Anwender 
 
 ## 4. Verbindliche Kanzleivorlage für den Mietaufhebungsvertrag
 
-Die vom Anwender bereitgestellte Datei **`templates/Mietaufhebungsvertrag.docx`** ist die verbindliche Kanzleivorlage für den Mietaufhebungsvertrag. Sie stammt aus dem Padniewski-Fall und hat für Aufbau, Klauselreihenfolge, Formulierungsgrundlage und Unterschriftsblock Vorrang vor allen früheren Ersatzmustern oder Seminarvorlagen.
+Die vom Anwender bereitgestellte Datei **`templates/Mietaufhebungsvertrag.docx`** ist die verbindliche Kanzleivorlage für den Mietaufhebungsvertrag. Sie stammt aus einem abgeschlossenen Referenzfall der Kanzlei und hat für Aufbau, Klauselreihenfolge, Formulierungsgrundlage und Unterschriftsblock Vorrang vor allen früheren Ersatzmustern oder Seminarvorlagen.
 
 Zusätzlich enthält `templates/mietaufhebungsvertrag.md` eine textgetreue interne Fallback-Fassung derselben Vorlage. Wenn die DOCX-Datei in einem Lauf technisch nicht lesbar oder nicht direkt bearbeitbar ist, verwende diese Fallback-Fassung. Ändere dabei die Vertragsstruktur oder Standardklauseln nicht eigenmächtig; ersetze nur fallbezogene Platzhalter und passe ausdrücklich fallabhängige Regelungen an.
 
-Verwende **nicht** DMS-Dokument Nr. 87339 als Vertragsvorlage; dieses Dokument ist nur ein Begleitschreiben.
+Verwende **nicht** das kanzleiinterne Referenzschreiben aus dem DMS als Vertragsvorlage; dieses Dokument ist nur ein Begleitschreiben an den Vermieter.
 
 Arbeitsweise für jeden Fall:
 
@@ -182,7 +182,7 @@ Erstelle ein DOCX mit:
 - Anlagenvermerk „Kopie der Bestellungsurkunde“,
 - **keinem Wasserzeichen**.
 
-Verwende das Padniewski-Schreiben Nr. 87339 weder als Text- noch als Layoutvorlage für dieses Schreiben.
+Verwende das kanzleiinterne Referenzschreiben weder als Text- noch als Layoutvorlage für dieses Schreiben.
 
 Dateiname:
 
@@ -241,7 +241,7 @@ Vor Fertigstellung prüfe ausdrücklich:
 - Termin zur Besichtigung/Übergabe angeboten,
 - Bankverbindung des Verstorbenen abgefragt,
 - Bestellungsurkunde als Anlage genannt,
-- normales Vermieterschreiben: **kein Wasserzeichen** und **keine Ableitung aus Padniewski Nr. 87339**,
+- normales Vermieterschreiben: **kein Wasserzeichen** und **keine Ableitung aus dem kanzleiinternen Referenzschreiben**,
 - Mietaufhebungsvertrag: **immer** aus `templates/Mietaufhebungsvertrag.docx` erzeugen (außer ausdrücklich abbestellt); Wasserzeichen **„Entwurf“** auf allen Seiten,
 - keine fallfremden Daten verblieben,
 - beide Word-Dateien wurden im Chat ausgegeben und verlinkt.
