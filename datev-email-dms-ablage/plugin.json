@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "datev-email-dms-ablage",
-  "version": "1.0.0",
-  "description": "Verbindlicher Workflow für originalgetreue EML-Ablage im DATEV-DMS mit Ablage-Knigge und Kontrolle.",
+  "version": "1.1.0",
+  "description": "Verbindlicher Workflow für die EML-Ablage von Outlook-E-Mails im DATEV-DMS über Riecken mCO: Original-MIME oder dokumentierte Rekonstruktion, Ablage-Knigge, expliziter Status, geprüfte Dateiübergabe und Rücklesekontrolle.",
   "author": {
     "name": "Burchardt & Kollegen"
   },
@@ -11,7 +11,7 @@
       "interface": {
         "displayName": "DATEV E-Mail-DMS-Ablage",
         "shortDescription": "EML-Ablage nach Kanzleiknigge",
-        "longDescription": "Skills für die verbindliche Ablage von Outlook-E-Mails als originale EML-Dateien im DATEV-DMS einschließlich Ablage-Knigge, Kürzeln, Status und Rücklesekontrolle.",
+        "longDescription": "Skill für die verbindliche Ablage von Outlook-E-Mails als EML-Dateien im DATEV-DMS über den Microsoft-Outlook-Connector und Riecken mCO, einschließlich Ablage-Knigge, Kürzeln, explizitem Bearbeitungsstatus, dokumentierter EML-Rekonstruktion, geprüfter Dateiübergabe und Rücklesekontrolle mit Dokument-ID.",
         "developerName": "Burchardt & Kollegen",
         "category": "Productivity",
         "capabilities": [

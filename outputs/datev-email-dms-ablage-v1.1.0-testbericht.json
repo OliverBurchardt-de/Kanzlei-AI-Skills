@@ -1,0 +1,42 @@
+{
+  "skill": "datev-email-dms-ablage",
+  "version": "1.1.0",
+  "testdatum": "2026-10-08",
+  "umgebung": "Claude Code Cloud-Session, Connectoren Microsoft 365 (Outlook) und Riecken mCO, Kontrolle zusätzlich über Klardaten MCP",
+  "testfall": {
+    "mandant": 90011,
+    "absender": "invoices@taxmaro.com",
+    "betreff": "AW: Kündigung taxmaro",
+    "gesendet": "2026-10-08T14:15:00Z",
+    "empfangen": "2026-10-08T14:15:31Z",
+    "outlook_message_id": "<AM8P191MB1313A64CD4C00860670FADE5CB932@AM8P191MB1313.EURP191.PROD.OUTLOOK.COM>",
+    "dateiformat": "EML",
+    "status_vorgabe": "erledigt"
+  },
+  "schritte": [
+    {"nr": 1, "schritt": "Nachricht über outlook_email_search gefunden, Volltext und Anhangsliste über read_resource gelesen", "ergebnis": "ok", "hinweis": "Connector liefert strukturierte Felder (Kopfdaten, HTML-Body, 6 eingebettete PNG), keine Original-MIME-Daten"},
+    {"nr": 2, "schritt": "6 eingebettete Anhänge über ihre Anhang-URIs abgerufen", "ergebnis": "ok", "hinweis": "Dateigrößen 3951/95692/3951/69789/63904/56976 Bytes; Graph-Angabe size enthält Overhead"},
+    {"nr": 3, "schritt": "Vollständige EML mit scripts/build_eml.py erzeugt und lokal geprüft", "ergebnis": "ok", "hinweis": "434.034 Bytes, multipart/mixed, alle 6 Anhänge byte-identisch, Python strict-Parser und Node mailparser ohne Fehler"},
+    {"nr": 4, "schritt": "Mandant 90011 über datev_search_clients bestimmt", "ergebnis": "ok", "hinweis": "Burchardt & Kollegen, UUID 4e278c6b-755a-4342-b5b7-342dc70560fd"},
+    {"nr": 5, "schritt": "Knigge-Zuordnung", "ergebnis": "ok", "hinweis": "Keine Spezialregel für Kündigungskorrespondenz mit Lieferanten; generische Regel 10041 Sonstige Korrespondenz → Mandanten/Stammakte/Korrespondenz (register_id 2), Status erledigt laut Vorgabe. Alternative 1243 Vertrag: verworfen, da Korrespondenz und kein Vertragsdokument"},
+    {"nr": 6, "schritt": "Aktuelle DMS-Struktur und Statuskatalog über datev_lookup_dms_structure geprüft", "ergebnis": "ok", "hinweis": "domain_id 1, folder_id 3, register_id 2, state erledigt = 6"},
+    {"nr": 7, "schritt": "Dateiübergabe Weg 2 (upload_url_api) versucht", "ergebnis": "blockiert", "hinweis": "Host datev-mcp.riecken.io durch Netzwerkrichtlinie der Cloud-Umgebung gesperrt (HTTP 403 am Proxy)"},
+    {"nr": 8, "schritt": "Dateiübergabe Weg 3 (content_base64) mit reduzierter EML", "ergebnis": "ok", "hinweis": "Die 6 Signaturgrafiken wurden mit --omit-attachments all dokumentiert weggelassen (Header X-BK-Omitted-Attachments/-Reason), reduzierte EML 30.359 Bytes; Connector meldet upload.size_bytes 30359"},
+    {"nr": 9, "schritt": "datev_prepare_document_filing und datev_execute_change_plan (application dms)", "ergebnis": "ok", "hinweis": "Dokument-ID ccf156e5-7274-4d97-9013-2b5339855944, DMS-Nummer 87836"},
+    {"nr": 10, "schritt": "Rücklesekontrolle datev_get_document", "ergebnis": "ok", "hinweis": "Mandant, Ablage Mandanten, Ordner Stammakte, Register Korrespondenz, Extension EML, Datei 2026-10-08_AW_Kuendigung_taxmaro.eml mit 30359 Bytes, Status erledigt, Jahr 2026, Monat 10, Beschreibung, Schlagworte und Notiz mit dokumentierten Einschränkungen"},
+    {"nr": 11, "schritt": "Rücklesekontrolle datev_read_document", "ergebnis": "fehler", "hinweis": "Riecken meldet 'Der Mail-Parser ist mit einem Fehler geendet.' Datei ist nachweislich intakt (Schritt 12); Ursache liegt im Riecken-Textextraktor, offen"},
+    {"nr": 12, "schritt": "Gespeicherte Datei über Klardaten datev_dms_get (document_files) + datev_prepare_attachment zurückgeholt", "ergebnis": "ok", "hinweis": "30359 Bytes, md5 0d0ff5264e873a4cadbb2925aaf28080, byte-identisch mit lokaler EML; parst in Python und mailparser"},
+    {"nr": 13, "schritt": "Outlook-Nachricht nach Gelöschte Elemente verschoben (outlook_batch_delete_messages)", "ergebnis": "ok", "hinweis": "movedCount 1, wiederherstellbar"}
+  ],
+  "bewertung": "bestanden mit dokumentierter Einschränkung",
+  "einschraenkungen": [
+    "Abgelegte EML ist eine gekennzeichnete Rekonstruktion ohne die 6 eingebetteten Signaturgrafiken; vollständige EML (434 KB) konnte aus der Cloud-Umgebung nicht übertragen werden (Upload-Host gesperrt, content_base64 nur für kleine Dateien).",
+    "datev_read_document kann die Datei nicht parsen; Rücklese daher über datev_get_document plus Klardaten-Download verifiziert."
+  ],
+  "offene_punkte": [
+    "Netzwerkfreigabe für datev-mcp.riecken.io in der Cloud-Umgebung einrichten, damit upload_url_api nutzbar ist und vollständige EMLs übertragen werden können.",
+    "Ursache des Riecken-Mail-Parser-Fehlers mit dem Anbieter klären (Datei ist RFC-konform).",
+    "Nicht genutzter Upload-Link ed7b332b7a8defb4bcbc6aa995136bbb verfällt am 09.10.2026 16:04 automatisch."
+  ],
+  "unit_tests": "tests/test_build_eml.py: 6 Tests bestanden"
+}
