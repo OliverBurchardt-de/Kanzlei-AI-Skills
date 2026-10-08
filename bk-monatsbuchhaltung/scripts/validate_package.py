@@ -31,6 +31,7 @@ from datev_io import (
     STANDARD_BATCH_TYPE,
     STATUS_BOOKED,
     STATUS_UNREADABLE,
+    TRANSFER_RULE,
     batch_label,
     batch_type_suffix,
     carry_order_violations,
@@ -1372,6 +1373,33 @@ def validate_document_file_rule(package_root: Path, manifest: dict) -> list[str]
     return errors
 
 
+def validate_import_scope(package_root: Path, manifest: dict) -> list[str]:
+    """Alle Buchungsstapel – mit und ohne Klärung – sowie alle Belegtransfer-Pakete sind zu importieren."""
+    errors: list[str] = []
+    if not manifest:
+        return errors
+    if manifest.get("transfer_rule") != TRANSFER_RULE:
+        errors.append(f"Übertragungsregel fehlt im Laufmanifest ({TRANSFER_RULE}).")
+    scope = manifest.get("import_scope")
+    if not isinstance(scope, list):
+        return errors + ["import_scope fehlt im Laufmanifest; jede DATEV-Datei muss als zu importieren geführt sein."]
+    by_file = {str(item.get("file", "")): item for item in scope if isinstance(item, dict)}
+    datev_dir = package_root / "01_DATEV_Import"
+    if not datev_dir.is_dir():
+        return errors
+    for path in sorted(datev_dir.iterdir()):
+        if not path.is_file():
+            continue
+        entry = by_file.get(path.name)
+        if entry is None or str(entry.get("import", "")).lower() != "ja":
+            label = "Klärungsstapel" if path.name.startswith("EXTF_Klaerungsposten_") else "DATEV-Datei"
+            errors.append(f"{path.name}: {label} ist nicht als zu importieren geführt; {TRANSFER_RULE}.")
+    for name in by_file:
+        if not (datev_dir / name).is_file():
+            errors.append(f"import_scope nennt eine nicht vorhandene Datei: {name}")
+    return errors
+
+
 def validate_test_import(evidence: dict, files: list[Path]) -> list[str]:
     if not isinstance(evidence, dict) or evidence.get("status") not in {"pending", "confirmed", "rejected"}:
         return ["DATEV-Testimportstatus ist ungültig."]
@@ -1514,6 +1542,7 @@ def main() -> int:
 
     errors.extend(validate_datev_import_layout(args.package, manifest))
     errors.extend(validate_batch_files(args.package, manifest))
+    errors.extend(validate_import_scope(args.package, manifest))
     workbooks = sorted(
         (args.package / "02_Buchungspruefung").glob(
             "Buchungspruefung_*.xlsx"

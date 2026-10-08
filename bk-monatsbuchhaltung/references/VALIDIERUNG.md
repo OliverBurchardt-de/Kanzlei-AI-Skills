@@ -90,6 +90,7 @@ Regeln:
 5. Abgrenzungsauflösungen stehen immer im Buchungsstapel. Eine zweifelhafte Auflösung bleibt Registervorschlag ohne Buchungszeile.
 6. Der Belegtransfer bleibt gemeinsam. Die BEDI-GUIDs vergibt nur `build_package.py`; sie verknüpfen Zeilen aus beiden Stapeln.
 7. Dateiname und Stapelbezeichnung enthalten keine Ampelfarbe.
+9. **Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung.** Der Klärungsstapel ist Bestandteil des Importpakets und wird in DATEV importiert; nur seine Festschreibung wartet auf die Bearbeitung der roten Zeilen. Das Laufmanifest führt jede EXTF-Datei und jedes Belegtransfer-Paket in `import_scope` mit `import: "ja"`; der Validator weist jede EXTF-Datei ohne diesen Eintrag zurück.
 8. Ein im Profil konfigurierter Stapeltyp (`batch_config`) erhält `EXTF_Buchungsstapel_<JJJJ-MM>_<Stapeltyp>.csv` und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>_<Stapeltyp>.csv`; der Suffix darf nur aus `batch_config` stammen.
 
 **Befund (Mandant 12191, Stapel 08-2026/0004):** DATEV füllt ein leeres Kontofeld beim Import mit dem Konto der vorhergehenden Zeile („geschleppt“). Nachgewiesen ist das nur für Konto (Feld 7). Gegenkonto (Feld 8), BU-Schlüssel (Feld 9), Belegdatum (Feld 10) und Belegfeld 1 (Feld 11) gelten vorsorglich als gefährdet; die Liste steht als `CARRY_FIELDS` in `datev_io.py` und wird nach dem DATEV-Test auf die tatsächlich geschleppten Felder reduziert.

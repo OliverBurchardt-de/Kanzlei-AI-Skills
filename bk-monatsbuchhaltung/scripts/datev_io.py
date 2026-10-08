@@ -354,8 +354,9 @@ DATEV_IMPORT_ORDER = [
     "reguläre Belegtransfer_*.zip",
     "Belegtransfer_Avise_*.zip in DUO",
     "EXTF_Buchungsstapel_<JJJJ-MM>.csv je Periode, danach konfigurierte Stapeltypen derselben Periode (z. B. _Eigenbelege)",
-    "EXTF_Klaerungsposten_<JJJJ-MM>.csv (und ggf. _02 usw.) als eigener Importvorgang",
+    "EXTF_Klaerungsposten_<JJJJ-MM>.csv (und ggf. _02 usw.) als eigener Importvorgang – wird ebenfalls importiert, Festschreibung erst nach Bearbeitung",
 ]
+TRANSFER_RULE = "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung"
 CARRY_RESULTS = {"carried", "not_carried", "not_tested"}
 BATCH_KIND_BOOKING = "buchung"
 BATCH_KIND_CLARIFICATION = "klaerung"

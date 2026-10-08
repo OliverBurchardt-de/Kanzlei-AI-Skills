@@ -1,7 +1,7 @@
 {
   "skill_version": "1.4.1",
   "package": "bk-monatsbuchhaltung-v1.4.1.skill",
-  "package_sha256": "0fd59807c1bcc1b652265341f090491ad24bcde43782b005ccd07e6a7ba18395",
+  "package_sha256": "b43da7aac025b604d4d33d329674dc13355cd8a0fc395e7a52d40ffd8636b58f",
   "package_files": 38,
   "tests": [
     {
@@ -69,8 +69,10 @@
     "Versionstest 1.4.1 / kein 1.4.2",
     "Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei",
     "Riecken-Connector-Pflicht; 'Kreditor fehlt' ist kein Rot-Grund; merge nie über mehrere Belege",
-    "Abgrenzungsregister: leer/nicht vorhanden ohne formalen Nachweis; EÜR ohne Register und ohne Abgrenzungen"
+    "Abgrenzungsregister: leer/nicht vorhanden ohne formalen Nachweis; EÜR ohne Register und ohne Abgrenzungen",
+    "Übertragung: Buchungsstapel und Klärungsstapel werden importiert (import_scope, Validator)"
   ],
   "datev_test_import": "not_performed",
-  "datev_connector": "ausschließlich Riecken"
+  "datev_connector": "ausschließlich Riecken",
+  "transfer_rule": "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung"
 }

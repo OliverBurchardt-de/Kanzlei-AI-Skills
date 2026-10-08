@@ -23,7 +23,7 @@ Der EXTF-Header enthält 31 Felder. Pflichtwerte aus Live-DATEV-Daten übernehme
 
 ## Buchungsstapel
 
-Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel` (Grün und fällige Abgrenzungsauflösungen) und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>.csv` mit Stapelbezeichnung `Klärungsposten`; der Header ist ansonsten identisch (Kategorie 21, Version 13, Datum von/bis des Monats, Festschreibung 0). Konfigurierte Stapeltypen erhalten den Suffix `_<Stapeltyp>` und die Bezeichnung aus `batch_config`; geteilte Klärungsstapel den Suffix `_02` ff. Keine Abgrenzungs-CSV-Dateien.
+Die interne Ampelfarbe wird niemals in DATEV-Dateiname oder Stapelbezeichnung ausgegeben. Je Buchungsmonat `EXTF_Buchungsstapel_<JJJJ-MM>.csv` mit Stapelbezeichnung `Buchungsstapel` (Grün und fällige Abgrenzungsauflösungen) und bei roten Vorgängen `EXTF_Klaerungsposten_<JJJJ-MM>.csv` mit Stapelbezeichnung `Klärungsposten`; der Header ist ansonsten identisch (Kategorie 21, Version 13, Datum von/bis des Monats, Festschreibung 0). Konfigurierte Stapeltypen erhalten den Suffix `_<Stapeltyp>` und die Bezeichnung aus `batch_config`; geteilte Klärungsstapel den Suffix `_02` ff. Keine Abgrenzungs-CSV-Dateien. Beide Stapelarten werden in DATEV importiert; der Klärungsstapel wird nicht zurückgehalten, sondern als eigener Importvorgang eingelesen und erst nach Bearbeitung festgeschrieben.
 
 Vollständige 125-Feld-Folge ausgeben. Wesentliche Felder:
 

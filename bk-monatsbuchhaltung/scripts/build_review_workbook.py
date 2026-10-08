@@ -226,14 +226,14 @@ def build(data: dict[str, Any], output: Path) -> None:
 
     guide_rows = [
         ["Schritt / Feld", "Bedeutung"],
-        ["1. Belegprüfung", "Rote Fälle bearbeiten. Grüne Vorgänge stehen im Buchungsstapel, rote im Klärungsstapel. Rechts neben der Ampel steht der vollständige Dateiname des jeweiligen Stapels. Die Spalte Belegdatum laut Beleg zeigt das sicher erkannte Datum; im Klärungsstapel ist das DATEV-Belegdatum immer leer und wird in DATEV nachgetragen."],
+        ["1. Belegprüfung", "Rote Fälle bearbeiten. Grüne Vorgänge stehen im Buchungsstapel, rote im Klärungsstapel; beide Stapel werden in DATEV importiert, der Klärungsstapel wird dort bearbeitet und erst danach festgeschrieben. Rechts neben der Ampel steht der vollständige Dateiname des jeweiligen Stapels. Die Spalte Belegdatum laut Beleg zeigt das sicher erkannte Datum; im Klärungsstapel ist das DATEV-Belegdatum immer leer und wird in DATEV nachgetragen."],
         ["2. Buchungszeilen", "Direkt rechts neben der Ampel steht der DATEV-Buchungsstapel; danach Konten, BU-Schlüssel, Belegfeld 1, Buchungstext und Periode nachvollziehen."],
         ["3. Rücklaufstatus", "Für jeden roten Vorgang einen Abschlussstatus wählen: unverändert übernommen, geändert oder nicht übernommen. Offen ist kein Abschlussstatus."],
         ["4. Mitarbeiter-Ergebnis", "Bei geändert oder nicht übernommen ist die endgültige Behandlung als Mitarbeiter-Ergebnis Pflicht."],
         ["Grün", "Vollständig und plausibel; keine offene fachliche Frage."],
         ["Rot", "Aktive Bearbeitung erforderlich. Nur konkret ungeklärte Felder bleiben leer; bei Anlagenzugängen bleibt das Anlagenkonto immer offen. Arbeitsanweisungen stehen ausschließlich hier."],
         ["Zahlungsavise", "Nicht buchen. Das gesonderte Belegtransfer_Avise-ZIP in DATEV Unternehmen online hochladen."],
-        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. Buchungsstapel je Monat (danach konfigurierte Stapeltypen wie _Eigenbelege derselben Periode), 5. Klärungsstapel je Monat als eigener Importvorgang; erst festschreiben, wenn alle roten Zeilen bearbeitet sind. DATEV-Testimportstatus beachten."],
+        ["DATEV-Import", "1. Stammdaten, 2. reguläre Belegtransfer-ZIPs, 3. Avis-ZIPs, 4. Buchungsstapel je Monat (danach konfigurierte Stapeltypen wie _Eigenbelege derselben Periode), 5. Klärungsstapel je Monat als eigener Importvorgang, ebenfalls importieren; erst festschreiben, wenn alle roten Zeilen bearbeitet sind. Alle Stapel, mit und ohne Klärung, werden übertragen. DATEV-Testimportstatus beachten."],
         ["Klärungsquote", "Blatt Klärungsquote zeigt N (buchungsrelevante Vorgänge), R (rote Vorgänge) und Q = 100 × R / N vor und nach der Zweitprüfung, die Grenzstufe, die Verteilung nach Rot-Gründen und die verbleibenden offenen Gründe. Die Quote ist ein Qualitätsindikator, kein Zielwert."],
         ["Technisch nicht auswertbar", "Vorgänge mit diesem Endstatus wurden nach dokumentiertem Auswertungsversuch einschließlich Belegbildprüfung nicht ausgewertet; sie stehen ohne Ampel in der Belegprüfung mit den Versuchen als nächstem Schritt."],
         ["Belegdateien", "Jeder Buchungsbeleg ist im Belegtransfer genau eine eigene PDF-Datei; Sammel-PDFs wurden je Vorgang getrennt, verteilte oder Bildbelege zu einer PDF zusammengeführt."],
