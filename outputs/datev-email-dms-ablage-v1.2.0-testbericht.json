@@ -1,0 +1,36 @@
+{
+  "skill": "datev-email-dms-ablage",
+  "version": "1.2.0",
+  "testdatum": "2026-10-09",
+  "umgebung": "Claude Code Cloud-Session, Connectoren Microsoft 365 (Outlook) und Riecken mCO; Klardaten MCP in dieser Session nicht verbunden",
+  "freigabe": "Stehende Freigabe des Nutzers vom 09.10.2026: Rekonstruierte EML ist freigegeben; keine Nachfrage je E-Mail",
+  "testfall": {
+    "ziel": "E-Mail mit PDF-Anhang ablegen",
+    "mandant": 90011,
+    "absender": "noreply@ecovis.com (TAXMARO GmbH)",
+    "betreff": "Ihre Rechnung #23250",
+    "gesendet": "2026-10-07T21:18:32Z",
+    "anhang": "Rechnung_23250.pdf, application/pdf, 238.370 Bytes laut Outlook",
+    "outlook_message_id": "<20261007211832.233AE11F6F2E@onlineapp2.ecovis.com>"
+  },
+  "schritte": [
+    {"nr": 1, "schritt": "Nachricht über outlook_email_search gefunden, Volltext und Anhangsliste über read_resource gelesen", "ergebnis": "ok"},
+    {"nr": 2, "schritt": "PDF-Anhang über seine Anhang-URI abgerufen", "ergebnis": "fehlgeschlagen", "hinweis": "Connector liefert für application/pdf nur den extrahierten Text, keine Dateibytes. Gegenprobe mit einem PDF als application/octet-stream (andere Mail): Antwort 'Binary attachment — content cannot be returned inline'. PDF-Bytes sind über den Microsoft-365-Connector nicht erhältlich."},
+    {"nr": 3, "schritt": "EML ohne --allow-missing erzeugt", "ergebnis": "ok", "hinweis": "Skript bricht wie vorgesehen mit Exit 2 ab und nennt Rechnung_23250.pdf"},
+    {"nr": 4, "schritt": "EML mit --allow-missing erzeugt und lokal geprüft", "ergebnis": "ok", "hinweis": "3.819 Bytes, X-Reconstructed-EML: yes, X-BK-Missing-Attachments: Rechnung_23250.pdf, Hinweis im Nachrichtentext, strict-Parser ohne Defekte"},
+    {"nr": 5, "schritt": "Knigge-Zuordnung", "ergebnis": "ok", "hinweis": "Keine Spezialregel; 10041 Sonstige Korrespondenz → Stammakte/Korrespondenz (register_id 2). Status offen, weil die Rechnung mit E-Mail vom 08.10.2026 widersprochen wurde und der Vorgang nicht abgeschlossen ist"},
+    {"nr": 6, "schritt": "Dateiübergabe content_base64", "ergebnis": "ok", "hinweis": "upload.size_bytes 3819 = lokale Datei"},
+    {"nr": 7, "schritt": "datev_prepare_document_filing und datev_execute_change_plan (application dms)", "ergebnis": "ok", "hinweis": "Dokument-ID f88541a6-1c38-4342-aeb2-4ec00ef5b1db, DMS-Nummer 87864"},
+    {"nr": 8, "schritt": "Rücklesekontrolle datev_get_document", "ergebnis": "ok", "hinweis": "Mandant, Mandanten/Stammakte/Korrespondenz, Extension EML, Datei 2026-10-07_Ihre_Rechnung_23250_rekonstruierte-EML.eml mit 3819 Bytes, Status offen, Jahr 2026, Monat 10, Titel mit [rekonstruierte EML, Anhang fehlt], Notiz mit Freigabe, Datenquelle und fehlendem Anhang"},
+    {"nr": 9, "schritt": "Rücklesekontrolle datev_read_document", "ergebnis": "fehler", "hinweis": "Riecken meldet erneut 'Der Mail-Parser ist mit einem Fehler geendet.' Byteweise Gegenprobe über Klardaten in dieser Session nicht möglich (Server nicht verbunden); Größe stimmt exakt überein, gestern war der identische Weg byte-identisch"},
+    {"nr": 10, "schritt": "Outlook-Löschung", "ergebnis": "nicht ausgeführt", "hinweis": "Nicht beauftragt; die Nachricht mit dem PDF bleibt in Outlook"}
+  ],
+  "bewertung": "Ablagepfad bestanden; Testziel 'PDF-Anhang in der EML' nicht erreichbar",
+  "kernbefund": "Der Microsoft-365-Connector liefert keine Dateibytes für PDF- und sonstige Dokumentanhänge, nur für Bilder. Damit kann der Skill über diesen Connector keine EML mit PDF-Anhang erzeugen, unabhängig von der Netzwerkfreigabe für den Riecken-Upload. Der Skill dokumentiert den fehlenden Anhang in Header, Titel und Notiz und legt die EML als unvollständig gekennzeichnet ab.",
+  "offene_punkte": [
+    "Anhangsbytes aus Outlook: entweder ein Connector mit Graph-Zugriff auf /attachments/{id}/$value oder ein anderer Exportweg (z. B. Outlook-Regel, Power Automate, DATEV-E-Mail-Schnittstelle).",
+    "Netzwerkfreigabe für datev-mcp.riecken.io bleibt für große EMLs mit Bildern nötig.",
+    "Riecken-Mail-Parser-Fehler bei RFC-konformen EMLs mit dem Anbieter klären."
+  ],
+  "unit_tests": "tests/test_build_eml.py: 7 Tests bestanden"
+}
