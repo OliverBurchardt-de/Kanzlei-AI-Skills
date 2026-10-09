@@ -22,9 +22,16 @@ from datev_io import (
     CARRY_FIELDS,
     CARRY_RESULTS,
     DATEV_IMPORT_ORDER,
+    DOCUMENT_FILE_RULE,
     MASTER_FIELDS,
     OPEN_FIELD_INDEXES,
+    RED_REASON_CODES,
+    REQUIRED_CONNECTOR,
+    REQUIRED_RETRIEVAL_STEPS,
     STANDARD_BATCH_TYPE,
+    STATUS_BOOKED,
+    STATUS_UNREADABLE,
+    TRANSFER_RULE,
     batch_label,
     batch_type_suffix,
     carry_order_violations,
@@ -35,6 +42,7 @@ from datev_io import (
     parse_batch_file_name,
 )
 from sharepoint_target import build_targets
+from clarification_rate import THRESHOLD_NORMAL, THRESHOLD_SECOND_REVIEW, quota, stage_for
 
 
 DOCUMENT_NAMESPACE = "http://xml.datev.de/bedi/tps/document/v06.0"
@@ -78,7 +86,7 @@ EXPECTED_REVIEW_HEADERS = {
 }
 REQUIRED_REVIEW_SHEETS = {
     "Anleitung", "Übersicht", "Belegprüfung", "Buchungszeilen",
-    "Mandanten-Hinweise", "Stammdatenänderungen",
+    "Mandanten-Hinweise", "Stammdatenänderungen", "Klärungsquote",
 }
 FORBIDDEN_VISIBLE_REVIEW_HEADERS = {
     "Belegdatei", "Quelldatei", "Originaldateiname", "Importfähig",
@@ -90,7 +98,7 @@ FORBIDDEN_DATEV_FOLDERS = {
 }
 
 
-EXPECTED_SKILL_VERSION = "1.4.0"
+EXPECTED_SKILL_VERSION = "1.4.1"
 EXPECTED_OUTPUT_CONTRACT = "monthly-booking-and-clarification-batches-v4"
 
 
@@ -518,19 +526,32 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
     elif not isinstance(scope.get("target_periods"), list) or not scope["target_periods"]:
         errors.append("Zielperioden fehlen im Laufvertrag.")
     def check_accrual_register(item: object) -> None:
-        if isinstance(item, dict) and item.get("status") == "not_found":
+        if isinstance(item, dict) and item.get("status") == "access_error":
+            # Abrufproblem (z. B. HTTP 403): gesondert vermerkt, kein Nullstand, Lauf nicht vollständig abgeschlossen.
+            if item.get("source_url") != str(targets["accrual_url"]) or item.get("file_name") != f"{client_number}.md":
+                errors.append("Abgrenzungsregister-Abrufproblem verwendet nicht das exakte SharePoint-Ziel.")
+            if not item.get("retrieved_via") or not item.get("checked_at"):
+                errors.append("Abgrenzungsregister-Abrufproblem ist unvollständig dokumentiert.")
+            if item.get("http_status") in (None, "") and not str(item.get("error_code", "")).strip():
+                errors.append("Abgrenzungsregister-Abrufproblem ohne HTTP-Status oder Fehlercode.")
+            if str(item.get("http_status")) == "404" or str(item.get("error_code", "")).lower() in {"itemnotfound", "not_found"}:
+                errors.append("Abgrenzungsregister: itemNotFound ist kein Abrufproblem, sondern ein bestätigter Erstlauf.")
+            if not isinstance(item.get("direct_lookup_attempts"), int) or item["direct_lookup_attempts"] < 2:
+                errors.append("Abgrenzungsregister-Abrufproblem wurde nicht nach zulässiger Wiederholung dokumentiert.")
+            if "kein Nullstand" not in str(item.get("register_state", "")):
+                errors.append("Abgrenzungsregister-Abrufproblem darf keinen Nullstand annehmen.")
+            completion = manifest.get("run_completion") or {}
+            if completion.get("status") != "nicht vollständig abgeschlossen":
+                errors.append("Abgrenzungsregister nicht abrufbar: Lauf muss als nicht vollständig abgeschlossen ausgewiesen sein.")
+            return
+        if isinstance(item, dict) and item.get("status") in {"not_found", "empty"}:
+            # Leer oder nicht vorhanden ist ein normaler Zustand; nur der Abruf muss dokumentiert sein.
             if item.get("source_url") != str(targets["accrual_url"]):
-                errors.append("Abgrenzungsregister-Nichtvorhanden-Nachweis verwendet nicht die exakte URL.")
+                errors.append("Abgrenzungsregister-Abruf verwendet nicht die exakte URL.")
             if item.get("file_name") != f"{client_number}.md":
                 errors.append("Abgrenzungsregister-Dateiname stimmt nicht.")
             if not item.get("retrieved_via") or not item.get("checked_at"):
-                errors.append("Abgrenzungsregister-Nichtvorhanden-Nachweis ist unvollständig.")
-            if item.get("not_found_code") != "itemNotFound":
-                errors.append("Abgrenzungsregister wurde nicht eindeutig als itemNotFound bestätigt.")
-            if item.get("site_verified") is not True or item.get("library_verified") is not True:
-                errors.append("Site/Bibliothek für das Abgrenzungsregister wurden nicht bestätigt.")
-            if not isinstance(item.get("direct_lookup_attempts"), int) or item["direct_lookup_attempts"] < 2:
-                errors.append("Abgrenzungsregister wurde nicht zweimal direkt geprüft.")
+                errors.append("Abgrenzungsregister-Abruf ist unvollständig dokumentiert.")
             return
         check_sharepoint(
             item,
@@ -540,6 +561,11 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
         )
     if contract.get("accounting_method") == "Bilanz":
         check_accrual_register(evidence.get("abgrenzungsregister"))
+    elif contract.get("accounting_method") == "EÜR":
+        if manifest.get("accrual_releases") or any(
+            item.get("kind") == "accrual" for item in manifest.get("booking_trace", []) or []
+        ):
+            errors.append("EÜR: Abgrenzungsauflösungen sind unzulässig; kein Abgrenzungsregister bei Einnahmenüberschussrechnung.")
     if contract.get("accounting_method") not in {"Bilanz", "EÜR"}:
         errors.append("Rechnungslegungsart im Laufmanifest ist ungültig.")
     required = contract.get("kostenstellenpflicht")
@@ -592,6 +618,13 @@ def _validate_preflight_manifest(manifest: dict) -> list[str]:
     elif not datev.get("retrieved_at"):
         errors.append("DATEV-Livenachweis enthält keinen Abrufzeitpunkt.")
     else:
+        if str(datev.get("connector", "")).strip() != REQUIRED_CONNECTOR:
+            errors.append(f"DATEV-Livenachweis stammt nicht vom {REQUIRED_CONNECTOR}-Connector.")
+        retrieved_via = datev.get("retrieved_via")
+        if not isinstance(retrieved_via, dict) or any(
+            not str(retrieved_via.get(step, "")).startswith("datev_") for step in REQUIRED_RETRIEVAL_STEPS
+        ):
+            errors.append("DATEV-Livenachweis nennt nicht für jede Prüfung ein Riecken-Werkzeug (retrieved_via).")
         if not isinstance(datev.get("validated_accounts"), list) or not datev["validated_accounts"]:
             errors.append("DATEV-Livenachweis enthält keine validierten Konten.")
         if not isinstance(datev.get("validated_bu_keys"), list):
@@ -1200,6 +1233,173 @@ def validate_transfer_period_separation(package_root: Path) -> list[str]:
     return errors
 
 
+def _trace_lights(manifest: dict) -> dict[str, str]:
+    """Belegweit schlechteste Ampel je Vorgang aus dem Exportnachweis (Mehrfachzeilen einmal)."""
+    lights: dict[str, str] = {}
+    for item in manifest.get("booking_trace", []) or []:
+        if item.get("kind") != "document":
+            continue
+        tid = str(item.get("transaction_id", ""))
+        light = str(item.get("traffic_light", ""))
+        if light == "Rot" or tid not in lights:
+            lights[tid] = light
+    return lights
+
+
+def validate_clarification_rate(package_root: Path, manifest: dict) -> tuple[list[str], dict]:
+    """Klärungsquote erneut vor der Abschlussmeldung berechnen und gegen den Nachweis prüfen."""
+    errors: list[str] = []
+    rate = manifest.get("clarification_rate")
+    if not isinstance(rate, dict) or not isinstance(rate.get("after"), dict) or not isinstance(rate.get("before"), dict):
+        return ["Klärungsquoten-Zusammenfassung (clarification_rate) fehlt im Laufmanifest."], {}
+    lights = _trace_lights(manifest)
+    red_ids = sorted(tid for tid, light in lights.items() if light == "Rot")
+    n_after = len(lights)
+    r_after = len(red_ids)
+    q_after = quota(r_after, n_after)
+    after = rate["after"]
+    before = rate["before"]
+    if int(after.get("N", -1)) != n_after or int(after.get("R", -1)) != r_after:
+        errors.append(
+            f"Klärungsquote: Nachweis nennt N={after.get('N')}, R={after.get('R')}, Exportnachweis ergibt N={n_after}, R={r_after}."
+        )
+    if after.get("Q") != q_after:
+        errors.append(f"Klärungsquote: Q nach Zweitprüfung {after.get('Q')} stimmt nicht mit {q_after} überein.")
+    to_green = [str(value) for value in rate.get("corrected_to_green", [])]
+    to_red = [str(value) for value in rate.get("corrected_to_red", [])]
+    excluded = [str(value) for value in rate.get("corrected_excluded", [])]
+    expected_r_before = r_after + len(to_green) - len(to_red) + len(excluded)
+    expected_n_before = n_after + len(excluded)
+    if int(before.get("R", -1)) != expected_r_before or int(before.get("N", -1)) != expected_n_before:
+        errors.append("Klärungsquote: Vorher-Werte widersprechen den dokumentierten Korrekturen der Zweitprüfung.")
+    q_before = quota(expected_r_before, expected_n_before)
+    stage_before = stage_for(q_before)
+    red_before = set(red_ids) | set(to_green) | set(excluded)
+    reviewed = {str(value) for value in rate.get("reviewed_transaction_ids", [])}
+    if stage_before == "zweitpruefung":
+        if rate.get("second_review_performed") is not True:
+            errors.append(
+                f"Klärungsquote {q_before} % > {THRESHOLD_SECOND_REVIEW:g} %: vollständige Zweitprüfung aller roten Vorgänge fehlt."
+            )
+        missing = sorted(red_before - reviewed)
+        if missing:
+            errors.append("Zweitprüfung unvollständig; nicht nachgeprüft: " + ", ".join(missing))
+    for tid in to_green:
+        if lights.get(tid) != "Grün":
+            errors.append(f"Klärungsquote: {tid} als Grün korrigiert, aber nicht grün exportiert.")
+    for tid in excluded:
+        if tid in lights:
+            errors.append(f"Klärungsquote: {tid} als ausgeschlossen korrigiert, aber exportiert.")
+    cases = {str(item.get("transaction_id", "")): item for item in rate.get("red_cases", []) if isinstance(item, dict)}
+    for tid in red_ids:
+        case = cases.get(tid)
+        if case is None or case.get("code") not in RED_REASON_CODES:
+            errors.append(f"Klärungsquote: roter Vorgang {tid} ohne maschinenlesbaren Rot-Grund im Nachweis.")
+    distribution = rate.get("reason_distribution") or {}
+    stage_after = stage_for(q_after)
+    if stage_before == "ursachenpruefung" or stage_after == "ursachenpruefung":
+        cause = rate.get("cause_analysis") or {}
+        for code in distribution:
+            if not str(cause.get(code, "")).strip():
+                errors.append(f"Klärungsquote {THRESHOLD_NORMAL:g}–{THRESHOLD_SECOND_REVIEW:g} %: Ursachenprüfung für Rot-Kategorie {code} fehlt.")
+    proof = package_root / "02_Buchungspruefung" / "Klaerungsquote_Nachweis.md"
+    if not proof.is_file():
+        errors.append("Klärungsquoten-Nachweis fehlt: 02_Buchungspruefung/Klaerungsquote_Nachweis.md")
+    else:
+        text = proof.read_text(encoding="utf-8")
+        for needle in (f"| N (buchungsrelevante Vorgänge) | {expected_n_before} | {n_after} |",
+                       f"| R (rote Vorgänge) | {expected_r_before} | {r_after} |"):
+            if needle not in text:
+                errors.append(f"Klärungsquoten-Nachweis nennt nicht die geprüften Werte ({needle.strip('| ')}).")
+    summary = {
+        "N": n_after, "R": r_after, "Q": q_after, "stage": stage_after,
+        "before": {"N": expected_n_before, "R": expected_r_before, "Q": q_before, "stage": stage_before},
+        "second_review_required": stage_before == "zweitpruefung",
+        "second_review_performed": rate.get("second_review_performed") is True,
+        "reviewed_cases": len(reviewed & red_before),
+        "corrected_to_green": len(to_green),
+        "remaining_red": r_after,
+        "reason_distribution": distribution,
+        "professionally_open": r_after > 0,
+        "check_step": "erneut vor Abschlussmeldung (Validator)",
+    }
+    return errors, summary
+
+
+def validate_document_file_rule(package_root: Path, manifest: dict) -> list[str]:
+    """Ein Buchungsbeleg = genau eine eigene PDF-Datei im Belegtransfer."""
+    errors: list[str] = []
+    index_path = package_root / "03_Technische_Protokolle" / "Belegindex.json"
+    if not index_path.is_file():
+        return []  # wird bereits von der Periodentrennung gemeldet
+    try:
+        entries = json.loads(index_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    booked = set(_trace_lights(manifest))
+    primary_count: dict[str, int] = {}
+    pdf_names: dict[str, set[str]] = {}
+    for entry in entries:
+        if not entry.get("included") or entry.get("document_package_kind") != "booking":
+            continue
+        primaries = [str(value) for value in entry.get("primary_transaction_ids", []) or []]
+        name = str(entry.get("technical_filename", ""))
+        if len(primaries) > 1:
+            errors.append(f"{name}: Belegdatei trägt mehrere Buchungsbelege ({', '.join(primaries)}); {DOCUMENT_FILE_RULE}.")
+        for tid in primaries:
+            primary_count[tid] = primary_count.get(tid, 0) + 1
+        if primaries and not name.lower().endswith(".pdf"):
+            errors.append(f"{name}: Buchungsbeleg ist keine PDF-Datei; {DOCUMENT_FILE_RULE}.")
+        if primaries:
+            pdf_names.setdefault(str(entry.get("document_package", "")), set()).add(name)
+    for tid in sorted(booked):
+        count = primary_count.get(tid, 0)
+        if count == 0:
+            errors.append(f"{tid}: gebuchter Vorgang ohne eigene PDF-Belegdatei im Belegtransfer; {DOCUMENT_FILE_RULE}.")
+        elif count > 1:
+            errors.append(f"{tid}: Buchungsbeleg ist auf {count} Dateien verteilt; {DOCUMENT_FILE_RULE}.")
+    for package_name, names in pdf_names.items():
+        archive = package_root / "01_DATEV_Import" / package_name
+        if not archive.is_file() or not zipfile.is_zipfile(archive):
+            continue
+        with zipfile.ZipFile(archive) as bundle:
+            for name in sorted(names):
+                try:
+                    head = bundle.open(name).read(5)
+                except KeyError:
+                    continue
+                if head != b"%PDF-":
+                    errors.append(f"{package_name}/{name}: Buchungsbeleg ist keine gültige PDF-Datei.")
+    return errors
+
+
+def validate_import_scope(package_root: Path, manifest: dict) -> list[str]:
+    """Alle Buchungsstapel – mit und ohne Klärung – sowie alle Belegtransfer-Pakete sind zu importieren."""
+    errors: list[str] = []
+    if not manifest:
+        return errors
+    if manifest.get("transfer_rule") != TRANSFER_RULE:
+        errors.append(f"Übertragungsregel fehlt im Laufmanifest ({TRANSFER_RULE}).")
+    scope = manifest.get("import_scope")
+    if not isinstance(scope, list):
+        return errors + ["import_scope fehlt im Laufmanifest; jede DATEV-Datei muss als zu importieren geführt sein."]
+    by_file = {str(item.get("file", "")): item for item in scope if isinstance(item, dict)}
+    datev_dir = package_root / "01_DATEV_Import"
+    if not datev_dir.is_dir():
+        return errors
+    for path in sorted(datev_dir.iterdir()):
+        if not path.is_file():
+            continue
+        entry = by_file.get(path.name)
+        if entry is None or str(entry.get("import", "")).lower() != "ja":
+            label = "Klärungsstapel" if path.name.startswith("EXTF_Klaerungsposten_") else "DATEV-Datei"
+            errors.append(f"{path.name}: {label} ist nicht als zu importieren geführt; {TRANSFER_RULE}.")
+    for name in by_file:
+        if not (datev_dir / name).is_file():
+            errors.append(f"import_scope nennt eine nicht vorhandene Datei: {name}")
+    return errors
+
+
 def validate_test_import(evidence: dict, files: list[Path]) -> list[str]:
     if not isinstance(evidence, dict) or evidence.get("status") not in {"pending", "confirmed", "rejected"}:
         return ["DATEV-Testimportstatus ist ungültig."]
@@ -1236,10 +1436,18 @@ def main() -> int:
         inventory = manifest.get("input_inventory")
         inventory_count = manifest.get("input_inventory_count")
         uploaded_count = manifest.get("hochgeladene_dateien")
+        derived_count = manifest.get("abgeleitete_belegdateien", 0)
         if not isinstance(inventory, list):
             errors.append("Technisches input_inventory fehlt im Laufmanifest")
-        elif inventory_count != len(inventory) or uploaded_count != len(inventory):
-            errors.append("Eingabeinventar und hochgeladene Dateianzahl stimmen nicht überein")
+        elif (
+            inventory_count != len(inventory)
+            or not isinstance(uploaded_count, int)
+            or not isinstance(derived_count, int)
+            or uploaded_count + derived_count != len(inventory)
+        ):
+            errors.append("Eingabeinventar, hochgeladene und abgeleitete Dateianzahl stimmen nicht überein")
+        elif derived_count != sum(1 for item in inventory if isinstance(item, dict) and item.get("derived_from")):
+            errors.append("Zahl der abgeleiteten Belegdateien stimmt nicht mit dem Inventar überein")
         else:
             for item in inventory:
                 if (
@@ -1270,6 +1478,22 @@ def main() -> int:
 
     if manifest.get("datev_import_order") != list(DATEV_IMPORT_ORDER):
         errors.append("Verbindliche DATEV-Importreihenfolge fehlt im Laufmanifest")
+    run_completion = manifest.get("run_completion")
+    if not isinstance(run_completion, dict) or run_completion.get("status") not in {
+        "vollständig abgeschlossen", "nicht vollständig abgeschlossen",
+    }:
+        errors.append("Abschluss-Gate: run_completion fehlt im Laufmanifest oder hat einen ungültigen Status")
+        run_completion = {"status": "nicht vollständig abgeschlossen", "open_items": []}
+    if run_completion.get("datev_import_claimed") is True:
+        errors.append("Abschluss-Gate: eine DATEV-Übertragung darf nicht behauptet werden")
+    if manifest.get("document_file_rule") != DOCUMENT_FILE_RULE:
+        errors.append(f"Belegdateiregel fehlt im Laufmanifest ({DOCUMENT_FILE_RULE})")
+    if manifest and manifest.get("status", {}).get(STATUS_UNREADABLE):
+        # technisch nicht auswertbare Vorgänge sind nur mit dokumentiertem Versuch zulässig (Generatorprüfung);
+        # hier nur die Zählung im Nachweis sichern.
+        rate_counts = (manifest.get("clarification_rate") or {}).get("counts") or {}
+        if rate_counts.get("technisch_nicht_auswertbar") != manifest["status"][STATUS_UNREADABLE]:
+            errors.append("Zahl technisch nicht auswertbarer Vorgänge weicht zwischen Status und Klärungsquoten-Nachweis ab")
     errors.extend(_validate_preflight_manifest(manifest))
     expected_master_records = int(manifest.get("master_records", 0))
     master_path = (
@@ -1307,13 +1531,18 @@ def main() -> int:
         args.package / "02_Buchungspruefung" / "Abgrenzungsregister_Vorschlag.md",
         args.package / "02_Buchungspruefung" / "Taetigkeitsnachweis.md",
         args.package / "02_Buchungspruefung" / "Uebergabeliste.md",
+        args.package / "02_Buchungspruefung" / "Klaerungsquote_Nachweis.md",
+        args.package / "03_Technische_Protokolle" / "Belegindex.json",
     ]
     for path in required_work_files:
         if not path.is_file():
-            errors.append(f"Arbeitsdatei fehlt: {path.name}")
+            errors.append(f"Vollständigkeits-Gate: Pflichtdatei fehlt: {path.name}")
+    rate_errors, rate_summary = validate_clarification_rate(args.package, manifest) if manifest else (["Klärungsquote ohne Laufmanifest nicht prüfbar"], {})
+    errors.extend(rate_errors)
 
     errors.extend(validate_datev_import_layout(args.package, manifest))
     errors.extend(validate_batch_files(args.package, manifest))
+    errors.extend(validate_import_scope(args.package, manifest))
     workbooks = sorted(
         (args.package / "02_Buchungspruefung").glob(
             "Buchungspruefung_*.xlsx"
@@ -1356,6 +1585,7 @@ def main() -> int:
     )
     errors.extend(transfer_errors)
     errors.extend(validate_transfer_period_separation(args.package))
+    errors.extend(validate_document_file_rule(args.package, manifest))
     booking_document_count = int(
         manifest.get("status", {}).get("Buchungszeile erzeugt", 0)
     )
@@ -1376,8 +1606,16 @@ def main() -> int:
             + ", ".join(documents_without_link)
         )
 
+    completion_gate = {
+        "run_status": run_completion.get("status") if manifest else "nicht vollständig abgeschlossen",
+        "open_items": run_completion.get("open_items", []) if manifest else [],
+        "validator_valid": not errors,
+        "passed": (not errors) and bool(manifest) and run_completion.get("status") == "vollständig abgeschlossen",
+        "rule": "erfolgreicher Abschluss nur bei valid=true und ohne zurückgestellte Teilentscheidungen; sonst ausdrücklich nicht vollständig abgeschlossen",
+    }
     report = {
         "package": str(args.package),
+        "skill_version_expected": EXPECTED_SKILL_VERSION,
         "checked_extf_files": len(csv_files),
         "checked_belegtransfer_packages": transfer_count,
         "checked_advice_packages": advice_package_count,
@@ -1394,9 +1632,13 @@ def main() -> int:
         ],
         "booking_batches": manifest.get("booking_batches", []),
         "batch_split_reasons": manifest.get("batch_split_reasons", []),
+        "clarification_rate": rate_summary,
+        "completion_gate": completion_gate,
+        "document_file_rule": DOCUMENT_FILE_RULE,
         "errors": errors,
     }
     target = args.package / "03_Technische_Protokolle" / "Validierungsbericht.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8"
     )

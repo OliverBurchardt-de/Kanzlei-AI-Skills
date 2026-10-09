@@ -18,7 +18,7 @@ import build_package
 import datev_io
 import validate_package
 from sharepoint_target import build_targets
-from test_datev_contract import booking_document, evidence
+from test_datev_contract import booking_document, evidence, red_reason, second_review, write_pdf
 
 
 PERIOD = "2025-12"
@@ -75,6 +75,7 @@ def make_run(root: Path, *, cost: bool = False, pflicht: bool = False, batches: 
     run["datev_live_evidence"] = {
         **{key: run[key] for key in ("beraternummer", "mandantennummer", "wirtschaftsjahr_beginn", "sachkontenlaenge", "sachkontenrahmen")},
         "source": "DATEV live", "retrieved_at": "2026-10-07T10:00:00+02:00",
+        "connector": "Riecken", "retrieved_via": {"health": "datev_health_check", "core": "datev_get_client_dossier", "master_data": "datev_search_business_partners", "prior_bookings": "datev_get_account_postings", "accounts": "datev_get_account_balances", "bu_keys": "datev_suggest_posting"},
         "validated_accounts": ["4900", "4655", "8400", "70001", "10001"], "validated_bu_keys": ["401", "900"],
         "highest_creditor_account": 70001, "highest_debtor_account": 10001,
         "used_person_accounts": [
@@ -104,8 +105,7 @@ class Scenario:
 
     def add(self, light: str = "Grün", **overrides) -> dict:
         number = len(self.docs) + 1
-        source = self.root / f"beleg{number}.txt"
-        source.write_text(f"Synthetischer Beleg {number} {light}", encoding="utf-8")
+        source = write_pdf(self.root / f"beleg{number}.pdf", f"Synthetischer Beleg {number} {light}")
         doc = booking_document(source, light)
         doc["transaction_id"] = f"V{number:04d}"
         doc["invoice_number"] = f"RE-{number}"
@@ -134,12 +134,16 @@ class Scenario:
         return doc
 
     def data(self) -> dict:
+        red_ids = [doc["transaction_id"] for doc in self.docs if doc.get("traffic_light") == "Rot"]
+        codes = {str((doc.get("red_reason") or {}).get("code", "")) for doc in self.docs if doc.get("traffic_light") == "Rot"}
         return {
             "run": self.run,
             "scope": {"target_periods": [PERIOD], "job_mode": "belegbuchhaltung", "include_prior_periods": False, "include_future_periods": False},
             "source_files": self.sources, "transactions": self.docs, "transaction_sources": self.mappings,
             "clarification_cases": self.cases, "master_records": [], "accrual_releases": self.releases,
             "activity_report": {"datev_import_status": "Importpaket erstellt – noch nicht in DATEV importiert", "sources_used": ["Synthetische Testbelege"], "named_entities": []},
+            # v1.4.1: Zweitprüfung aller roten Vorgänge und Ursachenprüfung je Rot-Kategorie dokumentiert.
+            "clarification_review": second_review(red_ids, cause={code: "Einzelfall, keine systematische Fehleinstufung." for code in codes if code}),
         }
 
     def write(self, name: str = "lauf.json") -> Path:
@@ -201,6 +205,12 @@ def red_booking(**fields) -> dict:
 def test_clarification_batches(root: Path) -> None:
     """Spezifikation Klärungsstapel: getrennte Dateien, Pflichtleerung, Sortierregel, Teilung."""
     scenario = Scenario(root, make_run(root))
+    # Abgrenzungsauflösung nur bei Bilanz; das Register wird lediglich abgerufen (hier: nicht vorhanden).
+    scenario.run["accounting_method"] = "Bilanz"
+    scenario.run["abgrenzungsregister_evidence"] = {
+        "status": "not_found", "source_url": str(build_targets("12861")["accrual_url"]), "file_name": "12861.md",
+        "retrieved_via": "microsoft_sharepoint.fetch", "checked_at": "2026-10-08T09:00:00+02:00",
+    }
     scenario.add("Grün")
     scenario.add("Grün")
     scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung aus Beleg nicht erkennbar."})])
@@ -456,6 +466,7 @@ def test_cost_centers(root: Path) -> None:
     expect_error(lambda: live.load("live"), "nicht live in DATEV vorhanden", "KOST1 ohne Livenachweis")
     live.docs[0]["traffic_light"] = "Rot"
     live.docs[0]["requires_clarification"] = True
+    live.docs[0]["red_reason"] = red_reason("spezialregel_sonstige")
     live.docs[0]["bookings"][0].update({"kost1": None, "open_fields": {"kost1": "Kostenstelle 9999 in DATEV anlegen."}})
     live.cases.append({"case_id": "K1", "transaction_ids": ["V0001"], "topic": "Kostenstelle in DATEV anlegen", "facts": "9999 fehlt live.", "booking_risk": "Buchung ohne Kostenstelle.", "provisional_treatment": "kost1 offen.", "recommendation": "Kostenstelle 9999 anlegen.", "decision_needed": "Anlegen.", "traffic_light": "Rot", "target": "DATEV", "proposed_change": "Kostenstelle anlegen", "employee_result": ""})
     assert live.document_errors("live-red") == []

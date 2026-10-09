@@ -1,6 +1,6 @@
 interface:
-  display_name: BK Monatsbuchhaltung v1.4.0
-  short_description: Belegbuchhaltung v1.4 mit Rot/Grün, Buchungsstapel, Klärungsstapel und Kostenstellen
+  display_name: BK Monatsbuchhaltung v1.4.1
+  short_description: Belegbuchhaltung v1.4.1 mit Rot/Grün, Buchungsstapel, Klärungsstapel, Kostenstellen, Durchführungspflicht und Klärungsquote
   default_prompt: "Verwende $bk-monatsbuchhaltung, um Belege im freigegebenen Zeitraum bis zum validierten DATEV-Paket mit Tätigkeitsnachweis zu verarbeiten; nutze bei großen Belegmengen getrennte Agents und eine unabhängige Integritätskontrolle oder werte ein zurückgesandtes Prüfprotokoll aus."
   icon_small: assets/icon.svg
   icon_large: assets/icon.svg

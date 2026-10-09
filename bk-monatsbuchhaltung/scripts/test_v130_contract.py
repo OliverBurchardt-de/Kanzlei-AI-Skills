@@ -15,7 +15,7 @@ import build_package
 import datev_io
 import validate_package
 from sharepoint_target import build_targets
-from test_datev_contract import booking_document, evidence
+from test_datev_contract import booking_document, evidence, second_review, write_pdf
 
 
 def main() -> None:
@@ -37,6 +37,7 @@ def main() -> None:
         run["datev_live_evidence"] = {
             **{key: run[key] for key in ("beraternummer", "mandantennummer", "wirtschaftsjahr_beginn", "sachkontenlaenge", "sachkontenrahmen")},
             "source": "DATEV live", "retrieved_at": "2026-10-07T10:00:00+02:00",
+            "connector": "Riecken", "retrieved_via": {"health": "datev_health_check", "core": "datev_get_client_dossier", "master_data": "datev_search_business_partners", "prior_bookings": "datev_get_account_postings", "accounts": "datev_get_account_balances", "bu_keys": "datev_suggest_posting"},
             "validated_accounts": ["4900", "4655", "70001"], "validated_bu_keys": ["401"],
             "highest_creditor_account": 70001, "highest_debtor_account": 10000,
             "used_person_accounts": [{"account": "70001", "account_type": "kreditor", "name": "DATEV Test GmbH"}],
@@ -46,8 +47,7 @@ def main() -> None:
         docs, sources, mappings, cases = [], [], [], []
         fields = [None, "account", "recognized_date", "bu_key", "amount", "document_field_1", "contra_account", "exchange_rate"]
         for number, field in enumerate(fields, start=1):
-            source = root / f"beleg{number}.txt"
-            source.write_text(f"Synthetischer Beleg {number}", encoding="utf-8")
+            source = write_pdf(root / f"beleg{number}.pdf", f"Synthetischer Beleg {number}")
             doc = booking_document(source, "Rot" if field else "Grün")
             doc["transaction_id"] = f"V{number:04d}"
             doc["entity_assessment"] = {"legal_entity": "Test", "addressee": "Test", "relevance": "in_scope"}
@@ -118,6 +118,8 @@ def main() -> None:
             "source_files": sources, "transactions": docs, "transaction_sources": mappings,
             "clarification_cases": cases, "master_records": [],
             "activity_report": {"datev_import_status": "Importpaket erstellt – noch nicht in DATEV importiert", "sources_used": ["Synthetische Testbelege"], "named_entities": []},
+            # v1.4.1: sieben rote von acht Vorgängen (Q = 87,5 %) verlangen die vollständige Zweitprüfung.
+            "clarification_review": second_review([doc["transaction_id"] for doc in docs if doc["traffic_light"] == "Rot"], cause={"konto_unklar": "Synthetischer Test mit je einem offenen Feld; keine systematische Fehleinstufung."}),
         }
         input_path = root / "lauf.json"
         input_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")

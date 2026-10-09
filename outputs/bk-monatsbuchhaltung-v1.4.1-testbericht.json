@@ -1,0 +1,78 @@
+{
+  "skill_version": "1.4.1",
+  "package": "bk-monatsbuchhaltung-v1.4.1.skill",
+  "package_sha256": "b43da7aac025b604d4d33d329674dc13355cd8a0fc395e7a52d40ffd8636b58f",
+  "package_files": 38,
+  "tests": [
+    {
+      "test": "test_accrual_register_first_run.py",
+      "passed": true
+    },
+    {
+      "test": "test_accrual_register_manifest.py",
+      "passed": true
+    },
+    {
+      "test": "test_datev_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_document_xml_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_parallel_processing.py",
+      "passed": true
+    },
+    {
+      "test": "test_review_return.py",
+      "passed": true
+    },
+    {
+      "test": "test_review_workbook.py",
+      "passed": true
+    },
+    {
+      "test": "test_sharepoint_target.py",
+      "passed": true
+    },
+    {
+      "test": "test_start_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v110_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v130_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v140_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v141_contract.py",
+      "passed": true
+    }
+  ],
+  "regression_cases_v141": [
+    "Anti-Abbruch 150 Eingaben / 120 Bild-PDFs",
+    "Einzelner DATEV-/SharePoint-Fehler ohne Gesamtstopp",
+    "Abgrenzungsregister fehlend, leer, HTTP 403",
+    "Klärungsquote N=100 R=25 → Zweitprüfung → R=15",
+    "Unverändert hohe Klärungsquote bleibt fachlich offen",
+    "Mehrfachzeilen und Dubletten in der Zählweise",
+    "Scan ohne Textebene nicht allein wegen OCR Rot",
+    "Vollständigkeits-Gate",
+    "Versionstest 1.4.1 / kein 1.4.2",
+    "Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei",
+    "Riecken-Connector-Pflicht; 'Kreditor fehlt' ist kein Rot-Grund; merge nie über mehrere Belege",
+    "Abgrenzungsregister: leer/nicht vorhanden ohne formalen Nachweis; EÜR ohne Register und ohne Abgrenzungen",
+    "Übertragung: Buchungsstapel und Klärungsstapel werden importiert (import_scope, Validator)"
+  ],
+  "datev_test_import": "not_performed",
+  "datev_connector": "ausschließlich Riecken",
+  "transfer_rule": "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung"
+}

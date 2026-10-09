@@ -10,6 +10,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 import build_package
+from test_datev_contract import write_pdf
 
 
 def source_item(path: Path, source_id: str) -> dict:
@@ -177,9 +178,8 @@ def test_scope_and_payment() -> None:
 
 
 def test_source_transaction_transfer(temp: Path) -> None:
-    invoice = temp / "invoice.txt"
+    invoice = write_pdf(temp / "invoice.pdf", "invoice")
     email = temp / "email.txt"
-    invoice.write_text("invoice", encoding="utf-8")
     email.write_text("email", encoding="utf-8")
     data = normalized_data(
         [source_item(invoice, "S1"), source_item(email, "S2")],
@@ -191,22 +191,46 @@ def test_source_transaction_transfer(temp: Path) -> None:
     )
     assert len(data["documents"][0]["source_paths"]) == 2
     packages, index = build_package.prepare_document_transfer(data)
-    assert sum(len(item["documents"]) for item in packages) == 2
-    assert sum(1 for item in index if item.get("included")) == 2
+    # v1.4.1 Belegdateiregel: nur der Buchungsbeleg (eine PDF) geht nach DATEV; die Begleit-E-Mail nicht als eigener Beleg.
+    assert sum(len(item["documents"]) for item in packages) == 1
+    assert sum(1 for item in index if item.get("included")) == 1
+    assert "Begleitdokument" in next(item for item in index if item["source_id"] == "S2")["reason"]
 
-    bundle = temp / "bundle.txt"
-    bundle.write_text("three logical receipts", encoding="utf-8")
+    # v1.4.1 Belegdateiregel: eine Sammeldatei darf nicht mehrere Buchungsbelege tragen.
+    bundle = write_pdf(temp / "bundle.pdf", "three logical receipts")
     transactions = [transaction(f"V{number}") for number in range(1, 4)]
     mappings = [
         {"transaction_id": item["transaction_id"], "source_id": "S3", "role": "primary_invoice"}
         for item in transactions
     ]
     shared = normalized_data([source_item(bundle, "S3")], transactions, mappings)
-    packages, index = build_package.prepare_document_transfer(shared)
-    assert sum(len(item["documents"]) for item in packages) == 1
-    assert sum(1 for item in index if item.get("included")) == 1
-    guids = {item.get("document_guid") for item in shared["documents"]}
-    assert len(guids) == 1
+    assert any("Sammeldatei" in item for item in build_package.validate_document_file_rule(shared))
+    try:
+        build_package.prepare_document_transfer(shared)
+    except ValueError as exc:
+        assert "Sammeldatei" in str(exc)
+    else:
+        raise AssertionError("Sammeldatei mit drei Buchungsbelegen wurde übertragen")
+    # Korrektes Modell: Original als bundle_original, je Vorgang eine abgeleitete PDF.
+    derived = [write_pdf(temp / f"V{number}.pdf", f"receipt {number}") for number in range(1, 4)]
+    sources = [source_item(bundle, "S3")] + [
+        {**source_item(path, f"D{number}"), "derived_from": {"source_ids": ["S3"], "method": "split", "pages": f"{number}-{number}"}}
+        for number, path in enumerate(derived, start=1)
+    ]
+    mappings = [
+        {"transaction_id": f"V{number}", "source_id": "S3", "role": "bundle_original"} for number in range(1, 4)
+    ] + [
+        {"transaction_id": f"V{number}", "source_id": f"D{number}", "role": "primary_invoice"} for number in range(1, 4)
+    ]
+    split_data = normalized_data(sources, [transaction(f"V{number}") for number in range(1, 4)], mappings)
+    assert build_package.validate_input_inventory(split_data) == []
+    assert build_package.validate_document_file_rule(split_data) == []
+    packages, index = build_package.prepare_document_transfer(split_data)
+    assert sum(len(item["documents"]) for item in packages) == 3
+    assert sum(1 for item in index if item.get("included")) == 3
+    assert next(item for item in index if item["source_id"] == "S3")["included"] is False
+    guids = {item.get("document_guid") for item in split_data["documents"]}
+    assert len(guids) == 3
 
 
 def test_activity_and_handoff() -> None:
