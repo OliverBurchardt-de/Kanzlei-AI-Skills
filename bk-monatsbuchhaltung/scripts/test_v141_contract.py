@@ -8,7 +8,7 @@
 6. Mehrfachzeilen und Dubletten in der Zählweise
 7. Scan ohne Textebene ist nicht allein wegen fehlender OCR Rot
 8. Vollständigkeits-Gate: nur Inventar oder nur Prüfungs-Excel ist kein Abschluss
-9. Versionstest: Paketvertrag 1.4.1 (Skill 1.5.0), kein Verweis auf 1.4.2
+9. Versionstest: Paketvertrag und Skill 1.5.1, kein Verweis auf 1.4.2
 10. Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei
 """
 
@@ -40,8 +40,8 @@ from test_v140_contract import PACKAGE_DIR, PERIOD, Scenario, csv_rows, extf_nam
 
 
 SKILL_ROOT = SCRIPT_DIR.parent
-VERSION = "1.4.1"  # Paketvertrag der Skripte
-SKILL_VERSION = "1.5.0"
+VERSION = "1.5.1"  # Paketvertrag der Skripte (seit v1.5.1 gleich der Skillversion)
+SKILL_VERSION = "1.5.1"
 
 
 def source_entry(path: Path, source_id: str, **extra) -> dict:
@@ -501,7 +501,7 @@ def test_version(root: Path) -> None:
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     # Seit v1.5.0 trägt SKILL.md die Skillversion; die Skripte behalten den Paketvertrag 1.4.1.
     assert f"# BK Monatsbuchhaltung v{SKILL_VERSION}" in skill and f"Startnachweis: bk-monatsbuchhaltung v{SKILL_VERSION} (Paketvertrag {VERSION})" in skill
-    assert f"Version `{SKILL_VERSION}`" in skill and f"bleibt Version `{VERSION}`" in skill
+    assert f"Version `{SKILL_VERSION}`" in skill and f"hat Version `{VERSION}`" in skill
     assert f"BK Monatsbuchhaltung v{SKILL_VERSION}" in (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
     assert build_package.SKILL_VERSION == VERSION and validate_package.EXPECTED_SKILL_VERSION == VERSION
     for path in [SKILL_ROOT / "SKILL.md", SKILL_ROOT / "agents" / "openai.yaml", *sorted((SKILL_ROOT / "references").glob("*.md")),

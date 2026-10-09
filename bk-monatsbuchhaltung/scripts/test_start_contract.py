@@ -7,10 +7,10 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.5.0"
-# Paketvertrag der Skripte (build_package.py, validate_package.py); v1.5.0 ergänzt nur SKILL.md Abschnitt 5.
-CONTRACT_VERSION = "1.4.1"
-FORBIDDEN_TARGET_VERSION = "1.5.1"
+VERSION = "1.5.1"
+# Paketvertrag der Skripte (build_package.py, validate_package.py); seit v1.5.1 gleich der Skillversion.
+CONTRACT_VERSION = "1.5.1"
+FORBIDDEN_TARGET_VERSION = "1.5.2"
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -111,6 +111,8 @@ def main() -> None:
     require(skill, "EXTF_Klaerungsposten_<JJJJ-MM>.csv", "Klärungsstapel-Dateiname")
     require(skill, "unkonfigurierter Pflichtkostenstelle", "verbleibender Kostenstellen-Stopp")
     require(skill, "Riecken-DATEV-Connector", "DATEV-Anbindung über Riecken")
+    require(skill, "Begründung aus dem Beleg", "Startnachweis Begründung aus dem Beleg")
+    require(skill, "genau eine Aufgabe", "Nächster Schritt als eine Aufgabe")
     require(skill, "`datev_health_check`", "Riecken-Erreichbarkeitsprüfung")
     # v1.4.1: Durchführungspflicht, Abschluss-Gate, Klärungsquote, Belegdateiregel.
     require(skill, "Auftrag zur vollständigen Abarbeitung", "Durchführungspflicht")
@@ -126,7 +128,7 @@ def main() -> None:
     # v1.5.0: Übertragung über den Riecken-Connector nur auf ausdrücklichen Auftrag, Klärungskonto.
     require(skill, "### 5. Übertragung über den Riecken-Connector (nur auf ausdrücklichen Auftrag)", "Abschnitt 5 Riecken-Übertragung")
     require(skill, "Riecken-Übertragung nur auf ausdrücklichen Auftrag mit Klärungskonto", "Startnachweis Riecken-Übertragung")
-    require(skill, f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) bleibt Version `{CONTRACT_VERSION}`", "Paketvertrag")
+    require(skill, f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) hat Version `{CONTRACT_VERSION}`", "Paketvertrag")
     require(skill, "159900 Klärungskonto Buchhaltung", "Kanzleistandard Klärungskonto")
     for path in (SKILL_ROOT / "SKILL.md", SKILL_ROOT / "agents" / "openai.yaml"):
         if FORBIDDEN_TARGET_VERSION in path.read_text(encoding="utf-8"):

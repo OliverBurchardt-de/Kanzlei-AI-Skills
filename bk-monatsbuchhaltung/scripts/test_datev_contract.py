@@ -81,8 +81,9 @@ def booking_document(source: Path, light: str = "Grün") -> dict:
         "period": "2025-12",
         "processing_status": "Buchungszeile erzeugt",
         "traffic_light": light,
-        "derivation": "119 EUR, Aufwand 4900 gegen Kreditor 70001, BU 401.",
-        "reason": "Betrag, Kontierung und Steuerbehandlung sind eindeutig.",
+        "document_summary": "Rechnung RE-100 der DATEV Test GmbH vom 15.12.2025 über 119,00 EUR brutto für Betriebsbedarf, zahlbar per Überweisung.",
+        "derivation": "119 EUR, Aufwand 4900 gegen Kreditor 70001, Steuerschlüssel 401.",
+        "reason": "Lieferant, Betrag, Datum, Leistung und Steuerbehandlung sind auf der Rechnung eindeutig.",
         "business_purpose_status": "betrieblich",
         "input_tax_treatment": "volle_vorsteuer",
         "prior_booking_check": {
@@ -107,6 +108,7 @@ def booking_document(source: Path, light: str = "Grün") -> dict:
     if light == "Rot":
         result["requires_clarification"] = True
         result["red_reason"] = red_reason()
+        result["next_step"] = "Beim Mandanten nachfragen und den Beleg danach endgültig zuordnen."
     return result
 
 

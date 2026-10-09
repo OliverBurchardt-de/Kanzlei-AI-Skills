@@ -37,6 +37,7 @@ from datev_io import (
     carry_order_violations,
     carry_sort_key,
     clean_text,
+    plain_language_issues,
     fiscal_year_start,
     month_bounds,
     parse_batch_file_name,
@@ -64,9 +65,9 @@ EXPECTED_REVIEW_HEADERS = {
     "Belegprüfung": [
         "Ampel-Einstufung", "Buchungsstapel", "Vorgangs-ID", "Belegdatum laut Beleg",
         "Geschäftspartner", "Belegfeld 1", "Betrag", "Währung",
-        "Buchungsperiode", "Kontierung", "Ableitung",
-        "Prüfergebnis / Ampelbegründung",
-        "Offener Punkt / nächster Schritt", "Bearbeitungsstatus",
+        "Buchungsperiode", "Beleg zeigt", "Buchung", "Daraus folgt",
+        "Warum Rot oder Grün?",
+        "Nächster Schritt", "Bearbeitungsstatus",
         "Mitarbeiter-Ergebnis",
     ],
     "Buchungszeilen": [
@@ -98,7 +99,7 @@ FORBIDDEN_DATEV_FOLDERS = {
 }
 
 
-EXPECTED_SKILL_VERSION = "1.4.1"
+EXPECTED_SKILL_VERSION = "1.5.1"
 EXPECTED_OUTPUT_CONTRACT = "monthly-booking-and-clarification-batches-v4"
 
 
@@ -121,7 +122,7 @@ def expected_review_headers(manifest: dict | None) -> dict[str, list[str]]:
     config = manifest_cost_center_config(manifest)
     if config:
         review = headers["Belegprüfung"]
-        review.insert(review.index("Kontierung") + 1, "KOST1")
+        review.insert(review.index("Buchung") + 1, "KOST1")
         bookings = headers["Buchungszeilen"]
         position = bookings.index("BU-Schlüssel") + 1
         bookings.insert(position, "KOST1")
@@ -300,6 +301,20 @@ def validate_review_workbook(path: Path, manifest: dict | None = None) -> list[s
                         "Buchungsstapel an zweiter Stelle ohne sichtbaren "
                         "Quelldateinamen oder Importfähig-Spalte."
                     )
+                if sheet_name == "Belegprüfung":
+                    text_columns = {
+                        index for index, name in enumerate(actual)
+                        if name in {"Beleg zeigt", "Buchung", "Daraus folgt", "Warum Rot oder Grün?", "Nächster Schritt"}
+                    }
+                    for row in sheet_root.findall(f".//{{{XLSX_MAIN_NS}}}row"):
+                        if int(row.get("r", "0")) < 2:
+                            continue
+                        for item in row.findall(f"{{{XLSX_MAIN_NS}}}c"):
+                            column = excel_column_index(item.get("r", ""))
+                            if column not in text_columns:
+                                continue
+                            issues = plain_language_issues(xlsx_cell_text(item, shared_strings), f"{sheet_name}!{item.get('r', '')}")
+                            errors.extend(f"{path.name}: {issue}" for issue in issues)
                 if sheet_name in {"Belegprüfung", "Buchungszeilen"}:
                     expected_colors = {
                         "Grün": "C6E0B4",

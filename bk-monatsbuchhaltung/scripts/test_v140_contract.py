@@ -118,7 +118,8 @@ class Scenario:
             doc["bookings"] = bookings
         if light == "Rot":
             doc["requires_clarification"] = True
-            doc.setdefault("reason", "Offene fachliche Entscheidung.")
+            doc.setdefault("reason", "Der Beleg nennt den Zweck der Leistung nicht; die Zuordnung ist deshalb nicht aus dem Beleg ableitbar.")
+            doc.setdefault("next_step", "Beim Mandanten nachfragen, wofür die Leistung bestimmt war.")
             self.cases.append({
                 "case_id": f"K{number}", "transaction_ids": [doc["transaction_id"]],
                 "topic": "Klärung", "facts": "Sichere Angaben exportiert.",
@@ -213,8 +214,8 @@ def test_clarification_batches(root: Path) -> None:
     }
     scenario.add("Grün")
     scenario.add("Grün")
-    scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung aus Beleg nicht erkennbar."})])
-    duplicate = scenario.add("Rot", reason="Mögliche Dublette.")
+    scenario.add("Rot", reason="Der Beleg nennt nur einen Pauschalbetrag ohne Leistungsbeschreibung; das Sachkonto ist nicht ableitbar.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung aus Beleg nicht erkennbar."})])
+    duplicate = scenario.add("Rot", reason="Rechnungsnummer, Betrag und Datum stimmen mit einer bereits im November gebuchten Rechnung überein; möglicherweise doppelt eingereicht.")
     duplicate["prior_booking_check"] = {"checked": True, "result": "moegliche_dublette", "references": ["BU 2025-11/17"]}
     duplicate["duplicate_checks"]["datev_live"] = {"checked": True, "result": "possible_duplicate", "reference": "BU 2025-11/17"}
     scenario.releases.append({**scenario.docs[0]["bookings"][0], "accrual_id": "A1", "period": PERIOD, "booking_date": "2025-12-31", "document_field_1": "ARAP-A1"})
@@ -351,7 +352,7 @@ def test_batch_presence(root: Path) -> None:
 
     (root / "red").mkdir()
     red = Scenario(root / "red", make_run(root / "red"))
-    red.add("Rot", reason="Betrag unklar.", bookings=[red_booking(amount=None, open_fields={"amount": "Betrag auf dem Beleg nicht lesbar."})], total_amount=None)
+    red.add("Rot", reason="Der Gesamtbetrag ist auf dem Scan abgeschnitten und nicht lesbar.", bookings=[red_booking(amount=None, open_fields={"amount": "Betrag auf dem Beleg nicht lesbar."})], total_amount=None)
     package, manifest, _ = red.build("red")
     assert extf_names(package) == [f"EXTF_Klaerungsposten_{PERIOD}.csv"]
     assert manifest["booking_batches"][0]["batch_kind"] == "klaerung"
@@ -362,9 +363,9 @@ def test_split(root: Path) -> None:
     # Hinweis: Das Belegdatum ist im Klärungsstapel immer leer (Pflichtleerung) und
     # kann deshalb keinen Konflikt mehr auslösen; der Konflikt wird über Belegfeld 1 erzeugt.
     scenario = Scenario(root, make_run(root))
-    scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung unklar."})])
-    scenario.add("Rot", reason="Referenz offen.", invoice_number=None, bookings=[red_booking(document_field_1=None, open_fields={"document_field_1": "Keine Rechnungsnummer erkennbar."})])
-    scenario.add("Rot", reason="Dublette.", bookings=[red_booking()])
+    scenario.add("Rot", reason="Der Beleg nennt nur einen Pauschalbetrag ohne Leistungsbeschreibung; das Sachkonto ist nicht ableitbar.", bookings=[red_booking(account=None, open_fields={"account": "Der Beleg nennt keine Leistung; das Sachkonto ist nicht ableitbar."})])
+    scenario.add("Rot", reason="Auf dem Beleg ist keine Rechnungsnummer aufgedruckt; die Belegnummer bleibt offen.", invoice_number=None, bookings=[red_booking(document_field_1=None, open_fields={"document_field_1": "Keine Rechnungsnummer erkennbar."})])
+    scenario.add("Rot", reason="Der Beleg entspricht in Betrag und Datum einer bereits gebuchten Rechnung desselben Lieferanten.", bookings=[red_booking()])
     package, manifest, _ = scenario.build("split")
     names = extf_names(package)
     assert names == [f"EXTF_Klaerungsposten_{PERIOD}.csv", f"EXTF_Klaerungsposten_{PERIOD}_02.csv"], names
@@ -406,7 +407,7 @@ def test_cost_centers(root: Path) -> None:
     assert sorted(row[36] for row in rows) == ["", "1000"]
     workbook = load_workbook(next((package / "02_Buchungspruefung").glob("*.xlsx")))
     headers = [cell.value for cell in list(workbook["Belegprüfung"].rows)[0]]
-    assert headers[headers.index("Kontierung") + 1] == "KOST1"
+    assert headers[headers.index("Buchung") + 1] == "KOST1"
     kost_cells = {row[2].value: row[headers.index("KOST1")].value for row in list(workbook["Belegprüfung"].rows)[1:]}
     assert kost_cells == {"V0001": "1000", "V0002": "ohne Kostenstelle"}
     booking_headers = [cell.value for cell in list(workbook["Buchungszeilen"].rows)[0]]
@@ -424,7 +425,7 @@ def test_cost_centers(root: Path) -> None:
     strict_run = make_run(root / "pflicht", cost=True, pflicht=True)
     pflicht = Scenario(root / "pflicht", strict_run)
     pflicht.add("Grün", bookings=[red_booking(kost1="1000", open_fields={})])
-    pflicht.add("Rot", reason="Zuordnung Praxis/Labor unklar.", bookings=[red_booking(kost1=None, open_fields={"kost1": "Zuordnung Praxis/Labor aus Beleg nicht erkennbar."})])
+    pflicht.add("Rot", reason="Die Rechnung nennt Verbrauchsmaterial ohne Hinweis, ob es für die Praxis oder das Labor bestimmt ist.", bookings=[red_booking(kost1=None, open_fields={"kost1": "Zuordnung Praxis/Labor aus Beleg nicht erkennbar."})])
     pflicht.add("Grün", total_amount="238.00", derivation="Gemischte Rechnung je Kostenstelle aufgeteilt.", bookings=[
         red_booking(kost1="1000", open_fields={}),
         red_booking(kost1="2000", open_fields={}),
@@ -443,8 +444,8 @@ def test_cost_centers(root: Path) -> None:
     headers = [cell.value for cell in list(workbook["Belegprüfung"].rows)[0]]
     kost_cells = {row[2].value: row[headers.index("KOST1")].value for row in list(workbook["Belegprüfung"].rows)[1:]}
     assert kost_cells == {"V0001": "1000", "V0002": "offen", "V0003": "1000, 2000"}
-    open_column = headers.index("Offener Punkt / nächster Schritt")
-    assert "kost1" in str({row[2].value: row[open_column].value for row in list(workbook["Belegprüfung"].rows)[1:]}["V0002"])
+    why_column = headers.index("Warum Rot oder Grün?")
+    assert "Offen bleibt: Kostenstelle" in str({row[2].value: row[why_column].value for row in list(workbook["Belegprüfung"].rows)[1:]}["V0002"])
     workbook.close()
 
     # Grün ohne KOST1 bei Pflicht: Generatorfehler.
@@ -467,7 +468,9 @@ def test_cost_centers(root: Path) -> None:
     live.docs[0]["traffic_light"] = "Rot"
     live.docs[0]["requires_clarification"] = True
     live.docs[0]["red_reason"] = red_reason("spezialregel_sonstige")
-    live.docs[0]["bookings"][0].update({"kost1": None, "open_fields": {"kost1": "Kostenstelle 9999 in DATEV anlegen."}})
+    live.docs[0]["reason"] = "Die Rechnung gehört laut Profil zur Sammelkostenstelle 9999, die in DATEV noch nicht angelegt ist."
+    live.docs[0]["next_step"] = "Kostenstelle 9999 in DATEV anlegen."
+    live.docs[0]["bookings"][0].update({"kost1": None, "open_fields": {"kost1": "Kostenstelle 9999 ist in DATEV noch nicht angelegt und kann deshalb nicht bebucht werden."}})
     live.cases.append({"case_id": "K1", "transaction_ids": ["V0001"], "topic": "Kostenstelle in DATEV anlegen", "facts": "9999 fehlt live.", "booking_risk": "Buchung ohne Kostenstelle.", "provisional_treatment": "kost1 offen.", "recommendation": "Kostenstelle 9999 anlegen.", "decision_needed": "Anlegen.", "traffic_light": "Rot", "target": "DATEV", "proposed_change": "Kostenstelle anlegen", "employee_result": ""})
     assert live.document_errors("live-red") == []
     # Fehlender Livenachweis bei konfigurierten Kostenstellen.

@@ -1,6 +1,6 @@
 """Regressionstests Änderungsanweisung v1.5.0 (Übertragung über den Riecken-Connector).
 
-1. Versionstest: Skill 1.5.0, Paketvertrag der Skripte 1.4.1, Abschnitt 5 und Referenzen vorhanden
+1. Versionstest: Skill und Paketvertrag 1.5.1, Abschnitt 5 und Referenzen vorhanden
 2. riecken_records.py: grüne Zeilen 1:1, rote Zeilen über das Klärungskonto, KLÄR-Text höchstens 60 Zeichen,
    keine Zeile Klärungskonto an Klärungskonto, kein Platzhalterbetrag, Summenabgleich je Stapel,
    Abweisung bei zwei offenen Kontoseiten, fehlendem Betrag, fehlendem Datum und überlangem Vorgabetext
@@ -34,8 +34,8 @@ from test_v140_contract import Scenario, make_run, red_booking
 from test_v141_contract import build_ok, write_run
 
 SKILL_ROOT = SCRIPT_DIR.parent
-SKILL_VERSION = "1.5.0"
-CONTRACT_VERSION = "1.4.1"
+SKILL_VERSION = "1.5.1"
+CONTRACT_VERSION = "1.5.1"
 FORBIDDEN_NEXT = "1.5.1"
 CLEARING = "1599"
 CLEARING_NAME = "Klärungskonto Buchhaltung"
@@ -46,7 +46,7 @@ CLEARING_NAME = "Klärungskonto Buchhaltung"
 def test_version_and_texts() -> None:
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     assert f"# BK Monatsbuchhaltung v{SKILL_VERSION}" in skill
-    assert f"Version `{SKILL_VERSION}`" in skill and f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) bleibt Version `{CONTRACT_VERSION}`" in skill
+    assert f"Version `{SKILL_VERSION}`" in skill and f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) hat Version `{CONTRACT_VERSION}`" in skill
     assert f"Startnachweis: bk-monatsbuchhaltung v{SKILL_VERSION} (Paketvertrag {CONTRACT_VERSION})" in skill
     assert "Riecken-Übertragung nur auf ausdrücklichen Auftrag mit Klärungskonto" in skill
     assert "### 5. Übertragung über den Riecken-Connector (nur auf ausdrücklichen Auftrag)" in skill

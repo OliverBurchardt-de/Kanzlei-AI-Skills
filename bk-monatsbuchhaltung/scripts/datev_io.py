@@ -358,6 +358,92 @@ DATEV_IMPORT_ORDER = [
 ]
 TRANSFER_RULE = "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung"
 CARRY_RESULTS = {"carried", "not_carried", "not_tested"}
+
+# Lesbare Bezeichnungen der Buchungsfelder für Prüfungsdatei und Klärungsfälle.
+FIELD_LABELS = {
+    "amount": "Betrag", "debit_credit": "Soll/Haben", "currency": "Währung",
+    "exchange_rate": "Kurs", "base_amount": "Betrag in Euro", "account": "Sachkonto",
+    "contra_account": "Gegenkonto", "bu_key": "Steuerschlüssel",
+    "recognized_date": "Belegdatum", "document_field_1": "Belegnummer",
+    "kost1": "Kostenstelle", "kost2": "Kostenstelle 2",
+    "service_date": "Leistungsdatum", "tax_period_date": "Steuerperiode",
+}
+
+# Technische Bezeichner, die in für Mitarbeiter sichtbaren Texten nichts verloren haben.
+TECHNICAL_TOKEN_PATTERN = re.compile(
+    r"(?<![\w/])(?:contra_account|account|open_fields|bu_key|document_field_1|kost1|kost2|"
+    r"recognized_date|asset_account_field|traffic_light|booking_text|batch_type|"
+    r"processing_status|transaction_id|source_id|BF1|BU-Key|Riecken|Rieken|Riken|"
+    r"Connector|Konnektor|MCP|datev_[a-z_]+|JSON|null|None)(?![\w/])",
+    re.IGNORECASE,
+)
+
+# Pauschale Begründungen, die nicht aus dem Beleg abgeleitet sind.
+GENERIC_REASONS = {
+    "kontierung prüfen", "kontierung offen", "kontierung unklar", "prüfung erforderlich",
+    "fachliche prüfung erforderlich", "bitte prüfen", "prüfen", "unklar", "offen",
+    "klärung erforderlich", "klärungsfall", "zu klären", "rot", "grün", "beleg prüfen",
+    "offene fachliche entscheidung", "fachliche unsicherheit", "mitarbeiter prüfen",
+    "manuell prüfen", "offene entscheidung", "klärungsbedarf",
+}
+
+
+def _normalized_phrase(text: str) -> str:
+    return re.sub(r"[\s.:;!,–-]+$", "", clean_text(text).casefold())
+
+
+def plain_language_issues(text: Any, label: str, *, min_length: int = 0,
+                          reject_generic: bool = False) -> list[str]:
+    """Texts for employees: no technical identifiers, no boilerplate, derived from the document."""
+    issues: list[str] = []
+    value = clean_text(text)
+    if min_length and len(value) < min_length:
+        issues.append(f"{label}: zu knapp ({len(value)} Zeichen); aus dem Beleg konkret begründen")
+    tokens = sorted({match.group(0) for match in TECHNICAL_TOKEN_PATTERN.finditer(value)})
+    if tokens:
+        issues.append(f"{label}: technische Bezeichner sind unzulässig: " + ", ".join(tokens))
+    if reject_generic and _normalized_phrase(value) in GENERIC_REASONS:
+        issues.append(f"{label}: pauschale Begründung „{value}“; es muss aus dem Beleg hervorgehen, warum")
+    return issues
+
+
+# Formulierungen, die eine fehlende technische oder profilseitige Zuordnung als
+# Klärungsgrund ausgeben. Rot ist nur zulässig, wenn aus dem Beleg selbst eine
+# konkrete Frage offenbleibt.
+MISSING_MAPPING_PATTERN = re.compile(
+    r"(standard-?zuordnung|standard-?kontierung|keine\s+(?:profil-?)?regel|nicht\s+(?:im|in\s+der)\s+(?:mandanten-?)?profil"
+    r"|kein(?:e)?\s+(?:buchungs-?)?muster|keine\s+vorbuchung|kein\s+treffer|erstmalig|neuer\s+lieferant|unbekannter\s+lieferant"
+    r"|nicht\s+konfiguriert|keine\s+erfahrung|noch\s+nie\s+gebucht|bisher\s+nicht\s+gebucht)",
+    re.IGNORECASE,
+)
+
+
+def missing_mapping_issues(text: Any, label: str) -> list[str]:
+    """A missing standard mapping, profile rule or booking pattern is never a reason for Rot."""
+    value = clean_text(text)
+    match = MISSING_MAPPING_PATTERN.search(value)
+    if not match:
+        return []
+    return [
+        f"{label}: „{match.group(0)}“ ist kein zulässiger Klärungsgrund; fehlende Standardzuordnung, "
+        "Profilregel oder Vorbuchung ersetzt die fachliche Auswertung des Belegs nicht. Rot nur, wenn aus dem "
+        "Beleg selbst eine konkrete Frage offenbleibt; diese Frage benennen"
+    ]
+
+
+def single_task_issues(text: Any, label: str = "Nächster Schritt") -> list[str]:
+    """Exactly one task in one plain sentence for the employee."""
+    issues: list[str] = []
+    value = clean_text(text)
+    if not value:
+        return [f"{label}: fehlt; genau eine Aufgabe für den Mitarbeiter nennen"]
+    if len(value) > 240:
+        issues.append(f"{label}: länger als 240 Zeichen; auf eine Aufgabe kürzen")
+    sentences = [part for part in re.split(r"(?<=[.!?])\s+", value) if part.strip()]
+    if len(sentences) > 1 or " – " in value or ";" in value or re.search(r"\b\d\.\s", value):
+        issues.append(f"{label}: enthält mehr als eine Aufgabe; genau einen Satz mit einer Aufgabe nennen")
+    issues.extend(plain_language_issues(value, label))
+    return issues
 BATCH_KIND_BOOKING = "buchung"
 BATCH_KIND_CLARIFICATION = "klaerung"
 CLARIFICATION_LABEL = "Klärungsposten"
