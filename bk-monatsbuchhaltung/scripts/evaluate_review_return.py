@@ -23,15 +23,21 @@ REQUIRED_HEADERS = [
     "Betrag",
     "Währung",
     "Buchungsperiode",
-    "Kontierung",
-    "Ableitung",
-    "Prüfergebnis / Ampelbegründung",
-    "Offener Punkt / nächster Schritt",
+    "Buchung",
+    "Daraus folgt",
+    "Warum Rot oder Grün?",
+    "Nächster Schritt",
     "Bearbeitungsstatus",
     "Mitarbeiter-Ergebnis",
 ]
-# Ältere Prüfungsdateien (bis v1.3) tragen die Spalte noch als "Belegdatum".
-HEADER_ALIASES = {"Belegdatum laut Beleg": {"Belegdatum"}}
+# Ältere Prüfungsdateien (bis v1.4) tragen abweichende Spaltennamen.
+HEADER_ALIASES = {
+    "Belegdatum laut Beleg": {"Belegdatum"},
+    "Buchung": {"Kontierung"},
+    "Daraus folgt": {"Ableitung"},
+    "Warum Rot oder Grün?": {"Prüfergebnis / Ampelbegründung"},
+    "Nächster Schritt": {"Offener Punkt / nächster Schritt"},
+}
 CLOSING_STATUSES = {
     "unverändert übernommen": "unverändert übernommen",
     "geändert": "geändert",
@@ -160,10 +166,10 @@ def classify(row: dict[str, Any], status: str) -> str:
             clean(row.get(header))
             for header in (
                 "Mitarbeiter-Ergebnis",
-                "Offener Punkt / nächster Schritt",
-                "Prüfergebnis / Ampelbegründung",
-                "Ableitung",
-                "Kontierung",
+                "Nächster Schritt",
+                "Warum Rot oder Grün?",
+                "Daraus folgt",
+                "Buchung",
             )
         )
     )

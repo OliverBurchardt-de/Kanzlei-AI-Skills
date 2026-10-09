@@ -125,7 +125,7 @@ def main() -> None:
         result = evaluate(root / "integrity-original.xlsx", returned, root / "integrity-output-2")
         assert result["status"] == "unvollständig"
         assert not result["integrity"]
-        assert any("Kontierung" in error for error in result["errors"])
+        assert any("Buchung" in error for error in result["errors"])
 
         result, _, _ = run_case(
             root,

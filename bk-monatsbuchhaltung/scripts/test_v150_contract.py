@@ -1,6 +1,6 @@
 """Regressionstests Änderungsanweisung v1.5.0 (Übertragung über den Riecken-Connector).
 
-1. Versionstest: Skill 1.5.0, Paketvertrag der Skripte 1.4.1, Abschnitt 5 und Referenzen vorhanden
+1. Versionstest: Skill und Paketvertrag 1.5.1, Abschnitt 5 und Referenzen vorhanden
 2. riecken_records.py: grüne Zeilen 1:1, rote Zeilen über das Klärungskonto, KLÄR-Text höchstens 60 Zeichen,
    keine Zeile Klärungskonto an Klärungskonto, kein Platzhalterbetrag, Summenabgleich je Stapel,
    Abweisung bei zwei offenen Kontoseiten, fehlendem Betrag, fehlendem Datum und überlangem Vorgabetext
@@ -34,9 +34,9 @@ from test_v140_contract import Scenario, make_run, red_booking
 from test_v141_contract import build_ok, write_run
 
 SKILL_ROOT = SCRIPT_DIR.parent
-SKILL_VERSION = "1.5.0"
-CONTRACT_VERSION = "1.4.1"
-FORBIDDEN_NEXT = "1.5.1"
+SKILL_VERSION = "1.5.1"
+CONTRACT_VERSION = "1.5.1"
+FORBIDDEN_NEXT = "1.5.2"
 CLEARING = "1599"
 CLEARING_NAME = "Klärungskonto Buchhaltung"
 
@@ -46,7 +46,7 @@ CLEARING_NAME = "Klärungskonto Buchhaltung"
 def test_version_and_texts() -> None:
     skill = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
     assert f"# BK Monatsbuchhaltung v{SKILL_VERSION}" in skill
-    assert f"Version `{SKILL_VERSION}`" in skill and f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) bleibt Version `{CONTRACT_VERSION}`" in skill
+    assert f"Version `{SKILL_VERSION}`" in skill and f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) hat Version `{CONTRACT_VERSION}`" in skill
     assert f"Startnachweis: bk-monatsbuchhaltung v{SKILL_VERSION} (Paketvertrag {CONTRACT_VERSION})" in skill
     assert "Riecken-Übertragung nur auf ausdrücklichen Auftrag mit Klärungskonto" in skill
     assert "### 5. Übertragung über den Riecken-Connector (nur auf ausdrücklichen Auftrag)" in skill
@@ -86,19 +86,19 @@ def make_scenario(root: Path) -> Scenario:
     scenario.add("Grün")
     scenario.add("Grün", total_amount="50.00", document_type="Gutschrift", bookings=[red_booking(amount="50.00", debit_credit="H", booking_text="Gutschrift DATEV Test", open_fields={})])
     # V0003: Konto offen -> Klärungskonto im Soll
-    scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, account_name=None, open_fields={"account": "Kontierung aus Beleg nicht erkennbar."})])
+    scenario.add("Rot", reason="Die Rechnung nennt die Positionen ohne Leistungsbeschreibung; das Sachkonto ist nicht ableitbar.", bookings=[red_booking(account=None, account_name=None, open_fields={"account": "Kontierung aus Beleg nicht erkennbar."})])
     # V0004: Anlage, Anlagenkonto offen -> Klärungskonto, Zielkonto im Text
-    scenario.add("Rot", reason="Anlagenzugang.", asset_booking=True, total_amount="238.00", red_reason=red_reason("anlage_gwg_spezialregel"),
+    scenario.add("Rot", reason="Die Rechnung betrifft ein Gerät Dyson AM07 über 238,00 EUR; als Anlagenzugang bleibt das Anlagenkonto offen.", asset_booking=True, total_amount="238.00", red_reason=red_reason("anlage_gwg_spezialregel"),
                  bookings=[red_booking(amount="238.00", account=None, account_name=None, asset_account_field="account", open_fields={"account": "Anlagenkonto bleibt offen."})])
     # V0005: beide Kontoseiten offen -> nicht übertragbar
-    scenario.add("Rot", reason="Rechtsträger und Konto unklar.", red_reason=red_reason("rechtstraeger_unklar"),
+    scenario.add("Rot", reason="Die Rechnung ist an eine andere Firma als den Mandanten adressiert; Rechtsträger und Sachkonto bleiben offen.", red_reason=red_reason("rechtstraeger_unklar"),
                  bookings=[red_booking(account=None, account_name=None, contra_account=None, contra_account_name=None,
-                                       open_fields={"account": "Konto unklar.", "contra_account": "Geschäftspartneridentität unklar."})])
+                                       open_fields={"account": "Die Leistung ist nicht erkennbar; das Sachkonto bleibt offen.", "contra_account": "Die Geschäftspartneridentität ist nicht eindeutig; das Gegenkonto bleibt offen."})])
     # V0006: Betrag unsicher -> nicht übertragbar
-    scenario.add("Rot", reason="Betrag unsicher, Seite 2 fehlt.", total_amount=None, red_reason=red_reason("fehlende_belegangabe"),
+    scenario.add("Rot", reason="Seite 2 der Rechnung fehlt; der Gesamtbetrag ist deshalb nicht gesichert.", total_amount=None, red_reason=red_reason("fehlende_belegangabe"),
                  bookings=[red_booking(amount=None, open_fields={"amount": "Seite 2 der Rechnung fehlt."})])
     # V0007: Datum unsicher -> nicht übertragbar
-    scenario.add("Rot", reason="Belegdatum nicht erkennbar.", recognized_date=None, red_reason=red_reason("fehlende_belegangabe"),
+    scenario.add("Rot", reason="Das Rechnungsdatum ist auf dem Beleg nicht lesbar; das Belegdatum bleibt offen.", recognized_date=None, red_reason=red_reason("fehlende_belegangabe"),
                  bookings=[red_booking(open_fields={"recognized_date": "Datum auf dem Beleg nicht lesbar."})])
     return scenario
 
@@ -234,9 +234,9 @@ def test_workbook_update(package: Path, work: Path, records: dict, rejected: lis
     rows = {str(review.cell(r, cols["Vorgangs-ID"]).value): r for r in range(2, review.max_row + 1)}
     assert review.cell(rows["V0001"], cols["Buchungsstapel"]).value == "Riecken: Eingangsrechnungen 2025-12"
     assert review.cell(rows["V0003"], cols["Buchungsstapel"]).value == f"Riecken: Rechnungen Nachlauf 2025-12 (Konto {CLEARING})"
-    assert str(review.cell(rows["V0003"], cols["Kontierung"]).value).startswith("Gebucht über Riecken: Soll 1599 an Haben 70001")
-    assert "Kontierung aus Beleg nicht erkennbar" in str(review.cell(rows["V0003"], cols["Offener Punkt / nächster Schritt"]).value)
-    assert str(review.cell(rows["V0003"], cols["Offener Punkt / nächster Schritt"]).value).startswith("Umbuchung: Klärungskonto 1599")
+    assert str(review.cell(rows["V0003"], cols["Buchung"]).value).startswith("Gebucht über Riecken: Soll 1599 an Haben 70001")
+    assert "Kontierung aus Beleg nicht erkennbar" in str(review.cell(rows["V0003"], cols["Warum Rot oder Grün?"]).value)
+    assert str(review.cell(rows["V0003"], cols["Nächster Schritt"]).value).startswith("Umbuchung: Klärungskonto 1599")
     assert str(review.cell(rows["V0005"], cols["Buchungsstapel"]).value).startswith("nicht gebucht (Entscheidung Oliver Burchardt")
     assert review.cell(rows["V0005"], cols["Bearbeitungsstatus"]).value == "nicht übernommen"
     assert "Oliver Burchardt, 2026-10-08" in str(review.cell(rows["V0005"], cols["Mitarbeiter-Ergebnis"]).value)
