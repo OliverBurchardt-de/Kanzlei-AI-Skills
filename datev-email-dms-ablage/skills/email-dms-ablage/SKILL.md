@@ -1,15 +1,15 @@
 ---
 name: email-dms-ablage
-description: Immer bei Aufträgen zur Ablage, Archivierung oder Verarbeitung von ein- und ausgehenden E-Mails in DATEV DMS über den Microsoft-Outlook-Connector und Riecken mCO verwenden. Pflicht: EML-Datei (Original-MIME oder dokumentierte Rekonstruktion aus den Outlook-Daten) samt Anhängen, Zuordnung nach Ablage-Knigge, ausdrücklicher Bearbeitungsstatus, tatsächliche Dateiübergabe, Rücklesekontrolle mit Dokument-ID.
+description: Immer bei Aufträgen zur Ablage, Archivierung oder Verarbeitung von ein- und ausgehenden E-Mails in DATEV DMS über den Microsoft-Outlook-Connector und Riecken mCO verwenden. Pflicht: Original-EML samt Anhängen, soweit verfügbar; bei ausdrücklicher Nutzerfreigabe auch klar gekennzeichnete rekonstruierte EML. Immer Ablage-Knigge, Status und Rücklesekontrolle beachten. Tatsächliche Dateiübergabe an Riecken mCO und Rücklesekontrolle mit Dokument-ID.
 ---
 
-# E-Mail-Ablage DATEV-DMS — verbindlicher Standard (v1.1.0)
+# E-Mail-Ablage DATEV-DMS — verbindlicher Standard (v1.2.0)
 
 ## Aktivierung
-Bei jeder beauftragten E-Mail-Ablage (Eingang und Ausgang, einzelne Nachrichten oder ganze Korrespondenz) diesen Workflow automatisch anwenden. Die Nutzeraussage zur Ablage ist Auftrag und Freigabe für Abruf, EML-Erstellung, Dateiübergabe und Ausführung des Change-Plans. Bei eindeutigem Arbeitsauftrag keine Rückfragen stellen. Rückfrage nur, wenn der Mandant nicht eindeutig bestimmbar ist oder mehrere Knigge-Regeln gleich gut passen.
+Bei jeder beauftragten E-Mail-Ablage (Eingang und Ausgang, einzelne Nachrichten oder ganze Korrespondenz) diesen Workflow automatisch anwenden. Die Nutzeraussage zur Ablage ist Auftrag und Freigabe für Abruf, Original-EML, Dateiübergabe und Ausführung des Change-Plans. Sie ist keine Freigabe für eine rekonstruierte EML; dafür ist eine ausdrückliche, gesonderte Freigabe des Nutzers erforderlich (Abschnitt 2). Bei eindeutigem Arbeitsauftrag keine weiteren Rückfragen stellen. Rückfrage nur, wenn der Mandant nicht eindeutig bestimmbar ist, mehrere Knigge-Regeln gleich gut passen oder die Freigabe für eine Rekonstruktion fehlt.
 
 Startnachweis sinngemäß ausgeben und danach selbstständig weiterarbeiten:
-`Startnachweis: email-dms-ablage v1.1.0 | Quelle Outlook-Connector | EML Original oder Rekonstruktion | Knigge-Zuordnung | Status explizit | Dateiübergabe geprüft | Rücklesekontrolle mit Dokument-ID`
+`Startnachweis: email-dms-ablage v1.2.0 | Quelle Outlook-Connector | Original-EML vorrangig, Rekonstruktion nur mit Freigabe | Knigge-Zuordnung | Status explizit | Dateiübergabe geprüft | Rücklesekontrolle mit Dokument-ID`
 
 ## Werkzeuge
 - Outlook: `outlook_email_search` (Nachricht finden), `read_resource` mit `mail:///messages/{id}` (Kopfdaten, HTML-Text, Anhangsliste), `read_resource` mit der Anhang-URI (liefert die Anhangsdatei auf die Festplatte), `outlook_batch_delete_messages` (verschiebt einzelne Nachrichten nach „Gelöschte Elemente“). `outlook_trash_thread` nicht verwenden, es löscht den gesamten Thread.
@@ -23,16 +23,19 @@ Startnachweis sinngemäß ausgeben und danach selbstständig weiterarbeiten:
 4. Eingang und Ausgang getrennt behandeln. Zu einem Thread gehörende Ausgangsnachrichten nur ablegen, wenn der Auftrag sie umfasst.
 
 ## 2. EML erzeugen
-1. Liefert der Connector vollständige Original-MIME-Daten (RFC 5322 mit allen Headern), diese unverändert als EML verwenden. Der Microsoft-365-Connector liefert das derzeit nicht; er liefert strukturierte Felder.
-2. Andernfalls aus den tatsächlich gelieferten Daten mit `scripts/build_eml.py` eine technisch gültige EML erzeugen:
-   - Eingabe-JSON mit den Feldern aus `read_resource` (Beispiel im Skript-Docstring), HTML-Body unverändert übernehmen.
-   - Alle abgerufenen Anhänge über `--attachments-dir` einbinden; eingebettete Bilder werden mit `Content-Disposition: inline` abgelegt.
-   - Das Skript setzt nur Header aus gelieferten Werten (From, To, Cc, Subject, Date aus `sentDateTime`, Message-ID aus `internetMessageId`). Es erfindet keine Received-, Return-Path-, DKIM- oder sonstigen Transportheader. Es kennzeichnet die Datei mit `X-BK-EML-Source: reconstructed-from-graph` und listet enthaltene Anhänge in `X-BK-Included-Attachments`.
-   - Ein `text/plain`-Teil wird aus dem HTML abgeleitet und mit `X-BK-Derived` gekennzeichnet; der HTML-Teil bleibt unverändert.
-3. EML nach dem Erzeugen lokal prüfen: mit Python `email.parser` (policy `strict`) parsen, Struktur ausgeben, jeden Anhang byteweise mit der Quelldatei vergleichen. Bei Abweichung nicht weiterarbeiten.
-4. Fehlt ein Anhang (Abruf nicht möglich), bricht das Skript ab. Nur mit `--allow-missing` weiterarbeiten; die fehlenden Teile stehen dann in `X-BK-Missing-Attachments` und müssen in die DMS-Notiz.
-5. Lässt der Übertragungsweg (Abschnitt 3) die vollständige Datei nicht zu, dürfen Anhänge nur mit `--omit-attachments` und `--omit-reason` weggelassen werden. Reihenfolge: zuerst eingebettete Signaturgrafiken ohne Sachinhalt, nie Anhänge mit Sachinhalt (Rechnungen, Verträge, Bescheide). Weggelassene Anhänge stehen in `X-BK-Omitted-Attachments` und müssen in die DMS-Notiz. Eine solche Datei ist als unvollständig zu bezeichnen.
-6. Das Fehlen einer Original-MIME-Exportfunktion führt nicht zum Abbruch. Keine TXT-, PDF- oder HTML-Datei als EML ausgeben.
+1. **Vorrang Original-EML.** Vollständiges Original-EML (RFC 5322/MIME) einschließlich technischer Header, Nachrichtentext, HTML sowie eingebetteter und regulärer Anhänge über einen tatsächlich verfügbaren, freigegebenen Exportweg bevorzugen. Liefert der Connector solche Daten, diese unverändert als EML verwenden; dann wird ausschließlich die Original-EML abgelegt. Keine TXT-, PDF- oder HTML-Datei lediglich mit der Endung `.eml` ausgeben. Der Microsoft-365-Connector liefert derzeit keine Original-MIME-Daten, sondern strukturierte Felder.
+2. **Ohne Original-MIME: Nutzer informieren, Original erhalten.** Liefert der Connector keinen vollständigen MIME-Export, den Nutzer darüber informieren, die Nachricht in Outlook unverändert erhalten und die ausdrückliche Freigabe für eine rekonstruierte EML einholen. Eine allgemeine Ablageanweisung genügt dafür nicht. Eine Freigabe liegt vor, wenn der Nutzer die Rekonstruktion in diesem Auftrag oder als stehende Regel ausdrücklich zugelassen hat (z. B. „rekonstruierte EML ist freigegeben“).
+3. **Ohne Freigabe: Blockade melden, nicht ablegen.** Liegt keine ausdrückliche Freigabe vor, keine rekonstruierte EML erstellen, die technische Blockade transparent melden (Connector, fehlende Exportfunktion) und keine Ablage als Original-EML behaupten. Das ist kein stiller Abbruch, sondern eine Rückmeldung mit der Frage nach Freigabe.
+4. **Mit Freigabe: valide MIME-EML rekonstruieren** mit `scripts/build_eml.py`:
+   - Eingabe-JSON mit den Feldern aus `read_resource` (Beispiel im Skript-Docstring). Alle tatsächlich verfügbaren Nachrichteninhalte und Anhänge vollständig übernehmen; Anhänge über `--attachments-dir` einbinden, eingebettete Bilder mit `Content-Disposition: inline`.
+   - Vorhandene Absender-, Empfänger-, Betreff- und Zeitangaben verwenden (From, To, Cc, Subject, Date aus `sentDateTime`, Message-ID aus `internetMessageId`). Keine nicht bekannten technischen Header oder Message-IDs als Originaldaten ausgeben; das Skript setzt keine Received-, Return-Path-, DKIM- oder sonstigen Transportheader. Fehlt die Message-ID, erzeugt das Skript eine lokale Kennung unter `reconstructed.invalid` und vermerkt das im Header.
+   - Das Skript setzt die Header `X-Reconstructed-EML: yes` und `X-BK-EML-Source: reconstructed-from-graph`, listet enthaltene Anhänge in `X-BK-Included-Attachments` und stellt dem Nachrichtentext (Text- und HTML-Teil) den Hinweis „Rekonstruierte EML; keine durch Outlook exportierte Original-MIME-Datei“ voran. Der gelieferte HTML-Inhalt folgt danach unverändert. Ein `text/plain`-Teil wird aus dem HTML abgeleitet und mit `X-BK-Derived` gekennzeichnet.
+   - Dateiname und DMS-Titel mit „rekonstruierte EML“ kennzeichnen, z. B. `2026-10-08_AW_Kuendigung_taxmaro_rekonstruierte-EML.eml`.
+   - Derselbe Hinweis gehört in die DMS-Notiz, zusammen mit Freigabe des Nutzers (Wortlaut oder Datum), Datenquelle (Microsoft-365-Connector, Nachrichten-ID), enthaltenen Anhängen und nicht verfügbaren Anhängen.
+5. EML nach dem Erzeugen lokal prüfen: mit Python `email.parser` (policy `strict`) parsen, Struktur ausgeben, jeden Anhang byteweise mit der Quelldatei vergleichen. Bei Abweichung nicht weiterarbeiten.
+6. Fehlt ein Anhang (Abruf nicht möglich), bricht das Skript ab. Nur mit `--allow-missing` weiterarbeiten; die fehlenden Teile stehen dann in `X-BK-Missing-Attachments` und müssen in die DMS-Notiz. Fehlende Anhänge nie ersetzen oder fingieren.
+7. Lässt der Übertragungsweg (Abschnitt 3) die vollständige Datei nicht zu, dürfen Anhänge nur mit `--omit-attachments` und `--omit-reason` weggelassen werden. Reihenfolge: zuerst eingebettete Signaturgrafiken ohne Sachinhalt, nie Anhänge mit Sachinhalt (Rechnungen, Verträge, Bescheide). Weggelassene Anhänge stehen in `X-BK-Omitted-Attachments` und müssen in die DMS-Notiz.
+8. **Bezeichnung.** Eine rekonstruierte EML darf nie als Original-EML bezeichnet werden. Wurden alle verfügbaren Nachrichtendaten und Anhänge übernommen, darf sie als „inhaltlich vollständig aus den verfügbaren Outlook-Daten rekonstruiert“ bezeichnet werden, nicht als technische Originaldatei. Wurden Anhänge weggelassen oder fehlen sie, ist sie als unvollständig zu bezeichnen.
 
 ## 3. Dateiübergabe an Riecken mCO
 `datev_prepare_document_filing` nimmt die Datei auf genau einem dieser Wege an, in dieser Reihenfolge prüfen und den ersten technisch funktionierenden Weg verwenden:
@@ -46,16 +49,16 @@ Existiert kein funktionierender Übertragungsweg, die konkrete Blockade (Tool, F
 1. Mandant über `datev_search_clients` bestimmen (Nummer, Name, E-Mail-Adresse oder Domain). Bei mehreren Kandidaten (Privat, Praxis, GmbH) zuerst eindeutig zuordnen; Nachrichtentext, Absender, bisherige Korrespondenz heranziehen. Mandantennummer und UUID im Protokoll festhalten.
 2. Art, Thema und Richtung der Nachricht semantisch bestimmen. Den gesamten Knigge in `references/ablage-knigge.csv` nach `Bezeichnung` und `Ergaenzung` durchsuchen; `references/abkuerzungen.csv` interpretiert die Präfixe (`Ba`=Brief an, `Bv`=Brief von, `BaM`/`BvM` Mandant, `BaFA`/`BvFA` Finanzamt usw.). Passenden `KniggeId`, `Dokumentklasse`, `Bereich`, `Ordner`, `Register`, `Status` ermitteln. Spezialregel vor generischer Regel. Keine pauschale Standardablage, wenn eine konkrete Zuordnungsregel existiert. Fehlt eine eindeutige Übereinstimmung, die sachlich zutreffende generische Regel wählen (z. B. `10041 Sonstige Korrespondenz` für Korrespondenz mit Dritten ohne Spezialregel) und die Entscheidung im Protokoll begründen.
 3. Die IDs im Knigge sind Hinweise. Vor jeder Ablage `datev_lookup_dms_structure({type:"structure", domain:"Mandanten"})` aufrufen und die aktuellen `domain_id`, `folder_id`, `register_id` verwenden. In `datev_prepare_document_filing` reicht `register_id`; Ordner und Ablage werden daraus abgeleitet. `KniggeId` nicht an den Connector übergeben; er unterstützt das Feld nicht. KniggeId in `keywords` und `note` dokumentieren.
-4. Beschreibung nach Knigge-Muster: `{Knigge-Bezeichnung}: E-Mail von/an {Partner} ({Adresse}) vom {Datum} – {Betreff}`. Jahr und Monat aus dem Versanddatum setzen (`year`, `month`), `receipt_date` auf das Versanddatum.
+4. Beschreibung nach Knigge-Muster: `{Knigge-Bezeichnung}: E-Mail von/an {Partner} ({Adresse}) vom {Datum} – {Betreff}`; bei Rekonstruktion mit dem Zusatz `[rekonstruierte EML]`. Betreff, Richtung, Datum, Name und Rekonstruktionsstatus stehen damit im Titel. Jahr und Monat aus dem Versanddatum setzen (`year`, `month`), `receipt_date` auf das Versanddatum.
 
 ## 5. Bearbeitungsstatus
 Bei jedem Ablageaufruf `state` ausdrücklich setzen, als Name oder ID aus `datev_lookup_dms_structure({type:"states"})`: `erledigt` (ID 6) für abgeschlossene Korrespondenz, `offen` (ID 5) für noch zu bearbeitende Unterlagen. Keine stillschweigende Übernahme eines Standardstatus. Reihenfolge: ausdrückliche Vorgabe des Nutzers, dann tatsächlicher Bearbeitungsstand, dann Knigge-Spalte `Status`.
 
 ## 6. DMS-Ablage ausführen
-Für jede E-Mail getrennt:
-1. EML erzeugen oder Original-EML verwenden (Abschnitt 2).
+Eingangs- und Ausgangsnachricht getrennt als Original-EML ablegen; bei ausdrücklich freigegebener Rekonstruktion jeweils als klar gekennzeichnete rekonstruierte EML. Für jede E-Mail getrennt:
+1. Original-EML verwenden oder, nur mit Freigabe, EML rekonstruieren (Abschnitt 2).
 2. Dateiübergabe nach Abschnitt 3.
-3. `datev_prepare_document_filing` mit `client`, `description`, `document_class="dokument"`, `register_id`, `state`, `year`, `month`, `receipt_date`, `keywords`, `note` und der Dateiquelle aufrufen. Die `note` enthält: Richtung (Eingang/Ausgang), ob Original-MIME oder Rekonstruktion, enthaltene Anhänge, weggelassene oder fehlende Anhänge mit Grund, KniggeId, Outlook-Message-ID.
+3. `datev_prepare_document_filing` mit `client`, `description`, `document_class="dokument"`, `register_id`, `state`, `year`, `month`, `receipt_date`, `keywords`, `note` und der Dateiquelle aufrufen. Die `note` enthält: Richtung (Eingang/Ausgang), „Original-EML“ oder „Rekonstruierte EML; keine durch Outlook exportierte Original-MIME-Datei“, bei Rekonstruktion die Freigabe des Nutzers und die Datenquelle, enthaltene Anhänge, weggelassene oder fehlende Anhänge mit Grund, KniggeId, Outlook-Message-ID.
 4. Den zurückgegebenen `diff` gegen Mandant, Ablage/Ordner/Register, Status, Jahr/Monat und Dateiname prüfen. `upload.size_bytes` mit der lokalen Dateigröße abgleichen.
 5. `datev_execute_change_plan` mit `change_plan_id`, `confirmation_token` und `application="dms"` ausführen. Die Freigabe liegt im Ablageauftrag; eine zusätzliche Bestätigung ist nicht einzuholen, sofern der Nutzer das nicht ausdrücklich verlangt.
 6. Die zurückgegebene `documentId` speichern und im Protokoll festhalten.
@@ -65,6 +68,7 @@ Nach jeder Ablage `datev_get_document` mit der tatsächlichen `documentId` aufru
 - `correspondence_partner_guid` = UUID des Mandanten aus `datev_search_clients`
 - `domain`, `folder`, `register` = Knigge-Zuordnung
 - `extension` = `EML`
+- bei Rekonstruktion: Kennzeichnung „rekonstruierte EML“ in `description`, Dateiname und `note` vorhanden
 - `structure_items` enthält die Datei mit Name `.eml` und `size` = lokale Dateigröße
 - `state` = `offen` oder `erledigt` wie beauftragt
 - `description`, `keywords`, `note` wie übergeben, einschließlich dokumentierter Einschränkungen
@@ -79,10 +83,11 @@ Nur bei ausdrücklicher Löschanweisung des Nutzers:
 Bei fehlgeschlagener oder unvollständig geprüfter Ablage bleibt die Nachricht in Outlook.
 
 ## 9. Verbotene Verhaltensweisen
-- Kein Abbruch allein wegen fehlender Original-MIME-Exportfunktion.
+- Kein stiller Abbruch wegen fehlender Original-MIME-Exportfunktion: Nutzer informieren und Freigabe für die Rekonstruktion einholen.
+- Keine rekonstruierte EML ohne ausdrückliche Nutzerfreigabe; eine allgemeine Ablageanweisung genügt nicht.
 - Keine TXT-, PDF- oder HTML-Datei als angebliche EML.
 - Keine erfundenen Original-Header oder Anhänge.
-- Keine rekonstruierte EML als unverändertes Original bezeichnen; Kennzeichnung im Header und in der DMS-Notiz ist Pflicht.
+- Keine rekonstruierte EML als Original-EML bezeichnen; Kennzeichnung in Header, Nachrichtentext, Dateiname, DMS-Titel und DMS-Notiz ist Pflicht. In Rückmeldung und Protokoll immer zwischen „Original-EML“ und „rekonstruierte EML“ unterscheiden.
 - Keine stillen Anhangauslassungen; weggelassene oder fehlende Teile stehen in Header und Notiz.
 - Keine generische Standardablage, wenn eine Knigge-Regel passt.
 - Keine Löschung vor bestätigter Ablage und bestandener Rücklesekontrolle.
@@ -91,7 +96,7 @@ Bei fehlgeschlagener oder unvollständig geprüfter Ablage bleibt die Nachricht 
 - Keine unnötigen Rückfragen bei eindeutigem Arbeitsauftrag.
 
 ## 10. Protokoll je E-Mail
-Am Ende je Nachricht ausgeben: Richtung, Absender/Empfänger, Betreff, Datum, Mandant (Nummer), KniggeId und Regel, Ablage/Ordner/Register, Status, Dateiname und Größe, Original oder Rekonstruktion, enthaltene und weggelassene Anhänge, Übertragungsweg, DMS-Dokumentnummer und Dokument-ID, Ergebnis der Rücklesekontrolle, Outlook-Löschung ja/nein.
+Am Ende je Nachricht ausgeben: Richtung, Absender/Empfänger, Betreff, Datum, Mandant (Nummer), KniggeId und Regel, Ablage/Ordner/Register, Status, Dateiname und Größe, „Original-EML“ oder „rekonstruierte EML“ (bei Rekonstruktion: Freigabe des Nutzers, Datenquelle, Bezeichnung „inhaltlich vollständig aus den verfügbaren Outlook-Daten rekonstruiert“ oder „unvollständig“), enthaltene, weggelassene und nicht verfügbare Anhänge, Übertragungsweg, DMS-Dokumentnummer und Dokument-ID, Ergebnis der Rücklesekontrolle, Outlook-Löschung ja/nein.
 
 ## Referenzdateien
 `references/ablage-knigge.csv`: Übertragung des Tabellenblatts `Knigge` aus der Datei `Ablage-Knigge(1).xlsx` inklusive Zuordnung und Metadaten.

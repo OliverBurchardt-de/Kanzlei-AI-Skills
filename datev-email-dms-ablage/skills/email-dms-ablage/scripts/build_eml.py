@@ -28,8 +28,11 @@ Eingabe (JSON, Felder wie vom Microsoft-365-Connector geliefert):
 Grundsätze:
 - Es werden nur Werte übernommen, die der Connector tatsächlich geliefert hat.
   Keine Received-, Return-Path-, DKIM- oder sonstigen Transportheader werden erfunden.
-- Die Datei wird im Header ausdrücklich als Rekonstruktion gekennzeichnet
-  (X-BK-EML-Source: reconstructed-from-graph).
+- Die Datei wird als Rekonstruktion gekennzeichnet: Header X-Reconstructed-EML: yes und
+  X-BK-EML-Source: reconstructed-from-graph; dem Text- und dem HTML-Teil wird der Hinweis
+  "Rekonstruierte EML; keine durch Outlook exportierte Original-MIME-Datei" vorangestellt,
+  der gelieferte HTML-Inhalt folgt danach unverändert (--no-body-marker unterdrückt den
+  Hinweis im Nachrichtentext, nicht die Header).
 - Liegt ein Anhang aus dem JSON nicht vor (weder Datei noch contentBytes), bricht das
   Skript mit Exit-Code 2 ab, damit keine stillen Anhangauslassungen entstehen.
   Mit --allow-missing werden fehlende Anhänge stattdessen im Header
@@ -52,6 +55,11 @@ from datetime import datetime, timezone
 from email import policy
 from email.message import EmailMessage
 from email.utils import format_datetime, formataddr, make_msgid
+
+
+MARKER = "Rekonstruierte EML; keine durch Outlook exportierte Original-MIME-Datei"
+MARKER_HTML = ('<div style="border:1px solid #999;padding:6px;margin-bottom:8px;'
+               'font-family:sans-serif;font-size:10pt">' + MARKER + '</div>\n')
 
 
 def _addr(entry):
@@ -97,7 +105,7 @@ def html_to_text(src):
     return s.strip() + "\n"
 
 
-def build(data, attachments_dir, allow_missing, omit=None, omit_reason=None):
+def build(data, attachments_dir, allow_missing, omit=None, omit_reason=None, body_marker=True):
     msg = EmailMessage(policy=policy.SMTP)
 
     sender = _addr(data.get("sender")) or _addr(data.get("from"))
@@ -123,6 +131,7 @@ def build(data, attachments_dir, allow_missing, omit=None, omit_reason=None):
         msg["X-BK-Message-ID-Note"] = "Message-ID vom Connector nicht geliefert; lokal erzeugt"
 
     msg["MIME-Version"] = "1.0"
+    msg["X-Reconstructed-EML"] = "yes"
     msg["X-BK-EML-Source"] = "reconstructed-from-graph"
     msg["X-BK-Reconstructed-At"] = format_datetime(datetime.now(timezone.utc))
     if data.get("receivedDateTime"):
@@ -135,12 +144,16 @@ def build(data, attachments_dir, allow_missing, omit=None, omit_reason=None):
     body = data.get("body") or {}
     content = body.get("content") or ""
     ctype = (body.get("contentType") or "text").lower()
+    text_prefix = (MARKER + "\n\n") if body_marker else ""
+    html_prefix = MARKER_HTML if body_marker else ""
     if ctype == "html":
-        msg.set_content(html_to_text(content), subtype="plain", charset="utf-8")
-        msg.add_alternative(content, subtype="html", charset="utf-8")
+        msg.set_content(text_prefix + html_to_text(content), subtype="plain", charset="utf-8")
+        msg.add_alternative(html_prefix + content, subtype="html", charset="utf-8")
         msg["X-BK-Derived"] = "text/plain from text/html"
     else:
-        msg.set_content(content, subtype="plain", charset="utf-8")
+        msg.set_content(text_prefix + content, subtype="plain", charset="utf-8")
+    if body_marker:
+        msg["X-BK-Body-Marker"] = "yes"
 
     missing = []
     included = []
@@ -200,6 +213,8 @@ def main():
                     help="'all' oder kommagetrennte Namen: diese Anhänge bewusst weglassen; "
                          "wird im Header X-BK-Omitted-Attachments dokumentiert (Pflicht: --omit-reason)")
     ap.add_argument("--omit-reason", default=None)
+    ap.add_argument("--no-body-marker", action="store_true",
+                    help="Hinweis im Nachrichtentext unterdrücken (Header bleiben gesetzt)")
     args = ap.parse_args()
     if args.omit_attachments and not args.omit_reason:
         ap.error("--omit-attachments erfordert --omit-reason")
@@ -211,7 +226,8 @@ def main():
     if args.omit_attachments:
         omit = "all" if args.omit_attachments.strip().lower() == "all" else \
             {n.strip() for n in args.omit_attachments.split(",") if n.strip()}
-    msg, included, missing, omitted = build(data, args.attachments_dir, args.allow_missing, omit, args.omit_reason)
+    msg, included, missing, omitted = build(data, args.attachments_dir, args.allow_missing, omit,
+                                            args.omit_reason, body_marker=not args.no_body_marker)
     with open(args.output, "wb") as fh:
         fh.write(msg.as_bytes())
 

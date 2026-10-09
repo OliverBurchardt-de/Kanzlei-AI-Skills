@@ -57,14 +57,20 @@ def test_full():
         assert m["Message-ID"] == "<abc@example.com>"
         assert m["Date"].startswith("Thu, 08 Oct 2026 14:15:00")
         assert m["X-BK-EML-Source"] == "reconstructed-from-graph"
+        assert m["X-Reconstructed-EML"] == "yes"
         assert "Received" not in m and "Return-Path" not in m and "DKIM-Signature" not in m
         atts = list(m.iter_attachments())
         assert [a.get_filename() for a in atts] == ["logo.png", "rechnung.pdf"]
         assert atts[0].get_content_disposition() == "inline"
         assert atts[1].get_content_disposition() == "attachment"
         assert atts[0].get_payload(decode=True) == PNG
-        assert m.get_body(preferencelist=("html",)).get_content().strip() == base_msg()["body"]["content"]
-        assert "31.12.2026" in m.get_body(preferencelist=("plain",)).get_content()
+        html = m.get_body(preferencelist=("html",)).get_content()
+        plain = m.get_body(preferencelist=("plain",)).get_content()
+        marker = "Rekonstruierte EML; keine durch Outlook exportierte Original-MIME-Datei"
+        assert html.startswith("<div") and marker in html
+        assert html.strip().endswith(base_msg()["body"]["content"])  # Original-HTML folgt unverändert
+        assert plain.startswith(marker)
+        assert "31.12.2026" in plain
         assert not m.defects and not any(p.defects for p in m.walk())
 
 
@@ -106,6 +112,16 @@ def test_omit_selected_documented():
         assert rep["attachments_omitted"] and rep["attachments_included"]
 
 
+def test_no_body_marker_keeps_headers():
+    with tempfile.TemporaryDirectory() as tmp:
+        r, out = run(base_msg(), ["--no-body-marker"], tmp)
+        assert r.returncode == 0, r.stderr
+        m = parse(out)
+        assert m["X-Reconstructed-EML"] == "yes"
+        assert m["X-BK-Body-Marker"] is None
+        assert m.get_body(preferencelist=("html",)).get_content().strip() == base_msg()["body"]["content"]
+
+
 def test_text_body_without_message_id():
     with tempfile.TemporaryDirectory() as tmp:
         msg = base_msg()
@@ -116,6 +132,7 @@ def test_text_body_without_message_id():
         assert r.returncode == 0, r.stderr
         m = parse(out)
         assert m.get_content_type() == "text/plain"
+        assert m.get_content().startswith("Rekonstruierte EML;") and "Nur Text" in m.get_content()
         assert m["Message-ID"].endswith("@reconstructed.invalid>")
         assert m["X-BK-Message-ID-Note"]
 
