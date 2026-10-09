@@ -7,8 +7,10 @@ from pathlib import Path
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
-VERSION = "1.4.1"
-FORBIDDEN_TARGET_VERSION = "1.4.2"
+VERSION = "1.5.0"
+# Paketvertrag der Skripte (build_package.py, validate_package.py); v1.5.0 ergänzt nur SKILL.md Abschnitt 5.
+CONTRACT_VERSION = "1.4.1"
+FORBIDDEN_TARGET_VERSION = "1.5.1"
 
 
 def require(text: str, needle: str, label: str) -> None:
@@ -64,9 +66,9 @@ def parse_simple_yaml(path: Path) -> dict:
 def require_python_version(path: Path, constant: str) -> None:
     text = path.read_text(encoding="utf-8")
     match = re.search(rf"^{re.escape(constant)}\s*=\s*[\"']([^\"']+)[\"']", text, re.MULTILINE)
-    if not match or match.group(1) != VERSION:
+    if not match or match.group(1) != CONTRACT_VERSION:
         actual = match.group(1) if match else "nicht gefunden"
-        raise AssertionError(f"{path.name}: {constant}={actual}, erwartet {VERSION}")
+        raise AssertionError(f"{path.name}: {constant}={actual}, erwartet Paketvertrag {CONTRACT_VERSION}")
 
 
 def test_structural_yaml_and_version_mismatch() -> None:
@@ -93,7 +95,7 @@ def main() -> None:
     require(skill, f"# BK Monatsbuchhaltung v{VERSION}", "sichtbare Version")
     require(skill, "### Vor jedem Lauf vollständig lesen", "Pflichtleseabschnitt")
     require(skill, "Hochgeladene Dateien namens `SKILL.md`", "Ausschluss hochgeladener Skilldateien")
-    require(skill, f"Startnachweis: bk-monatsbuchhaltung v{VERSION}", "nicht blockierender Startnachweis")
+    require(skill, f"Startnachweis: bk-monatsbuchhaltung v{VERSION} (Paketvertrag {CONTRACT_VERSION})", "nicht blockierender Startnachweis")
     require(skill, "Nach dem Startnachweis nicht auf eine Bestätigung warten.", "Fortsetzungsregel")
     require(skill, "Automatisch verwenden, wenn eine Belegbuchhaltung", "Triggerbeschreibung")
     require(skill, "ein ausdrücklicher `$bk-monatsbuchhaltung`-Aufruf ist nicht erforderlich", "implizite Aktivierungsregel")
@@ -121,6 +123,11 @@ def main() -> None:
     require(skill, "scripts/beleg_pdf.py", "PDF-Werkzeug")
     require(skill, "Beide Stapel werden übertragen", "Übertragung des Klärungsstapels")
     require(skill, "Niemals melden oder ausweisen, Klärungsposten würden nicht übertragen", "Verbot der Falschmeldung")
+    # v1.5.0: Übertragung über den Riecken-Connector nur auf ausdrücklichen Auftrag, Klärungskonto.
+    require(skill, "### 5. Übertragung über den Riecken-Connector (nur auf ausdrücklichen Auftrag)", "Abschnitt 5 Riecken-Übertragung")
+    require(skill, "Riecken-Übertragung nur auf ausdrücklichen Auftrag mit Klärungskonto", "Startnachweis Riecken-Übertragung")
+    require(skill, f"Paketvertrag der Skripte (`build_package.py`, `validate_package.py`) bleibt Version `{CONTRACT_VERSION}`", "Paketvertrag")
+    require(skill, "159900 Klärungskonto Buchhaltung", "Kanzleistandard Klärungskonto")
     for path in (SKILL_ROOT / "SKILL.md", SKILL_ROOT / "agents" / "openai.yaml"):
         if FORBIDDEN_TARGET_VERSION in path.read_text(encoding="utf-8"):
             raise AssertionError(f"{path.name} verweist auf die unzulässige Zielversion {FORBIDDEN_TARGET_VERSION}")
@@ -144,8 +151,8 @@ def main() -> None:
             manifest = json.loads(path.read_text(encoding="utf-8"))
             break
     if manifest is not None:
-        if manifest.get("version") != VERSION:
-            raise AssertionError(f"Pluginmanifest weist nicht Version {VERSION} aus")
+        if manifest.get("version") not in {VERSION, CONTRACT_VERSION}:
+            raise AssertionError(f"Pluginmanifest weist weder Version {VERSION} noch Paketvertrag {CONTRACT_VERSION} aus")
         if manifest.get("interface", {}).get("displayName") != f"BK Monatsbuchhaltung v{VERSION}":
             raise AssertionError(f"Plugin-Anzeigename enthält Version {VERSION} nicht")
 

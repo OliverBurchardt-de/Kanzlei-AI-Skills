@@ -1,0 +1,99 @@
+{
+  "skill_version": "1.5.0",
+  "package_contract_version": "1.4.1",
+  "package": "bk-monatsbuchhaltung-v1.5.0.skill",
+  "package_sha256": "73d50f832b27d73cc1eda95c9f31f593f962cc59807a75baf3e667282f63f7d5",
+  "package_files": 42,
+  "tests": [
+    {
+      "test": "test_accrual_register_first_run.py",
+      "passed": true
+    },
+    {
+      "test": "test_accrual_register_manifest.py",
+      "passed": true
+    },
+    {
+      "test": "test_datev_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_document_xml_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_parallel_processing.py",
+      "passed": true
+    },
+    {
+      "test": "test_review_return.py",
+      "passed": true
+    },
+    {
+      "test": "test_review_workbook.py",
+      "passed": true
+    },
+    {
+      "test": "test_sharepoint_target.py",
+      "passed": true
+    },
+    {
+      "test": "test_start_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v110_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v130_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v140_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v141_contract.py",
+      "passed": true
+    },
+    {
+      "test": "test_v150_contract.py",
+      "passed": true
+    }
+  ],
+  "regression_cases_v141": [
+    "Anti-Abbruch 150 Eingaben / 120 Bild-PDFs",
+    "Einzelner DATEV-/SharePoint-Fehler ohne Gesamtstopp",
+    "Abgrenzungsregister fehlend, leer, HTTP 403",
+    "Klärungsquote N=100 R=25 → Zweitprüfung → R=15",
+    "Unverändert hohe Klärungsquote bleibt fachlich offen",
+    "Mehrfachzeilen und Dubletten in der Zählweise",
+    "Scan ohne Textebene nicht allein wegen OCR Rot",
+    "Vollständigkeits-Gate",
+    "Versionstest 1.4.1 / kein 1.4.2",
+    "Belegdateiregel: ein Buchungsbeleg = genau eine eigene PDF-Datei",
+    "Riecken-Connector-Pflicht; 'Kreditor fehlt' ist kein Rot-Grund; merge nie über mehrere Belege",
+    "Abgrenzungsregister: leer/nicht vorhanden ohne formalen Nachweis; EÜR ohne Register und ohne Abgrenzungen",
+    "Übertragung: Buchungsstapel und Klärungsstapel werden importiert (import_scope, Validator)"
+  ],
+  "regression_cases_v150": [
+    "Versionstest: Skill 1.5.0, Paketvertrag der Skripte 1.4.1, Abschnitt 5 und Referenzen vorhanden",
+    "riecken_records.py: grüne Zeilen 1:1 (Gutschrift mit vertauschtem Soll/Haben), rote Zeilen über das Klärungskonto",
+    "KLÄR-Text höchstens 60 Zeichen; überlanger Vorgabetext wird abgewiesen",
+    "Keine Zeile Klärungskonto an Klärungskonto; kein Platzhalterbetrag; Summenabgleich je Stapel",
+    "Abweisung: beide Kontoseiten offen, Betrag unsicher, Belegdatum unsicher -> nicht_uebertragbar.json",
+    "Klärungskonto muss zu account_config.clarification passen",
+    "update_review_workbook_riecken.py: Ursprungsfassung unter ersetzt/, Riecken-Stapel, Klärungskonto und KLÄR-Text in Excel, Nutzerentscheidung, Blatt Riecken-Übertragung, Statusdatei, EXTF verschoben, riecken_transfer im Laufmanifest",
+    "remove_document_from_transfer.py: Beleg samt document.xml-Eintrag entfernt, testzip, Original unter ersetzt/",
+    "Roter Riecken-Stapel heißt 'Rechnungen Nachlauf'; Stapelnamen mit Klärungs- oder Prüfhinweis werden abgewiesen"
+  ],
+  "datev_test_import": "not_performed",
+  "datev_connector": "ausschließlich Riecken; schreibende Werkzeuge nur nach SKILL.md Abschnitt 5 auf ausdrücklichen Auftrag",
+  "transfer_rule": "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung",
+  "clearing_account_default": "159900 Klärungskonto Buchhaltung (vierstellig 1599), nur für die Riecken-Übertragung",
+  "riecken_batch_labels": {
+    "gruen": "Eingangsrechnungen",
+    "rot": "Rechnungen Nachlauf"
+  }
+}

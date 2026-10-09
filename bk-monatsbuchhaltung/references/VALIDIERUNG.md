@@ -85,7 +85,7 @@ Regeln:
 
 1. Eine Datei, die keine Zeilen hätte, wird nicht erzeugt. Ein Monat ohne roten Vorgang hat keinen Klärungsstapel; ein Monat nur mit roten Vorgängen hat nur einen Klärungsstapel.
 2. Alle Zeilen eines Vorgangs gehören in denselben Stapel (belegweit schlechteste Ampel).
-3. Rote Zeilen: alle sicheren Angaben gefüllt, die konkret ungeklärten Felder leer und je Zeile in `open_fields` begründet. Keine Ersatzkonten (1590 oder andere Zwischenkonten).
+3. Rote Zeilen: alle sicheren Angaben gefüllt, die konkret ungeklärten Felder leer und je Zeile in `open_fields` begründet. Keine Ersatzkonten (1590 oder andere Zwischenkonten) im EXTF-Paket; für die Riecken-Übertragung siehe `SKILL.md` Abschnitt 5.
 4. **Belegdatum bei Rot immer leer (Pflichtleerung).** Jede Zeile des Klärungsstapels wird ohne EXTF-Feld 10 exportiert, auch bei sicher bekanntem Datum. Das Belegdatum ist DATEV-Pflichtfeld; jede rote Zeile wird dadurch beim Import zwingend als fehlerhaft gekennzeichnet. Das erkannte Datum bleibt in `recognized_date`, im Laufmanifest (`booking_trace.recognized_date`), in der Prüfungsdatei (Spalte „Belegdatum laut Beleg“) und im übertragenen Beleg erhalten; der Mitarbeiter trägt es in DATEV nach.
 5. Abgrenzungsauflösungen stehen immer im Buchungsstapel. Eine zweifelhafte Auflösung bleibt Registervorschlag ohne Buchungszeile.
 6. Der Belegtransfer bleibt gemeinsam. Die BEDI-GUIDs vergibt nur `build_package.py`; sie verknüpfen Zeilen aus beiden Stapeln.
@@ -157,6 +157,18 @@ Offene Frage für den DATEV-Test: ob DATEV eine Vorzeile auch über Dateigrenzen
 - Möglichen Skill-Änderungsbedarf erst nach vollständiger Paketerstellung kurz nennen und einmal fragen, ob separate Änderungsvorschläge gewünscht sind.
 - Auch nach Zustimmung nur eine Vorschlagsdatei erstellen; keine Skill-Änderung ohne weiteren ausdrücklichen Auftrag umsetzen.
 
+## Kontrolle nach Riecken-Übertragung
+
+Gilt nur nach einer Übertragung nach `SKILL.md` Abschnitt 5. Die Punkte vor der Statusmeldung prüfen und das Ergebnis in `00_STATUS_NACH_RIECKEN_UEBERTRAGUNG.md` festhalten; `scripts/riecken_records.py` prüft die Zeilenregeln beim Erzeugen der Records, `scripts/test_v150_contract.py` sichert sie als Test.
+
+- Zeilenzahl und Summe je Riecken-Stapel stimmen mit den EXTF-Dateien überein, abzüglich der dokumentiert nicht übertragenen Zeilen (`nicht_uebertragbar.json` beziehungsweise `riecken_transfer.not_transferred`).
+- Jede rote Zeile trägt das Klärungskonto aus dem Mandantenprofil, ein Belegdatum (`recognized_date`), eine Beleg-GUID aus `document.xml` und einen KLÄR-Buchungstext von höchstens 60 Zeichen nach dem Muster `KLÄR <Vorgangs-ID> <offenes Thema> <Zielkonto oder Alternativen>`.
+- Keine Zeile „Klärungskonto an Klärungskonto“, keine Platzhalterbeträge (insbesondere kein 1 Cent), keine geschätzten Beträge.
+- Über Riecken übertragene EXTF-Dateien liegen nicht mehr in `01_DATEV_Import`, sondern unter `03_Technische_Protokolle/ersetzt/`; `validate_package.py` ist für ein so verändertes Paket nicht mehr maßgeblich, der Nachweis ist die Statusdatei.
+- Die Statusdatei `00_STATUS_NACH_RIECKEN_UEBERTRAGUNG.md` und das Blatt `Riecken-Übertragung` der Prüfungs-Excel existieren; die Ursprungsfassung der Excel liegt als `<Name>_vor_Riecken.xlsx` unter `ersetzt/`.
+- Jede Nutzerentscheidung zu nicht übertragenen Vorgängen trägt Entscheider und Datum.
+- Der rote Riecken-Stapel heißt `Rechnungen Nachlauf`; keine Riecken-Stapelbezeichnung enthält `Klärung` oder `Prüfung`.
+
 ## Zeichen und Dateien
 
 - EXTF in Codepage 1252 mit CRLF erzeugen.
@@ -192,7 +204,9 @@ DATEV-Testplan vor produktiver Freigabe der Versionsreihe 1.4 (eingeführt mit 1
 6. Prüfen, ob DATEV den Klärungsstapel mit fehlerhaften Zeilen vollständig übernimmt oder ganz zurückweist. Bei vollständiger Zurückweisung Fehlermeldung protokollieren und die Lösung neu bewerten.
 7. Bei Kostenstellen: Prüfen, ob DATEV KOST1-Werte und den zweiten Vorlauf übernimmt und ob eine rote Zeile mit offener KOST1 bei aktivierter Pflicht-KOST importierbar ist.
 
-Produktive Freigabe der Versionsreihe 1.4 (aktuell 1.4.1) erst nach Test 1, 2, 3 und 6; bis dahin bleibt `datev_test_import.status = pending`.
+Produktive Freigabe der Versionsreihe 1.4 (aktuell Paketvertrag 1.4.1, Skill 1.5.0) erst nach Test 1, 2, 3 und 6; bis dahin bleibt `datev_test_import.status = pending`.
+
+Für die Übertragung über den Riecken-Connector (`SKILL.md` Abschnitt 5) ist kein EXTF-Testimport nötig, weil keine EXTF-Datei importiert wird. Ein erster Echtlauf ist aber in DATEV zu sichten: Stapel `Eingangsrechnungen` und `Rechnungen Nachlauf` je Monat vorhanden, Zeilenzahl und Summe wie in der Vorschau, Beleglinks lösen nach dem DUO-Upload der Belegtransfer-ZIPs auf. Solange die Leseschnittstelle die Stapel nicht zeigt, gilt die Übertragung als nicht nachgewiesen.
 
 Quelle: [DATEV-Schnittstellenvorgaben und Testimport](https://developer.datev.de/de/product-detail/accounting-extf-files/2.0/documentation/interface-requirements-file).
 
