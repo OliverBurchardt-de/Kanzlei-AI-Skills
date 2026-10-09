@@ -1,0 +1,48 @@
+{
+  "skill_version": "1.5.1",
+  "package_contract_version": "1.5.1",
+  "package": "bk-monatsbuchhaltung-v1.5.1.skill",
+  "package_sha256": "48352f8d51bbe89b37df2d0a60ca700056176c9849727fab69d86326680bb0c3",
+  "package_files": 49,
+  "testdatum": "2026-10-09",
+  "herkunft": "Übernahme der beiden Commits b16fe42 und 9725efd aus dem Branch claude/friendly-franklin-tsti28 (dort als v1.5.0 bezeichnet, Basis v1.4.0) auf den Stand v1.5.0 aus PR #12; Konflikte in 14 Dateien von Hand aufgelöst",
+  "aenderungen": [
+    "SKILL.md: Nr. 15 Begründung aus dem Beleg (vier Klartexte document_summary, derivation, reason, next_step), Nr. 16 Rot nur bei konkreter offener Frage aus dem Beleg; Startnachweis um 'Begründung aus dem Beleg in Klartext' ergänzt; Klartextspalten der Prüfungsdatei in Übergabe und Riecken-Abschnitt; Skill- und Paketvertragsversion 1.5.1",
+    "FACHLICHE_ENTSCHEIDUNGEN.md: neuer Abschnitt 20 'Begründung aus dem Beleg' (18 Klärungsquote und 19 Riecken-Übertragung bleiben), Rot-Definition in Abschnitt 2 und Prüfungsdatei in Abschnitt 14 angepasst",
+    "EINGABESCHEMA.md: Pflichtfelder document_summary und bei Rot next_step, Block 'Begründung aus dem Beleg', Belegampel-Absatz; red_reason und evaluation_attempts aus v1.4.1 bleiben",
+    "VALIDIERUNG.md, PRUEFPROTOKOLL_RUECKLAUF.md, agents/openai.yaml: Klartextspalten und Version",
+    "datev_io.py: FIELD_LABELS, plain_language_issues, missing_mapping_issues, single_task_issues",
+    "build_package.py: Generator weist technische Bezeichner, pauschale Begründungen, fehlende Standardzuordnung als Rot-Grund und fehlenden oder mehrteiligen next_step zurück; Klärungsfälle-Tabelle mit 'Beleg zeigt' und 'Nächster Schritt'",
+    "build_review_workbook.py: Spalten 'Beleg zeigt', 'Buchung' (Alltagssprache), 'Daraus folgt', 'Warum Rot oder Grün?', 'Nächster Schritt'; Anleitung ergänzt; Zweig 'technisch nicht auswertbar' aus v1.4.1 erhalten",
+    "validate_package.py: erwartete Spalten, Prüfung der Klartextspalten auf technische Bezeichner und unzulässige Klärungsgründe bei Rot",
+    "evaluate_review_return.py: neue Spaltennamen mit Aliasen für Rückläufe bis v1.4",
+    "update_review_workbook_riecken.py: schreibt in 'Buchung' und 'Nächster Schritt' statt in die alten Spalten",
+    "Tests: test_v151_contract.py neu; Fixtures in test_v130/v140/v141/v150/test_datev_contract auf Klartext umgestellt; Versionstests auf 1.5.1, Sperre für Zielversion 1.5.2"
+  ],
+  "tests": [
+    "test_accrual_register_first_run: ok",
+    "test_accrual_register_manifest: ok",
+    "test_datev_contract: ok",
+    "test_document_xml_contract: ok",
+    "test_parallel_processing: ok",
+    "test_review_return: ok",
+    "test_review_workbook: ok",
+    "test_sharepoint_target: ok",
+    "test_start_contract: ok",
+    "test_v110_contract: ok",
+    "test_v130_contract: ok",
+    "test_v140_contract: ok",
+    "test_v141_contract: ok",
+    "test_v150_contract: ok",
+    "test_v151_contract: ok"
+  ],
+  "datev_test_import": "not_performed",
+  "echtlauf": "not_performed; Abnahme am ersten Echtlauf: Prüfungsdatei mit Klartextspalten sichten",
+  "datev_connector": "ausschließlich Riecken; schreibende Werkzeuge nur nach SKILL.md Abschnitt 5 auf ausdrücklichen Auftrag",
+  "transfer_rule": "Alle Buchungsstapel werden übertragen, sowohl die mit Klärungen als auch die ohne Klärung",
+  "clearing_account_default": "159900 Klärungskonto Buchhaltung (vierstellig 1599), nur für die Riecken-Übertragung",
+  "riecken_batch_labels": {
+    "gruen": "Eingangsrechnungen",
+    "rot": "Rechnungen Nachlauf"
+  }
+}

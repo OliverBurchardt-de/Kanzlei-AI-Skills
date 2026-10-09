@@ -178,9 +178,9 @@ def update_review_sheet(sheet, by_transaction, red_by_transaction, decisions, re
             f"Umbuchung: Klärungskonto {clearing.get('account')} {clearing.get('name')} nach Klärung auf das Zielkonto umbuchen; "
             "Klärungskonto für die Periode auf Saldo 0 bringen, erst danach Klärungsstapel festschreiben."
         )
-        kont = sheet.cell(row, cols["Kontierung"])
+        kont = sheet.cell(row, cols["Buchung"])
         kont.value = f"{actual}\n{kont.value or ''}".rstrip()
-        nxt = sheet.cell(row, cols["Offener Punkt / nächster Schritt"])
+        nxt = sheet.cell(row, cols["Nächster Schritt"])
         nxt.value = f"{instruction}\n{nxt.value or ''}".rstrip()
 
 

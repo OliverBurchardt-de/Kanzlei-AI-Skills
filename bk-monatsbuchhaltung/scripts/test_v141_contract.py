@@ -149,8 +149,8 @@ def test_anti_abort(root: Path) -> None:
     # Fehlender OCR-Text ist kein Endpunkt und kein Rot-Grund.
     def ocr_red(data: dict) -> None:
         doc = data["transactions"][0]
-        doc.update({"traffic_light": "Rot", "requires_clarification": True, "reason": "Scan ohne Textebene, OCR fehlgeschlagen.", "red_reason": red_reason("konto_unklar")})
-        doc["bookings"][0].update({"account": None, "open_fields": {"account": "Konto unklar."}})
+        doc.update({"traffic_light": "Rot", "requires_clarification": True, "reason": "Der Scan hat keine Textebene und die Texterkennung lieferte keinen Text zu diesem Beleg.", "red_reason": red_reason("konto_unklar"), "next_step": "Den Originalbeleg beim Mandanten anfordern."})
+        doc["bookings"][0].update({"account": None, "open_fields": {"account": "Der Scan zeigt die Leistung nur als Bild; das Sachkonto ist aus dem Belegbild zu bestimmen."}})
         data["clarification_cases"].append({
             "case_id": "K-OCR", "transaction_ids": [doc["transaction_id"]], "topic": "OCR", "facts": "x",
             "booking_risk": "x", "provisional_treatment": "x", "recommendation": "x", "decision_needed": "x",
@@ -296,7 +296,7 @@ def quota_scenario(root: Path, green: int, red: int) -> Scenario:
     for _ in range(green):
         scenario.add("Grün")
     for _ in range(red):
-        scenario.add("Rot", reason="Kontierung offen; Leistungsart nicht erkennbar.",
+        scenario.add("Rot", reason="Die Rechnung nennt nur einen Pauschalbetrag; die Leistungsart ist nicht erkennbar und das Sachkonto bleibt offen.",
                      bookings=[red_booking(account=None, open_fields={"account": "Leistungsart aus Beleg nicht erkennbar."})])
     return scenario
 
@@ -391,8 +391,8 @@ def test_multiline_and_duplicates(root: Path) -> None:
     scenario = Scenario(root, make_run(root))
     scenario.add("Grün")
     scenario.add("Grün")
-    scenario.add("Rot", reason="Kontierung offen.", bookings=[
-        red_booking(amount="29.75", account=None, open_fields={"account": "Kontierung offen."}) for _ in range(4)
+    scenario.add("Rot", reason="Die Rechnung nennt die Positionen ohne Leistungsbeschreibung; das Sachkonto ist nicht ableitbar.", bookings=[
+        red_booking(amount="29.75", account=None, open_fields={"account": "Position ohne Leistungsbeschreibung; das Sachkonto bleibt offen."}) for _ in range(4)
     ])
     duplicate = scenario.add("Grün")
     duplicate.update({
@@ -442,7 +442,7 @@ def test_scan_without_text_layer(root: Path) -> None:
     assert manifest["clarification_rate"]["after"]["N"] == 2 and manifest["clarification_rate"]["counts"]["technisch_nicht_auswertbar"] == 1
     workbook = load_workbook(next((package / "02_Buchungspruefung").glob("*.xlsx")))
     rows = {row[2].value: row for row in list(workbook["Belegprüfung"].rows)[1:]}
-    assert "Technisch nicht auswertbar" in str(rows[broken["transaction_id"]][12].value)
+    assert "Technisch nicht auswertbar" in str(rows[broken["transaction_id"]][13].value)  # Spalte "Nächster Schritt" (seit v1.5.1 Index 13)
     workbook.close()
     assert report["completion_gate"]["passed"]
 
@@ -452,7 +452,7 @@ def test_scan_without_text_layer(root: Path) -> None:
 def test_completeness_gate(root: Path) -> None:
     scenario = Scenario(root, make_run(root))
     scenario.add("Grün")
-    scenario.add("Rot", reason="Kontierung offen.", bookings=[red_booking(account=None, open_fields={"account": "Kontierung offen."})])
+    scenario.add("Rot", reason="Die Rechnung nennt die Positionen ohne Leistungsbeschreibung; das Sachkonto ist nicht ableitbar.", bookings=[red_booking(account=None, open_fields={"account": "Position ohne Leistungsbeschreibung; das Sachkonto bleibt offen."})])
     package, manifest, report = build_ok(scenario, "full")
     assert report["completion_gate"]["passed"] is True
     # Alle Stapel – mit und ohne Klärung – werden übertragen.
@@ -667,8 +667,8 @@ def test_riecken_and_creditor_rule(root: Path) -> None:
     (root / "creditor").mkdir()
     scenario = Scenario(root / "creditor", make_run(root / "creditor"))
     scenario.add("Grün")
-    red = scenario.add("Rot", reason="Kreditor fehlt in DATEV.",
-                       bookings=[red_booking(contra_account=None, contra_account_name=None, open_fields={"contra_account": "Kreditor nicht angelegt."})],
+    red = scenario.add("Rot", reason="Der Lieferant fehlt in DATEV als Kreditor; Leistung und Betrag sind laut Rechnung eindeutig.",
+                       bookings=[red_booking(contra_account=None, contra_account_name=None, open_fields={"contra_account": "Der Kreditor fehlt in DATEV; das Personenkonto bleibt bis zur Anlage offen."})],
                        red_reason=red_reason("personenkonto_unklar"))
     errors = scenario.document_errors("creditor-missing")
     assert any("kein Rot-Grund" in item for item in errors), errors
@@ -679,7 +679,7 @@ def test_riecken_and_creditor_rule(root: Path) -> None:
     red["red_reason"] = red_reason("personenkonto_unklar", partner_check={"tool": "datev_search_business_partners", "query": "Neu GmbH", "result": "no_match"})
     assert any("Neuanlage" in item for item in scenario.document_errors("creditor-no-match"))
     # Auch ein anderer Code rettet eine "Kreditor fehlt"-Begründung nicht.
-    red["reason"] = "Lieferant nicht angelegt."
+    red["reason"] = "Der Lieferant fehlt in DATEV als Kreditor; Leistung und Betrag sind laut Rechnung eindeutig."
     red["red_reason"] = red_reason("konto_unklar")
     assert any("kein Rot-Grund" in item for item in scenario.document_errors("creditor-other-code"))
     # Zulässig: dokumentierte Mehrdeutigkeit der Geschäftspartneridentität.
