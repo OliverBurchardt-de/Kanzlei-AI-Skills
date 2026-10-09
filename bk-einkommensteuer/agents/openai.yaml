@@ -1,0 +1,4 @@
+interface:
+  display_name: "BK Einkommensteuer"
+  short_description: "Einkommensteuer-Arbeitspapiere und Belegpakete"
+  default_prompt: "Nutze $bk-einkommensteuer, um aus den Mandantenunterlagen ein prüfbares Einkommensteuer-Arbeitspapier und Belegpaket zu erstellen."
