@@ -41,8 +41,9 @@ nicht saldieren oder zusammenfassen.
 ### Posten ab 100 EUR und fehlende Belege
 
 Jeden auf 1590 verbleibenden Posten ab 100 EUR einzeln in die
-1590-Klärungsliste übernehmen. Für jeden Posten anhand der Klardaten prüfen und
-dokumentieren:
+1590-Klärungsliste übernehmen. Für jeden Posten anhand der über den
+Riecken-Connector gelesenen Einzelbuchungen (`datev_get_account_postings` auf
+1590) prüfen und dokumentieren:
 
 - Zahlungsrichtung: Zahlungseingang von oder Zahlungsausgang an,
 - Zahlungspartner mit verständlichem Namen, zum Beispiel „Herr Mayer“ oder
@@ -53,7 +54,8 @@ dokumentieren:
   fehlenden Belegs.
 
 Namen oder Vorgänge nicht erfinden. Reichen Buchungstext, Banktext, Gegenkonto
-und weitere Klardaten nicht zur sicheren Bestimmung aus, den Posten ROT
+und weitere DATEV-Daten aus dem Riecken-Abruf nicht zur sicheren Bestimmung
+aus, den Posten ROT
 kennzeichnen und dem Mitarbeiter die Recherche aufgeben.
 
 Der DATEV-Buchungstext muss Zahlungsrichtung, Zahlungspartner und den fehlenden
@@ -95,8 +97,9 @@ Nach der Erstprüfung dem Mitarbeiter eine konkrete Aufgabenliste ausgeben:
 > 1590 ist nachbearbeitet – bitte Schlusskontrolle durchführen.
 
 Den Monatsreview bis zu diesem erneuten Anstoß nicht als abschließend erledigt
-kennzeichnen. Nach dem erneuten Anstoß Konto 1590 frisch aus den DATEV-Klardaten
-auslesen; nicht auf die alte Liste vertrauen. Dabei prüfen:
+kennzeichnen. Nach dem erneuten Anstoß Konto 1590 frisch über den
+Riecken-Connector aus DATEV auslesen; nicht auf die alte Liste vertrauen. Dabei
+prüfen:
 
 - kein Einzelbetrag unter 100 EUR steht mehr auf 1590,
 - jeder verbleibende Posten ab 100 EUR hat Zahlungsrichtung,

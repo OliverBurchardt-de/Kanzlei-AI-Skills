@@ -13,16 +13,16 @@ Aus den aktuellen Kanzlei-ReWe-Daten und Mandantenstammdaten einen formal sauber
 
 ### 1. Abschlusswerte ausschließlich aus Kanzlei-ReWe ermitteln
 
-1. Mandant und Geschäftsjahr in Kanzlei-ReWe eindeutig auflösen.
-2. Ausschließlich das Accounting-Modul von Kanzlei-ReWe verwenden: zuerst `datev://accounting/clients`, danach `datev://accounting/fiscal_years` und anschließend die vollständigen Summen und Salden über `datev://accounting/accounting_sums_and_balances` abrufen.
-3. Alle Seiten abrufen. Der Standardwert `top=100` ist keine vollständige Datenmenge. Für die Berechnung mindestens `id`, `account_number`, `caption`, `annual_value_debit`, `annual_value_credit`, `balance`, `balance_debit_credit_identifier` und `opening_balance_sheet` verwenden.
+1. Mandant und Geschäftsjahr in Kanzlei-ReWe eindeutig auflösen. Der Zugriff auf Kanzlei-ReWe erfolgt ausschließlich über den Riecken-DATEV-Connector (MCP-Server `Riecken`, Werkzeuge mit Präfix `datev_`); kein anderer DATEV-Zugang wird verwendet, auch wenn er in der Umgebung verfügbar ist. Der Connector wird nur lesend verwendet; schreibende Werkzeuge (`datev_add_posting`, `datev_prepare_*`, `datev_execute_change_plan`) werden nicht aufgerufen.
+2. Mandant mit `datev_search_clients` über die Mandantennummer auflösen und die gelieferte `id` (UUID) verwenden; bei keinem oder mehreren Treffern nicht raten. Das Geschäftsjahr aus dem Auftrag als `fiscal_year` (zum Beispiel `"2025"`) binden, nicht aus dem Kalenderjahr ableiten und den Standardwert „laufendes Wirtschaftsjahr“ nicht stillschweigend verwenden. Mit `datev_get_accounting_statistics` nachweisen, dass das Geschäftsjahr bebucht ist.
+3. Die vollständigen Summen und Salden mit `datev_get_account_balances` abrufen. Der Beschluss benötigt alle Konten: dem Nutzer zu Beginn einmal mitteilen, dass die komplette Summen- und Saldenliste gelesen wird, seine Bestätigung einholen und danach mit `confirmed_full_list=true` und ausreichend hohem `limit` abrufen. Die gelieferte Kontenzahl gegen die gemeldete Gesamtzahl prüfen; bei Abschneidung in Kontenbereichen (`account_from`/`account_to`) nachladen. Für die Berechnung je Konto Kontonummer, Bezeichnung, EB-Wert, kumulierte Soll- und Habenwerte sowie den Jahressaldo mit Soll-/Haben-Kennzeichen verwenden; die Feldnamen aus der tatsächlichen Antwort des Connectors übernehmen.
 4. Gibt die Schnittstelle Bilanzsumme und Jahresergebnis nicht als fertige Felder zurück, diese Werte selbst aus den Kanzlei-ReWe-Daten berechnen. Dazu [references/rewe-berechnung.md](references/rewe-berechnung.md) vollständig lesen und anwenden.
 5. Die ermittelte Ergebnisart festhalten: Jahresüberschuss, Jahresfehlbetrag oder Nullergebnis.
 6. Die Quelle intern mit `Kanzlei-ReWe`, Mandantennummer, Geschäftsjahr, Abrufdatum und `berechnet aus Summen und Salden` dokumentieren.
 
 Für Bilanzsumme und Jahresergebnis gilt daneben eine absolute DMS-Sperre:
 
-- Niemals ein Werkzeug oder eine Ressource unter `datev://dms/*` aufrufen.
+- Niemals die DMS-Werkzeuge des Riecken-Connectors aufrufen, insbesondere nicht `datev_search_documents`, `datev_get_document`, `datev_read_document` oder `datev_lookup_dms_structure`.
 - Das DMS weder durchsuchen noch öffnen, herunterladen oder auswerten. Insbesondere keine dort gespeicherten Jahresabschlüsse, früheren Gesellschafterbeschlüsse oder sonstigen Dokumente als Quelle oder Gegenprobe verwenden.
 - Keine Vorjahreswerte aus einem DMS-Dokument übernehmen. Auch ein Dokument mit passendem Namen kann ein anderes Geschäftsjahr oder einen überholten Bearbeitungsstand enthalten.
 - Vom Nutzer genannte oder in einem Dokument sichtbare Beträge sind nur Hinweise und ersetzen die Ermittlung aus den Kanzlei-ReWe-Daten nicht.
@@ -30,12 +30,12 @@ Für Bilanzsumme und Jahresergebnis gilt daneben eine absolute DMS-Sperre:
 
 ### 2. Stammdaten ermitteln
 
-Die Quellensperre aus Schritt 1 betrifft die Abschlusswerte. Firma, Sitz, Gesellschafter und Geschäftsführung über die verfügbare Stammdatenverbindung ermitteln. Bei verfügbarem Klardaten MCP:
+Die Quellensperre aus Schritt 1 betrifft die Abschlusswerte. Firma, Sitz, Gesellschafter und Geschäftsführung über den Riecken-Connector ermitteln:
 
-1. Mandant über `datev://master-data/clients` mit `number eq <Mandantennummer>` auflösen.
-2. Den Rechtsträger über `legal_person_id` und `datev://master-data/addressees` mit `expand=*` lesen.
-3. Exakte Firma, Rechtsform, Satzungssitz/Ort und aktuelle Anschrift übernehmen.
-4. Über `datev://master-data/relationships` mit `has_addressee_id eq <legal_person_id>` aktuelle Gesellschafter und gesetzliche Vertreter ermitteln.
+1. Die in Schritt 1 ermittelte Mandanten-`id` verwenden.
+2. `datev_get_client_dossier` mit `include_addressees=true` und `include_relationships=true` lesen.
+3. Exakte Firma, Rechtsform, Satzungssitz/Ort und aktuelle Anschrift aus den Adressatenstammdaten übernehmen. Rechtsformschlüssel bei Bedarf mit `datev_lookup_reference_data` (`type=legal_forms`) auflösen.
+4. Aktuelle Gesellschafter und gesetzliche Vertreter aus den Beziehungen des Dossiers ermitteln. Enthält die Antwort `relationships_error`, konnten die Beziehungen nicht abgerufen werden; das dem Nutzer nennen und nicht als „keine Gesellschafter“ werten.
 5. Beteiligungsquote oder Alleingesellschafterstellung nur behaupten, wenn sie zuverlässig belegt ist. Andernfalls neutral von „den Gesellschaftern“ sprechen oder nachfragen.
 
 Ohne vollständige Stammdaten nach exakter Firma, Sitz, Gesellschaftern und Geschäftsführung fragen. Registerdaten nur ergänzen, wenn sie aktuell belegt sind.
@@ -116,12 +116,16 @@ Dateinamen ohne Unterstriche bilden. Das Dokument enthält regelmäßig:
 
 Keinen finalen Beschluss erstellen bei:
 
-- nicht verfügbarem Kanzlei-ReWe-Zugriff;
+- nicht verfügbarem Kanzlei-ReWe-Zugriff über den Riecken-Connector (bei Verbindungsproblemen zuerst `datev_health_check`);
 - nicht eindeutig aufgelöstem Mandanten oder Geschäftsjahr;
-- unvollständiger Seitennavigation der Summen und Salden;
+- unvollständiger Summen- und Saldenliste (gelieferte Kontenzahl kleiner als Gesamtzahl);
 - nicht auflösbarer Kontenzuordnung oder verbleibender Bilanzdifferenz nach der Kontrollrechnung;
 - unklarer Abgrenzung zwischen Handels- und Steuerbilanzdaten in Kanzlei-ReWe;
 - unbekannter Ergebnisverwendung;
 - Ausschüttung ohne Betrag oder Fälligkeit;
 - nicht belastbar ermittelter Firma oder Sitz;
 - unklarer Ergebnisart.
+
+## Version
+
+Version 1.1.0: Kanzlei-ReWe- und Stammdatenzugriff ausschließlich über den Riecken-Connector. Beschlusslogik, Eingabeschema und Dokumentenerzeugung unverändert.

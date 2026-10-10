@@ -11,7 +11,7 @@ description: >
   Beratung, Anlagenzugangsprüfung, Wertberichtigung oder Bescheidprüfung.
 ---
 
-# B&K Monatsreview – Produktivversion 1.1
+# B&K Monatsreview – Produktivversion 1.2
 
 ## 1. Rolle und Ziel
 
@@ -49,8 +49,8 @@ sonstiger Steuerkonten Bestandteil des Lohnmoduls.
    abhängigen Prüfpunkte als `NICHT_PRUEFBAR` kennzeichnen, die unabhängigen
    Prüfungen aber fortsetzen. Ein Gesamturteil `GRUEN` ist dann ausgeschlossen.
 3. Pflichtunterlagen des Prüfmonats sichten.
-4. DATEV Accounting über Klardaten nach
-   `referenz/Klardaten Abruf.md` abrufen.
+4. DATEV Accounting ausschließlich über den Riecken-Connector nach
+   `referenz/Riecken Abruf.md` abrufen; den Connector nur lesend verwenden.
 5. Kontonummern ausschließlich nach
    `referenz/Kontonummernregel.md` umrechnen.
 6. Prüfmodule M1 bis M5 abarbeiten.
@@ -94,7 +94,8 @@ Regeln: `referenz/M2 Bank und Interim.md`.
 Bankkonten nicht gegen externe Banksalden abstimmen. Nur auffällige Buchungen
 untersuchen. 1360 und 1590 nach den eigenen strengen Regeln prüfen. Die
 1590-Prüfung ist zweistufig: Erstprüfung, Mitarbeiter-Nachbearbeitung und
-anschließender frischer Klardatenabruf nach erneutem Anstoß.
+anschließender frischer Abruf über den Riecken-Connector nach erneutem
+Anstoß.
 
 ### M3 OPOS
 
@@ -166,7 +167,8 @@ Differenz, Quelle, Grund, Maßnahme, Bearbeitungsstatus und Kommentar.
   Auszifferungsliste.
 - Der Skill importiert oder überträgt keine Buchungen in DATEV. Ein erzeugter
   DATEV-Stapel ist ausschließlich ein Vorschlag zur fachlichen Freigabe und
-  anschließenden manuellen Verarbeitung außerhalb dieses Skills.
+  anschließenden manuellen Verarbeitung außerhalb dieses Skills. Die
+  schreibenden Werkzeuge des Riecken-Connectors werden nicht aufgerufen.
 
 ## 9. Ausgabe
 
@@ -191,8 +193,8 @@ Die verbindliche Spaltenfolge und die Trennung der Ergebnislisten stehen in
 ## 10. Technische Regeln
 
 - Kontonummern immer als Strings behandeln.
-- Sachkontenlänge ausschließlich aus dem konkreten DATEV-Wirtschaftsjahr
-  verwenden; nicht raten.
+- Sachkontenlänge ausschließlich aus den über den Riecken-Connector gelesenen
+  Mandantendaten des konkreten Wirtschaftsjahres verwenden; nicht raten.
 - Geldbeträge mit `Decimal` und centgenauer Rundung rechnen.
 - Vor Ausgabe die Kopfzeilen der Excel-Vorlage, die Ampelzählung, Formelfehler
   und die visuelle Darstellung aller Tabellenblätter prüfen.
@@ -216,3 +218,7 @@ durch den Skill zu importieren oder zu übertragen. Zusätzlich den vorhandenen
 Regressionstest ohne vollständige Mandantendatei ausführen, damit
 `NICHT_PRUEFBAR` nicht zu geratenen Aussagen führt. Das Protokoll
 `assets/Freigabeprotokoll.md` verwenden.
+
+Version 1.2 ersetzt den bisherigen ressourcenbasierten DATEV-MCP-Zugang durch
+den Riecken-Connector (`referenz/Riecken Abruf.md`). Die fachlichen Prüfregeln
+M1 bis M5 sind unverändert.

@@ -344,6 +344,12 @@ def validate_review_data(data: Any) -> list[str]:
                 sources_by_id[source_id] = source
             require(source.get("kind") in {"datev", "dms", "sharepoint", "upload", "calculation"}, f"{path}.kind ist unzulässig.", errors)
             require(isinstance(source.get("uri"), str) and bool(source["uri"]), f"{path}.uri fehlt.", errors)
+            if source.get("kind") == "datev" and isinstance(source.get("uri"), str):
+                require(
+                    source["uri"].startswith("riecken:datev_"),
+                    f"{path}.uri: DATEV-Quellen stammen ausschließlich aus dem Riecken-Connector (riecken:datev_<werkzeug>...).",
+                    errors,
+                )
             require(isinstance(source.get("retrieved_at"), str) and bool(source["retrieved_at"]), f"{path}.retrieved_at fehlt.", errors)
             require(isinstance(source.get("complete"), bool), f"{path}.complete muss boolesch sein.", errors)
 

@@ -222,7 +222,7 @@ def add_datev_source(data: dict) -> None:
         {
             "id": "DATEV-1",
             "kind": "datev",
-            "uri": "datev://accounting/account_postings",
+            "uri": "riecken:datev_get_account_postings?account_number=1590&fiscal_year=2025",
             "retrieved_at": "2026-08-23T12:00:00+02:00",
             "complete": True,
         }
@@ -354,6 +354,22 @@ class ReviewValidationTests(unittest.TestCase):
         data["posting_proposals"].append(small_amount_proposal(tax_key="9"))
         errors = validate_review_data.validate_review_data(data)
         self.assertTrue(any("leeren tax_key" in error for error in errors))
+
+    def test_datev_source_must_come_from_riecken(self) -> None:
+        data = valid_data()
+        add_datev_source(data)
+        data["sources"][-1]["uri"] = "datev://accounting/account_postings"
+        errors = validate_review_data.validate_review_data(data)
+        self.assertTrue(any("Riecken-Connector" in error for error in errors))
+
+    def test_skill_texts_reference_only_riecken(self) -> None:
+        for path in list(ROOT.glob("*.md")) + list((ROOT / "references").glob("*.md")):
+            with self.subTest(datei=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertNotIn("Klardaten", text)
+                self.assertNotIn("datev://", text)
+                self.assertNotIn("datev_describe", text)
+        self.assertIn("Riecken-Connector", (ROOT / "SKILL.md").read_text(encoding="utf-8"))
 
     def test_unknown_source_reference_is_rejected(self) -> None:
         data = valid_data()

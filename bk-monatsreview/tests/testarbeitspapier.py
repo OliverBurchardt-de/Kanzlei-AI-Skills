@@ -154,7 +154,26 @@ class ArbeitspapierContractTest(unittest.TestCase):
             "1590 ist nachbearbeitet – bitte Schlusskontrolle durchführen.",
             regel_text,
         )
-        self.assertIn("Konto 1590 frisch aus den DATEV-Klardaten", regel_text)
+        self.assertIn("Konto 1590 frisch über den", regel_text)
+        self.assertIn("Riecken-Connector aus DATEV auslesen", regel_text)
+
+    def test_datev_zugang_nur_ueber_riecken(self):
+        skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        abruf_text = (
+            SKILL_ROOT / "referenz" / "Riecken Abruf.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("Riecken-Connector", skill_text)
+        self.assertIn("datev_search_clients", abruf_text)
+        self.assertIn("datev_get_account_balances", abruf_text)
+        self.assertIn("datev_get_account_postings", abruf_text)
+        for path in SKILL_ROOT.rglob("*.md"):
+            if path.name == "Quellenbasis.md":
+                continue
+            with self.subTest(datei=path.name):
+                text = path.read_text(encoding="utf-8")
+                self.assertNotIn("Klardaten", text)
+                self.assertNotIn("datev://", text)
+                self.assertNotIn("datev_describe", text)
 
 
 if __name__ == "__main__":

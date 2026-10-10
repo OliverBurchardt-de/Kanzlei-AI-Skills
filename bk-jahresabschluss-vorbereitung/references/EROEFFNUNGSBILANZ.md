@@ -8,9 +8,9 @@ Handelsrechtliche Grundlage ist die Bilanzidentität nach [§ 252 Abs. 1 Nr. 1 H
 
 ## Quellen und Bereichsinventar
 
-1. Vor Abfragen `datev_describe` ausführen. Für beide Jahre vollständige SuSa und Kontenplan sowie alle `accounting_sequences_processed` paginiert lesen. Deren `accounting_reason` auswerten, mindestens auf `commercial_law` und `tax_law`; fehlende oder weitere Kennungen dokumentieren statt zu raten.
-2. Die zugehörigen `accounting_records` je Stapel-ID vollständig lesen. Je Konto, Gegenkonto, Soll/Haben, Datum, Betrag, Buchungstext und stabiler Datensatz-ID vergleichen. EB-, laufende und nachträgliche Abschlussbuchungen auseinanderhalten; Datum allein beweist keine EB-Buchung.
-3. Mandant, Jahres-IDs, Stichtage, Abrufzeit, Buchungsstand, Sperr-/Festschreibestatus, Ressourcen, Filter, Seitenumfang und Vollständigkeit dokumentieren. Nicht gelieferter Sperrstatus ist `unbekannt`, nicht „gesperrt“ oder „final“.
+1. Für beide Jahre die vollständige Summen- und Saldenliste einschließlich Kontenplan über den Riecken-Connector lesen (`datev_get_account_balances` je `fiscal_year`, nach Bestätigung des Nutzers mit `confirmed_full_list=true`). Sie liefert je Konto EB-Wert, kumulierte Soll-/Habenwerte und Jahressaldo. Der Connector liefert keine Buchungsstapel und keine stapelbezogene Bereichskennung. Das Bereichsinventar aus `datev_get_asset_inventory` je `accounting_reason` (`handelsrecht`, `steuerrecht`), aus DMS-Nachweisen und dem Mandantenprofil aufbauen; fehlende oder weitere Bereiche dokumentieren statt zu raten.
+2. Die Buchungen der betroffenen Konten um die Jahresgrenze mit `datev_get_account_postings` lesen: im Vorjahr die Abschlussbuchungen, im Zieljahr die Eröffnungs- und ersten laufenden Buchungen. Je Konto, Gegenkonto, Soll/Haben, Datum, Betrag, Belegfeld und Buchungstext vergleichen. EB-, laufende und nachträgliche Abschlussbuchungen auseinanderhalten; Datum allein beweist keine EB-Buchung.
+3. Mandant, Wirtschaftsjahre, Stichtage, Abrufzeit, Buchungsstand (`datev_get_accounting_statistics`), Sperr-/Festschreibestatus, Werkzeuge, Parameter, Limits und Vollständigkeit dokumentieren. Nicht gelieferter Sperrstatus ist `unbekannt`, nicht „gesperrt“ oder „final“.
 4. DMS-Nachweise mit Dokumentnummer, Dateiname, Version und Seite/Fundstelle erfassen. Nicht allein nach Titeln „E-Bilanz“/„Steuerbilanz“ urteilen. Körperschaftsteuererklärung und Steuerbescheid ersetzen keine Steuerbilanz.
 5. Beide Prüflinien im Ergebnis sichtbar halten, auch wenn keine separaten DATEV-Stapel vorhanden sind. Steuerliche Werte können auch durch eine vollständige Überleitung belegt werden. Nichtanwendbarkeit benötigt einen fachlichen Nachweis; fehlende Daten genügen nicht. Bei EÜR ohne Eröffnungsbilanz ist das Modul begründet nicht anwendbar. Im Erstjahr Gründungs-/Übernahmeunterlagen anfordern, keinen Nullvortrag erfinden.
 
@@ -22,7 +22,7 @@ Ergebnisvortragsdifferenzen nur über eine centgenaue Ergebnisbrücke schließen
 
 ## Steuerrecht und Herleitung der Wertschichten
 
-Die am 20.09.2026 beschriebene SuSa-Ressource besitzt keinen Filter für `accounting_reason`. Eine gemeinsame SuSa ist deshalb keine unmittelbar bereichsgetrennte Steuerbilanz. Das verhindert nicht die Prüfung von Stapeln und Buchungssätzen.
+Die Summen- und Saldenliste des Riecken-Connectors ist nicht nach Rechnungslegungsbereich getrennt, und der Connector liefert keine Buchungsstapel mit Bereichskennung. Eine gemeinsame SuSa ist deshalb keine unmittelbar bereichsgetrennte Steuerbilanz. Bereichsgetrennte Werte sind nur über das Anlagenverzeichnis je Bewertungsbereich, eine DMS-Steuerbilanz mit Kontennachweis oder eine vollständige Überleitung belegbar.
 
 Zulässige Nachweiswege je Schluss- und Eröffnungsstichtag:
 
@@ -66,7 +66,7 @@ Bei Ausführung der Prüfung `Eroeffnungsbilanzpruefung_<Mandant>_<Vorjahr>_<Zie
 4. `Differenzen`: nur offene oder erklärungsbedürftige Positionen mit konkreter Aufgabe.
 5. Bei gemeinsamem OPOS-Auftrag zusätzlich `OPOS-Abgleich` und `OPOS-Fortschreibung` nach der zugehörigen Fachreferenz.
 
-Differenzen, Gruppensummen, Ergebnisbrücken und Zählungen als Formeln. Neu berechnen, Formelfehler prüfen und Blätter visuell auf abgeschnittene Inhalte, Filter, Zahlenformate und Lesbarkeit kontrollieren. Quellen mit Dokumentnummer/Dateiname/Fundstelle oder DATEV-Ressource, Jahres-/Stapel-ID und Abrufstand nennen. Keine internen Web-URLs oder temporären Download-Links im ausgegebenen Arbeitspapier; exakte technische URLs bleiben im lokalen Quellenprotokoll.
+Differenzen, Gruppensummen, Ergebnisbrücken und Zählungen als Formeln. Neu berechnen, Formelfehler prüfen und Blätter visuell auf abgeschnittene Inhalte, Filter, Zahlenformate und Lesbarkeit kontrollieren. Quellen mit Dokumentnummer/Dateiname/Fundstelle oder Riecken-Werkzeug, Wirtschaftsjahr, Parametern und Abrufstand nennen. Keine internen Web-URLs oder temporären Download-Links im ausgegebenen Arbeitspapier; exakte technische URLs bleiben im lokalen Quellenprotokoll.
 
 ## Akzeptanzfall aus der bereitgestellten Anweisung
 
@@ -74,5 +74,5 @@ Mandant 12500, 2024/2025 ist ein vorgegebener Testfall, keine neue Live-Prüfung
 
 - Verlustvortrag `4.608,54` und Jahresüberschuss `75.558,17` ergeben Gewinnvortrag `70.949,63 EUR`. Mit Soll positiv lautet die Brücke `4608.54 + (-75558.17) = -70949.63`. Nur mit finaler Quelle ist die HGB-Brücke abgestimmt.
 - Darlehens-/Gesellschafter- und Umsatzsteuerpositionen dürfen bei dokumentierter Zuordnung gruppengleich sein.
-- Die vorgegebene Anlagenbuchungs-Teilmenge Juni–Dezember 2024 enthält in `commercial_law` und `tax_law` jeweils Normalabschreibung Gebäude 4831 gegen 9000 von `2.882,00 EUR`. Dies bleibt steuerlich `TEILNACHWEIS`, selbst bei identischen Beträgen.
+- Die vorgegebene Anlagenbuchungs-Teilmenge Juni–Dezember 2024 enthält in den Bereichen Handelsrecht und Steuerrecht jeweils Normalabschreibung Gebäude 4831 gegen 9000 von `2.882,00 EUR`. Dies bleibt steuerlich `TEILNACHWEIS`, selbst bei identischen Beträgen.
 - Erst vollständige, belegte Schluss- und Eröffnungswerte dürfen die steuerliche Prüflinie auf `ABGESTIMMT` heben. Kein Schluss „Steuerbilanz fehlt“, nur weil kein passender DMS-Titel gefunden wurde.

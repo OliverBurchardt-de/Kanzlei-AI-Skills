@@ -11,7 +11,7 @@
 - Mandantendatei vorhanden: ja/nein
 - Buchhaltung final: ja/nein
 - Pflichtunterlagen vollständig: ja/nein/nicht relevant
-- Klardaten-Abruf erfolgreich: ja/nein
+- DATEV-Abruf über den Riecken-Connector erfolgreich: ja/nein
 
 ## Ergebnisabgleich
 - Rote Befunde fachlich richtig: ja/nein/teilweise

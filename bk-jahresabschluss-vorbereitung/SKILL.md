@@ -3,7 +3,7 @@ name: bk-jahresabschluss-vorbereitung
 description: Bereitet Jahresabschlüsse buchhalterisch vor, prüft Eröffnungswerte getrennt nach Handels- und Steuerrecht und stimmt Debitoren-/Kreditoren-OPOS mit dem aktuellen Buchhaltungsstand ab. Liest DATEV und die Mandantenbesonderheiten in SharePoint, dokumentiert Kontenabstimmungen und Startblocker. Verwenden auch für eine einzelne Eröffnungsbilanzprüfung mit Excel-Arbeitspapier; kein vollständiger Jahresabschlussreview oder DATEV-Import.
 ---
 
-# B&K Abschlussvorbereitung – Startklarheit v0.5.0
+# B&K Abschlussvorbereitung – Startklarheit v0.6.0
 
 ## Ziel und Grenze
 
@@ -50,23 +50,23 @@ Bei einem Auftrag nur zur Eröffnungsbilanzprüfung die Schritte 1–3 sowie der
 
 ### 1. Mandant und Wirtschaftsjahr eindeutig binden
 
-1. Mandantennummer aus dem Auftrag verwenden und über DATEV `datev://accounting/clients` zum Client-GUID auflösen. Bei keinem oder mehreren Treffern nicht raten.
-2. Die verfügbaren Wirtschaftsjahre mit dem Client-GUID abrufen. Das Zielwirtschaftsjahr nicht aus dem aktuellen Kalenderjahr ableiten und keine `fiscalYearId` konstruieren.
-3. Beginn, Ende, `fiscalYearId`, Sachkontenlänge und `taxation_method` des Zieljahrs dokumentieren. Daraus und aus dem Mandantenprofil die Gewinnermittlungsart bestimmen. Ein abweichendes Wirtschaftsjahr als solches behandeln. Die Buchhaltung muss für diese Vorstufe noch nicht insgesamt abschlussreif sein; den Datenstand mit Abrufzeitpunkt ausweisen.
-4. Das unmittelbar vorhergehende DATEV-Wirtschaftsjahr als Vergleichsjahr bestimmen. Fehlt es, die Vorjahresanalyse `NICHT_PRUEFBAR` kennzeichnen und die übrigen Module fortsetzen.
-5. Vor DATEV-Abfragen die jeweilige Ressource mit `datev_describe` beschreiben lassen. Einen Hinweis auf veraltete MCP-Toolbeschreibungen als technisches Pilotgate protokollieren; daraus keinen DATEV-Datenfehler ableiten.
+1. Mandantennummer aus dem Auftrag verwenden und über den Riecken-Connector mit `datev_search_clients` zur Mandanten-`id` (UUID) auflösen. Bei keinem oder mehreren Treffern nicht raten. DATEV wird ausschließlich über den Riecken-Connector nach [references/MCP_UND_SHAREPOINT.md](references/MCP_UND_SHAREPOINT.md) gelesen.
+2. Kerndaten mit `datev_get_client_dossier` lesen: Kontenrahmen, Sachkontenlänge, Beginn des Wirtschaftsjahres, Rechtsform. Das Zielwirtschaftsjahr aus dem Auftrag als `fiscal_year` binden; nicht aus dem aktuellen Kalenderjahr ableiten und den Standardwert „laufendes Wirtschaftsjahr“ nicht stillschweigend verwenden.
+3. Existenz und Buchungsstand des Zieljahrs mit `datev_get_accounting_statistics` nachweisen. Beginn, Ende, `fiscal_year`, Sachkontenlänge und Gewinnermittlungsart dokumentieren. Die Gewinnermittlungsart aus dem Mandantenprofil und, soweit geliefert, aus dem Dossier bestimmen; der Connector liefert kein eigenes Feld dafür. Ein abweichendes Wirtschaftsjahr als solches behandeln. Die Buchhaltung muss für diese Vorstufe noch nicht insgesamt abschlussreif sein; den Datenstand mit Abrufzeitpunkt ausweisen.
+4. Das unmittelbar vorhergehende Wirtschaftsjahr als Vergleichsjahr bestimmen und ebenfalls mit `datev_get_accounting_statistics` nachweisen. Liefert der Connector dafür keine Daten, die Vorjahresanalyse `NICHT_PRUEFBAR` kennzeichnen und die übrigen Module fortsetzen.
+5. Die aktuelle Werkzeugbeschreibung des Connectors ist maßgeblich; Parameter und Feldnamen nicht erfinden. Bei Verbindungs- oder Berechtigungsproblemen zuerst `datev_health_check` aufrufen. Einen technischen Fehler des Connectors als Pilotgate protokollieren; daraus keinen DATEV-Datenfehler ableiten.
 
 ### 2. Pflichtquellen direkt lesen
 
 1. `scripts/sharepoint_target.py --mandant <Nummer>` ausführen.
 2. Mandantenprofil und bei bilanzierenden Mandanten das Abgrenzungsregister an den ausgegebenen exakten SharePoint-URLs direkt abrufen. Die Bibliothek ist `https://burchardtkollegen.sharepoint.com/sites/Wissen/Mandantenbesonderheiten`. Profilinhalt vor fachlichen Schlussfolgerungen lesen und einschlägige Besonderheiten mit Quelle den Prüfpunkten zuordnen. Keine allgemeine Suche vor dem Direktabruf.
-3. DATEV-Kontenplan, Summen und Salden, Einzelbuchungen, Debitoren, Kreditoren sowie verdichtete OPOS vollständig und mit den richtigen Jahres-IDs abrufen.
-4. Jede Quelle mit stabilem Bezeichner, Abrufzeitpunkt, URI/URL, Filter, Zeitraum und – bei Dateien – Datei-ID und SHA-256 im Reviewdatensatz nachweisen.
+3. Über den Riecken-Connector vollständig und mit dem richtigen `fiscal_year` abrufen: Summen- und Saldenliste einschließlich Kontenplan beider Jahre (`datev_get_account_balances`, nach Bestätigung des Nutzers mit `confirmed_full_list=true`), Einzelbuchungen der Prüfkonten (`datev_get_account_postings`), Debitoren und Kreditoren (`datev_search_business_partners`) sowie offene Posten beider Seiten (`datev_get_open_items`).
+4. Jede Quelle mit stabilem Bezeichner, Abrufzeitpunkt, Werkzeug und Parametern beziehungsweise URL, Zeitraum und – bei Dateien – Datei-ID und SHA-256 im Reviewdatensatz nachweisen.
 5. Fehlt nur die Review-Sheet-Vorlage, alle Prüfungen durchführen und `Vorbereitungsdaten.json` erzeugen. Das definierte Excel-Arbeitspapier zur Eröffnungsbilanz ist unabhängig davon zu erstellen; es ersetzt die noch ausstehende Kanzlei-Gesamtvorlage nicht.
 
 ### 3. Eröffnungsbilanz je Rechnungslegungsbereich prüfen
 
-1. Handelsrecht und Steuerrecht als zwei eigenständige Prüflinien führen. Für Vor- und Zieljahr alle verarbeiteten DATEV-Stapel und deren `accounting_reason` einschließlich `commercial_law` und `tax_law` prüfen; die zugehörigen Buchungsdatensätze lesen. Ein fehlender DMS-Titel beweist keinen fehlenden Steuerrechtsbereich.
+1. Handelsrecht und Steuerrecht als zwei eigenständige Prüflinien führen. Der Riecken-Connector liefert keine bereichsgetrennten Buchungsstapel; eine Bereichskennung (`accounting_reason`) ist nur im Anlagenverzeichnis (`datev_get_asset_inventory`) verfügbar. Das Bereichsinventar für Vor- und Zieljahr deshalb aus Anlagenverzeichnis je Bewertungsbereich, DMS-Nachweisen und Mandantenprofil aufbauen und offen dokumentieren. Ein fehlender DMS-Titel beweist keinen fehlenden Steuerrechtsbereich.
 2. Vollständige Schluss- und Eröffnungswerte je Prüflinie beschaffen oder aus belegter Grundbuchhaltung und vollständiger Wertschicht herleiten. Eine gemeinsame SuSa allein genügt nicht. Unvollständige Herleitung als `TEILNACHWEIS` oder `NICHT_PRUEFBAR` ausweisen und den Start sperren.
 3. Nach [references/EROEFFNUNGSBILANZ.md](references/EROEFFNUNGSBILANZ.md) zuerst kontengleich prüfen, nur belegte zulässige Gruppen und finale Ergebnisbrücken verwenden und das Excel-Arbeitspapier erstellen. Keine Ansatz- oder Bewertungsentscheidung treffen.
 4. Bei EÜR das Thema nur mit begründeter Gewinnermittlungsart `NICHT_ANWENDBAR` setzen. Bei Erstjahr/Neugründung die Eröffnungswerte gegen die maßgeblichen Gründungs-/Übernahmeunterlagen prüfen lassen; fehlendes Vorjahr bedeutet nicht automatisch einen Nullvortrag.
@@ -95,7 +95,7 @@ Die Regeln aus [references/PRUEFLOGIK.md](references/PRUEFLOGIK.md) vollständig
 
 ### 6. Vorjahrshinweise und Übergabegrenze
 
-1. Abschlussnahe Buchungen des Vorjahres anhand DATEV-Sequenz, Buchungsdatum, Konten, Buchungstext und `accounting_reason` als Orientierung zusammenstellen. Eine Buchung nicht allein wegen des Datums als Abschlussbuchung klassifizieren.
+1. Abschlussnahe Buchungen des Vorjahres anhand Buchungsdatum, Konto, Gegenkonto, Belegfeld und Buchungstext aus `datev_get_account_postings` der betroffenen Konten als Orientierung zusammenstellen. Eine Buchung nicht allein wegen des Datums als Abschlussbuchung klassifizieren.
 2. Je Vorjahresbuchung nur festhalten: damalige Buchung, verfügbare Quelle und konkreter Hinweis für den Mitarbeiter, was im Zieljahr geprüft oder neu berechnet werden könnte.
 3. Vorjahresbeträge nie fortschreiben oder als aktuell notwendige Abschlussbuchung darstellen.
 4. Andere Abschlussbereiche nach [references/VORBEREITUNGSABGRENZUNG.md](references/VORBEREITUNGSABGRENZUNG.md) nicht reviewen. Ergibt sich aus den bereits gelesenen Quellen ein offensichtlicher Hinweis, ihn ohne Vertiefung nach `handoff_to_annual_close` übergeben.

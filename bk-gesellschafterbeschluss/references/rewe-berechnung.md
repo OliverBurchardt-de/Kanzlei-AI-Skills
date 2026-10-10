@@ -4,19 +4,19 @@ Diese Anleitung vollständig anwenden, wenn die Schnittstelle keine fertige Bila
 
 ## 1. Datenbasis sichern
 
-1. Mandant über `datev://accounting/clients` mit der Mandantennummer auflösen.
-2. Geschäftsjahr ausschließlich über `datev://accounting/fiscal_years` ermitteln. Keine ID aus dem Kalenderjahr ableiten.
-3. Kontenlänge und Währung des Geschäftsjahres festhalten.
-4. `datev://accounting/accounting_sums_and_balances` vollständig mit `top` und `skip` abrufen. Bis zum Ende weiterblättern.
+1. Mandant über den Riecken-Connector mit `datev_search_clients` und der Mandantennummer auflösen; die gelieferte `id` verwenden.
+2. Geschäftsjahr ausschließlich aus dem Auftrag als `fiscal_year` binden und mit `datev_get_accounting_statistics` nachweisen. Kein Jahr aus dem Kalenderjahr ableiten.
+3. Sachkontenlänge, Kontenrahmen und Währung des Geschäftsjahres aus `datev_get_client_dossier` beziehungsweise der Antwort des Connectors festhalten.
+4. `datev_get_account_balances` mit `fiscal_year`, `confirmed_full_list=true` (nach Bestätigung des Nutzers) und ausreichend hohem `limit` abrufen. Gelieferte Kontenzahl gegen die Gesamtzahl prüfen; bei Abschneidung in Kontenbereichen nachladen, bis alle Konten vorliegen.
 5. Nur Daten des ausgewählten Geschäftsjahres verwenden.
-6. Keine Ressource unter `datev://dms/*` aufrufen.
-7. Bei einem vorübergehenden Verbindungsfehler den Accounting-Abruf bis zu dreimal wiederholen und erforderlichenfalls die Seitengröße verkleinern. Bleibt der vollständige Abruf unmöglich, stoppen; niemals ins DMS ausweichen.
+6. Keine DMS-Werkzeuge des Connectors (`datev_search_documents`, `datev_get_document`, `datev_read_document`, `datev_lookup_dms_structure`) aufrufen.
+7. Bei einem vorübergehenden Verbindungsfehler `datev_health_check` ausführen und den Abruf bis zu dreimal wiederholen, erforderlichenfalls in kleineren Kontenbereichen. Bleibt der vollständige Abruf unmöglich, stoppen; niemals ins DMS ausweichen.
 
 ## 2. Salden richtig lesen
 
-- Für den Stichtagssaldo `balance` zusammen mit `balance_debit_credit_identifier` verwenden.
+- Für den Stichtagssaldo den Jahressaldo des Kontos zusammen mit seinem Soll-/Haben-Kennzeichen verwenden, so wie der Connector beide liefert. Die Feldnamen aus der tatsächlichen Antwort übernehmen, nicht raten.
 - Rechenkonvention: Soll `S` positiv, Haben `H` negativ.
-- Monatswerte sind Bewegungen und nicht der Stichtagssaldo. Sie nicht anstelle von `balance` verwenden.
+- Monatssalden sind Bewegungen und nicht der Stichtagssaldo. Sie nicht anstelle des Jahressaldos verwenden.
 - Beträge nie ohne Soll-/Haben-Kennzeichen addieren.
 - Sachkonten von Debitoren und Kreditoren anhand der Kontenlänge trennen.
 - Personenkonten für die HGB-seitengerechte Aufteilung verwenden: Debitoren mit Sollsaldo sind Forderungen, Debitoren mit Habensaldo sind auf der Passivseite umzugliedern; Kreditoren mit Habensaldo sind Verbindlichkeiten, Kreditoren mit Sollsaldo sind auf der Aktivseite umzugliedern.
@@ -30,7 +30,7 @@ Diese Anleitung vollständig anwenden, wenn die Schnittstelle keine fertige Bila
 2. Eigene oder ungewöhnlich beschriftete Konten nicht allein anhand der Kontenklasse erzwingen. Kontenbeschriftung, Kontenzweck und bei Bedarf die Buchungen des aktuellen Geschäftsjahres prüfen.
 3. Für alle GuV-Sachkonten rechnen:
 
-   `Jahresergebnis = Summe annual_value_credit - Summe annual_value_debit`
+   `Jahresergebnis = Summe der kumulierten Habenwerte - Summe der kumulierten Sollwerte`
 
 4. Bilanzkonten, Personenkonten sowie Vortrags- und statistische Konten ausschließen.
 5. Positives Ergebnis als Jahresüberschuss, negatives Ergebnis als Jahresfehlbetrag und null als ausgeglichenes Jahresergebnis behandeln.
