@@ -3,13 +3,13 @@ name: email-dms-ablage
 description: Immer bei Aufträgen zur Ablage, Archivierung oder Verarbeitung von ein- und ausgehenden E-Mails in DATEV DMS über den Microsoft-Outlook-Connector und Riecken mCO verwenden. Pflicht: Original-EML samt Anhängen, soweit verfügbar; bei ausdrücklicher Nutzerfreigabe auch klar gekennzeichnete rekonstruierte EML. Immer Ablage-Knigge, Status und Rücklesekontrolle beachten. Tatsächliche Dateiübergabe an Riecken mCO und Rücklesekontrolle mit Dokument-ID.
 ---
 
-# E-Mail-Ablage DATEV-DMS — verbindlicher Standard (v1.2.0)
+# E-Mail-Ablage DATEV-DMS — verbindlicher Standard (v1.2.1)
 
 ## Aktivierung
 Bei jeder beauftragten E-Mail-Ablage (Eingang und Ausgang, einzelne Nachrichten oder ganze Korrespondenz) diesen Workflow automatisch anwenden. Die Nutzeraussage zur Ablage ist Auftrag und Freigabe für Abruf, Original-EML, Dateiübergabe und Ausführung des Change-Plans. Sie ist keine Freigabe für eine rekonstruierte EML; dafür ist eine ausdrückliche, gesonderte Freigabe des Nutzers erforderlich (Abschnitt 2). Bei eindeutigem Arbeitsauftrag keine weiteren Rückfragen stellen. Rückfrage nur, wenn der Mandant nicht eindeutig bestimmbar ist oder mehrere Knigge-Regeln gleich gut passen. Für die rekonstruierte EML besteht eine stehende Freigabe (Abschnitt 2 Nr. 2); dafür nie nachfragen.
 
 Startnachweis sinngemäß ausgeben und danach selbstständig weiterarbeiten:
-`Startnachweis: email-dms-ablage v1.2.0 | Quelle Outlook-Connector | Original-EML vorrangig, Rekonstruktion nur mit Freigabe | Knigge-Zuordnung | Status explizit | Dateiübergabe geprüft | Rücklesekontrolle mit Dokument-ID`
+`Startnachweis: email-dms-ablage v1.2.1 | Quelle Outlook-Connector | Original-EML vorrangig, Rekonstruktion nur mit Freigabe | Knigge-Zuordnung | Status explizit | Dateiübergabe geprüft | Rücklesekontrolle mit Dokument-ID`
 
 ## Werkzeuge
 - Outlook: `outlook_email_search` (Nachricht finden), `read_resource` mit `mail:///messages/{id}` (Kopfdaten, HTML-Text, Anhangsliste), `read_resource` mit der Anhang-URI (liefert die Anhangsdatei auf die Festplatte), `outlook_batch_delete_messages` (verschiebt einzelne Nachrichten nach „Gelöschte Elemente“). `outlook_trash_thread` nicht verwenden, es löscht den gesamten Thread.
@@ -75,7 +75,7 @@ Nach jeder Ablage `datev_get_document` mit der tatsächlichen `documentId` aufru
 - `state` = `offen` oder `erledigt` wie beauftragt
 - `description`, `keywords`, `note` wie übergeben, einschließlich dokumentierter Einschränkungen
 - `year`, `month`, `receipt_date`
-Zusätzlich `datev_read_document` mit der `document_id` aufrufen, um Kopfdaten und Text aus der gespeicherten Datei zu bestätigen. Meldet Riecken `Der Mail-Parser ist mit einem Fehler geendet.`, ist das kein Ablagefehler, wenn `datev_get_document` die Datei mit korrekter Größe zeigt; die Datei dann über einen zweiten Weg prüfen (z. B. Klardaten `datev_dms_get` mit `datev://dms/document_files` und `datev_prepare_attachment`, Ergebnis byteweise mit der lokalen EML vergleichen) und das Ergebnis protokollieren. Schlägt eine Prüfung fehl, keine Erfolgsmeldung ausgeben, Abweichung benennen.
+Zusätzlich `datev_read_document` mit der `document_id` aufrufen, um Kopfdaten und Text aus der gespeicherten Datei zu bestätigen. Meldet Riecken `Der Mail-Parser ist mit einem Fehler geendet.`, ist das kein Ablagefehler, wenn `datev_get_document` die Datei mit korrekter Größe zeigt; die Datei dann über einen zweiten Weg innerhalb von Riecken prüfen: mit `datev_create_download_link` einen Download-Link für die abgelegte Datei erzeugen, ihn dem Nutzer wörtlich weitergeben und ihn bitten, Dateigröße und Inhalt gegen die lokale EML zu vergleichen (Download-Inhalte laufen nie durch das Modell); das Ergebnis protokollieren. Kein anderer DATEV-Zugang wird für die Rücklesekontrolle verwendet. Schlägt eine Prüfung fehl, keine Erfolgsmeldung ausgeben, Abweichung benennen.
 
 ## 8. Outlook-Löschung
 Nur bei ausdrücklicher Löschanweisung des Nutzers:

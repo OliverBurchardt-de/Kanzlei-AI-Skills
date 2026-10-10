@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "datev-email-dms-ablage",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Verbindlicher Workflow für die EML-Ablage von Outlook-E-Mails im DATEV-DMS über Riecken mCO: Original-EML vorrangig, rekonstruierte EML nur mit ausdrücklicher Nutzerfreigabe und klarer Kennzeichnung, Ablage-Knigge, expliziter Status, geprüfte Dateiübergabe und Rücklesekontrolle.",
   "author": {
     "name": "Burchardt & Kollegen"
